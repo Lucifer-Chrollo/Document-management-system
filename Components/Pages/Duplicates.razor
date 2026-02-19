@@ -1,0 +1,189 @@
+@page "/duplicates"
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+@inject IDocumentService DocumentService
+@inject NavigationManager Navigation
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<PageTitle>Duplicate Files - DMS</PageTitle>
+
+<RadzenStack Gap="1.5rem" class="p-4">
+    <!-- Header -->
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenIcon Icon="content_copy" Style="font-size: 2rem; color: var(--rz-warning);" />
+            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Duplicate Files</RadzenText>
+        </RadzenStack>
+        <RadzenButton Text="Refresh" Icon="refresh" Click="@LoadDuplicates" ButtonStyle="ButtonStyle.Light" />
+    </RadzenStack>
+
+    <!-- Stats Cards -->
+    <RadzenRow Gap="1rem">
+        <RadzenColumn Size="12" SizeMD="4">
+            <RadzenCard class="h-100">
+                <RadzenStack AlignItems="AlignItems.Center">
+                    <RadzenIcon Icon="folder_copy" Style="font-size: 2.5rem; color: var(--rz-primary);" />
+                    <RadzenText TextStyle="TextStyle.H3" class="mb-0">@stats.DuplicateGroups</RadzenText>
+                    <RadzenText class="text-muted">Duplicate Groups</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="4">
+            <RadzenCard class="h-100">
+                <RadzenStack AlignItems="AlignItems.Center">
+                    <RadzenIcon Icon="file_copy" Style="font-size: 2.5rem; color: var(--rz-warning);" />
+                    <RadzenText TextStyle="TextStyle.H3" class="mb-0">@stats.TotalDuplicateFiles</RadzenText>
+                    <RadzenText class="text-muted">Total Duplicate Files</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="4">
+            <RadzenCard class="h-100">
+                <RadzenStack AlignItems="AlignItems.Center">
+                    <RadzenIcon Icon="storage" Style="font-size: 2.5rem; color: var(--rz-danger);" />
+                    <RadzenText TextStyle="TextStyle.H3" class="mb-0">@FormatFileSize(stats.WastedBytes)</RadzenText>
+                    <RadzenText class="text-muted">Wasted Storage</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+
+    @if (isLoading)
+    {
+        <RadzenCard>
+            <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="min-height: 200px;">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                <RadzenText>Loading duplicate files...</RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    }
+    else if (!duplicateGroups.Any())
+    {
+        <RadzenCard>
+            <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="min-height: 200px;">
+                <RadzenIcon Icon="check_circle" Style="font-size: 4rem; color: var(--rz-success);" />
+                <RadzenText TextStyle="TextStyle.H5" class="text-success">No Duplicates Found!</RadzenText>
+                <RadzenText class="text-muted">Your document library is clean with no duplicate files.</RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    }
+    else
+    {
+        @foreach (var group in duplicateGroups)
+        {
+            var firstDoc = group.First();
+            var duplicateCount = group.Count();
+            var totalSize = group.Sum(d => d.FileSize);
+            var wastedSize = totalSize - firstDoc.FileSize;
+            
+            <RadzenCard class="mb-3">
+                <RadzenStack Gap="1rem">
+                    <!-- Group Header -->
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                            <RadzenIcon Icon="@GetFileIcon(firstDoc.Extension)" Style="font-size: 1.5rem;" />
+                            <RadzenStack Gap="0">
+                                <RadzenText TextStyle="TextStyle.Subtitle1" Style="margin: 0;">
+                                    @duplicateCount identical files (@FormatFileSize(firstDoc.FileSize) each)
+                                </RadzenText>
+                                <RadzenText class="text-muted" Style="font-size: 0.8rem;">
+                                    Hash: @group.Key?.Substring(0, Math.Min(16, group.Key?.Length ?? 0))...
+                                </RadzenText>
+                            </RadzenStack>
+                        </RadzenStack>
+                        <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="@($"+{FormatFileSize(wastedSize)} wasted")" />
+                    </RadzenStack>
+
+                    <!-- Documents Grid -->
+                    <RadzenDataGrid Data="@group" TItem="Document" Density="Density.Compact">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="Document" Title="Name" Width="300px">
+                                <Template Context="doc">
+                                    <RadzenLink Path="@($"/document/{doc.DocumentId}")" Text="@doc.DocumentName" />
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="Document" Property="CategoryName" Title="Category" Width="150px" />
+                            <RadzenDataGridColumn TItem="Document" Property="LocationName" Title="Location" Width="150px" />
+                            <RadzenDataGridColumn TItem="Document" Property="UploadedDate" Title="Uploaded" FormatString="{0:MMM dd, yyyy}" Width="130px" />
+                            <RadzenDataGridColumn TItem="Document" Property="UserName" Title="By" Width="120px" />
+                            <RadzenDataGridColumn TItem="Document" Title="Actions" Width="120px" TextAlign="TextAlign.Center" Filterable="false" Sortable="false">
+                                <Template Context="doc">
+                                    <RadzenButton Icon="visibility" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Info" 
+                                                  Click="@(() => Navigation.NavigateTo($"/document/{doc.DocumentId}"))" Tooltip="View" />
+                                    <RadzenButton Icon="delete" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Danger" 
+                                                  Click="@(() => DeleteDocument(doc))" Tooltip="Delete" />
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenStack>
+            </RadzenCard>
+        }
+    }
+</RadzenStack>
+
+@code {
+    private IEnumerable<IGrouping<string, Document>> duplicateGroups = Enumerable.Empty<IGrouping<string, Document>>();
+    private (int DuplicateGroups, int TotalDuplicateFiles, long WastedBytes) stats;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDuplicates();
+    }
+
+    private async Task LoadDuplicates()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            duplicateGroups = await DocumentService.GetDuplicatesAsync();
+            stats = await DocumentService.GetDuplicateStatsAsync();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "Failed to load duplicates.");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteDocument(Document doc)
+    {
+        var confirmed = await DialogService.Confirm(
+            $"Delete '{doc.DocumentName}'? This will move it to trash.",
+            "Delete Duplicate",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+
+        if (confirmed == true)
+        {
+            await DocumentService.DeleteAsync(doc.DocumentId);
+            NotificationService.Notify(NotificationSeverity.Success, "Deleted", "Document moved to trash.");
+            await LoadDuplicates();
+        }
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        int order = 0;
+        double size = bytes;
+        while (size >= 1024 && order < sizes.Length - 1) { order++; size /= 1024; }
+        return $"{size:0.##} {sizes[order]}";
+    }
+
+    private static string GetFileIcon(string? ext) => ext?.ToLowerInvariant() switch
+    {
+        ".pdf" => "picture_as_pdf",
+        ".doc" or ".docx" => "description",
+        ".xls" or ".xlsx" => "table_chart",
+        ".jpg" or ".jpeg" or ".png" => "image",
+        _ => "insert_drive_file"
+    };
+}

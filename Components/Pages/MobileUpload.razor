@@ -1,0 +1,376 @@
+@page "/m/upload/{Token}"
+@layout DocumentManagementSystem.Components.Layout.EmptyLayout
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+@inject IUploadSessionService UploadSessionService
+@inject IDocumentService DocumentService
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+
+<PageTitle>Mobile Upload - DMS</PageTitle>
+
+<style>
+    .mobile-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1rem;
+    }
+    .upload-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        max-width: 400px;
+        margin: 0 auto;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .pin-input {
+        font-size: 2rem !important;
+        text-align: center;
+        letter-spacing: 0.5rem;
+        font-family: monospace;
+    }
+    .file-input-wrapper {
+        border: 2px dashed #ccc;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .file-input-wrapper:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+    .success-icon {
+        font-size: 4rem;
+        color: #22c55e;
+    }
+    .error-icon {
+        font-size: 4rem;
+        color: #ef4444;
+    }
+</style>
+
+<div class="mobile-container">
+    <div class="upload-card">
+        @if (isLoading)
+        {
+            <RadzenStack AlignItems="AlignItems.Center" Gap="1rem" Style="padding: 2rem;">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                <RadzenText>Loading...</RadzenText>
+            </RadzenStack>
+        }
+        else if (session == null || !session.IsActive)
+        {
+            <!-- Invalid/Expired Session -->
+            <RadzenStack AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenIcon Icon="error_outline" class="error-icon" />
+                <RadzenText TextStyle="TextStyle.H5" TextAlign="TextAlign.Center">Session Invalid</RadzenText>
+                <RadzenText class="text-muted text-center">
+                    This upload link is invalid, expired, or has been revoked.
+                </RadzenText>
+            </RadzenStack>
+        }
+        else if (DateTime.UtcNow >= session.ExpiresAt)
+        {
+            <!-- Expired -->
+            <RadzenStack AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenIcon Icon="timer_off" class="error-icon" />
+                <RadzenText TextStyle="TextStyle.H5" TextAlign="TextAlign.Center">Session Expired</RadzenText>
+                <RadzenText class="text-muted text-center">
+                    This upload session has expired. Please request a new QR code.
+                </RadzenText>
+            </RadzenStack>
+        }
+        else if (session.FailedAttempts >= session.MaxAttempts)
+        {
+            <!-- Locked Out -->
+            <RadzenStack AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenIcon Icon="lock" class="error-icon" />
+                <RadzenText TextStyle="TextStyle.H5" TextAlign="TextAlign.Center">Session Locked</RadzenText>
+                <RadzenText class="text-muted text-center">
+                    Too many incorrect PIN attempts. This session has been locked.
+                </RadzenText>
+            </RadzenStack>
+        }
+        else if (!isPinVerified)
+        {
+            <!-- PIN Verification -->
+            <RadzenStack AlignItems="AlignItems.Center" Gap="1.5rem">
+                <RadzenIcon Icon="security" Style="font-size: 3rem; color: #667eea;" />
+                <RadzenText TextStyle="TextStyle.H5" TextAlign="TextAlign.Center">Enter PIN</RadzenText>
+                <RadzenText class="text-muted text-center">
+                    Enter the 6-digit PIN shown when the QR code was generated.
+                </RadzenText>
+
+                @if (!string.IsNullOrEmpty(pinError))
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Danger" Shade="Shade.Lighter">
+                        @pinError
+                    </RadzenAlert>
+                }
+
+                <RadzenTextBox @bind-Value="@enteredPin" Placeholder="000000" MaxLength="6"
+                               class="pin-input" Style="width: 180px;" />
+
+                <RadzenText class="text-muted" Style="font-size: 0.8rem;">
+                    Attempts remaining: @(session.MaxAttempts - session.FailedAttempts)
+                </RadzenText>
+
+                <RadzenButton Text="Verify" Icon="check" ButtonStyle="ButtonStyle.Primary" 
+                              Style="width: 100%;" Click="@VerifyPin" IsBusy="@isVerifying" />
+            </RadzenStack>
+        }
+        else if (uploadSuccess)
+        {
+            <!-- Upload Success -->
+            <RadzenStack AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenIcon Icon="check_circle" class="success-icon" />
+                <RadzenText TextStyle="TextStyle.H5" TextAlign="TextAlign.Center">Upload Complete!</RadzenText>
+                <RadzenText class="text-muted text-center">
+                    @uploadedCount file(s) uploaded successfully to @session.UserName's account.
+                </RadzenText>
+                
+                @if (session.FilesUploaded < session.MaxFiles)
+                {
+                    <RadzenButton Text="Upload More" Icon="add" ButtonStyle="ButtonStyle.Primary" 
+                                  Style="width: 100%;" Click="@(() => uploadSuccess = false)" />
+                }
+                else
+                {
+                    <RadzenText class="text-muted">Maximum files reached for this session.</RadzenText>
+                }
+            </RadzenStack>
+        }
+        else
+        {
+            <!-- Upload Form -->
+            <RadzenStack Gap="1.5rem">
+                <RadzenStack AlignItems="AlignItems.Center" Gap="0.5rem">
+                    <RadzenIcon Icon="cloud_upload" Style="font-size: 2.5rem; color: #667eea;" />
+                    <RadzenText TextStyle="TextStyle.H5" TextAlign="TextAlign.Center">Upload Files</RadzenText>
+                    <RadzenText class="text-muted text-center">
+                        Uploading as <strong>@session.UserName</strong>
+                    </RadzenText>
+                </RadzenStack>
+
+                <!-- Session Info -->
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceAround">
+                    <RadzenStack AlignItems="AlignItems.Center">
+                        <RadzenText Style="font-size: 0.8rem; color: #888;">Time Left</RadzenText>
+                        <RadzenText Style="font-weight: bold;">@session.RemainingMinutes min</RadzenText>
+                    </RadzenStack>
+                    <RadzenStack AlignItems="AlignItems.Center">
+                        <RadzenText Style="font-size: 0.8rem; color: #888;">Files</RadzenText>
+                        <RadzenText Style="font-weight: bold;">@session.FilesUploaded / @session.MaxFiles</RadzenText>
+                    </RadzenStack>
+                </RadzenStack>
+
+                @if (!string.IsNullOrEmpty(uploadError))
+                {
+                    <RadzenAlert AlertStyle="AlertStyle.Danger" Shade="Shade.Lighter">
+                        @uploadError
+                    </RadzenAlert>
+                }
+
+                <!-- File Input -->
+                <div class="file-input-wrapper">
+                    <InputFile OnChange="@HandleFileSelected" multiple accept="*/*" style="display: none;" id="fileInput" />
+                    <label for="fileInput" style="cursor: pointer; width: 100%; display: block;">
+                        <RadzenIcon Icon="add_photo_alternate" Style="font-size: 3rem; color: #667eea;" />
+                        <RadzenText>Tap to select files</RadzenText>
+                        <RadzenText class="text-muted" Style="font-size: 0.8rem;">or use camera</RadzenText>
+                    </label>
+                </div>
+
+                @if (selectedFiles.Any())
+                {
+                    <RadzenStack Gap="0.5rem">
+                        @foreach (var file in selectedFiles)
+                        {
+                            <RadzenCard Style="padding: 0.5rem;">
+                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <RadzenText Style="font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis;">
+                                        @file.Name
+                                    </RadzenText>
+                                    <RadzenText class="text-muted" Style="font-size: 0.8rem;">
+                                        @FormatSize(file.Size)
+                                    </RadzenText>
+                                </RadzenStack>
+                            </RadzenCard>
+                        }
+
+                        <RadzenButton Text="@($"Upload {selectedFiles.Count} File(s)")" Icon="cloud_upload" 
+                                      ButtonStyle="ButtonStyle.Success" Style="width: 100%;" 
+                                      Click="@UploadFiles" IsBusy="@isUploading" />
+                    </RadzenStack>
+                }
+
+                @if (!string.IsNullOrEmpty(session.Label))
+                {
+                    <RadzenText class="text-muted text-center" Style="font-size: 0.85rem;">
+                        Session: @session.Label
+                    </RadzenText>
+                }
+            </RadzenStack>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Token { get; set; } = "";
+
+    private UploadSession? session;
+    private bool isLoading = true;
+    private bool isPinVerified;
+    private bool isVerifying;
+    private bool isUploading;
+    private bool uploadSuccess;
+    private string enteredPin = "";
+    private string pinError = "";
+    private string uploadError = "";
+    private int uploadedCount;
+    private List<IBrowserFile> selectedFiles = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSession();
+    }
+
+    private async Task LoadSession()
+    {
+        isLoading = true;
+        try
+        {
+            session = await UploadSessionService.GetByTokenAsync(Token);
+            if (session != null)
+            {
+                isPinVerified = session.IsPinVerified;
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task VerifyPin()
+    {
+        pinError = "";
+        isVerifying = true;
+        StateHasChanged();
+
+        try
+        {
+            if (string.IsNullOrEmpty(enteredPin) || enteredPin.Length != 6)
+            {
+                pinError = "Please enter a 6-digit PIN.";
+                return;
+            }
+
+            var ipAddress = HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            var result = await UploadSessionService.VerifyPinAsync(Token, enteredPin, ipAddress);
+
+            if (result)
+            {
+                isPinVerified = true;
+                await LoadSession(); // Refresh session data
+            }
+            else
+            {
+                await LoadSession(); // Refresh to get updated failed attempts
+                if (session != null && session.FailedAttempts >= session.MaxAttempts)
+                {
+                    pinError = "Session locked due to too many failed attempts.";
+                }
+                else
+                {
+                    pinError = $"Invalid PIN. {session?.MaxAttempts - session?.FailedAttempts} attempts remaining.";
+                }
+                enteredPin = "";
+            }
+        }
+        finally
+        {
+            isVerifying = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFiles = e.GetMultipleFiles(10).ToList();
+        uploadError = "";
+        StateHasChanged();
+    }
+
+    private async Task UploadFiles()
+    {
+        if (!selectedFiles.Any() || session == null) return;
+
+        uploadError = "";
+        isUploading = true;
+        uploadedCount = 0;
+        StateHasChanged();
+
+        try
+        {
+            foreach (var file in selectedFiles)
+            {
+                if (session.FilesUploaded >= session.MaxFiles)
+                {
+                    uploadError = "Maximum files reached for this session.";
+                    break;
+                }
+
+                try
+                {
+                    using var stream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024); // 100MB max
+                    using var ms = new MemoryStream();
+                    await stream.CopyToAsync(ms);
+                    ms.Position = 0;
+
+                    var document = new Document
+                    {
+                        DocumentName = file.Name,
+                        FileType = file.ContentType,
+                        CategoryID = session.DefaultCategoryId ?? 1,
+                        UploadedBy = session.UserId,
+                        Extension = Path.GetExtension(file.Name),
+                        FileSize = file.Size,
+                        Status = "Active"
+                    };
+
+                    await DocumentService.CreateAsync(document, ms);
+                    await UploadSessionService.IncrementFileCountAsync(Token);
+                    uploadedCount++;
+                }
+                catch (Exception ex)
+                {
+                    uploadError = $"Error uploading {file.Name}: {ex.Message}";
+                }
+            }
+
+            if (uploadedCount > 0)
+            {
+                uploadSuccess = true;
+                selectedFiles.Clear();
+                await LoadSession(); // Refresh counts
+            }
+        }
+        finally
+        {
+            isUploading = false;
+            StateHasChanged();
+        }
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        return $"{bytes / (1024.0 * 1024.0):F1} MB";
+    }
+}

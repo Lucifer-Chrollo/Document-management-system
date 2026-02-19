@@ -1,0 +1,186 @@
+@page "/trash"
+@attribute [Authorize]
+@inject IDocumentService DocumentService
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+
+<PageTitle>Trash / Recycle Bin - DMS</PageTitle>
+
+<RadzenStack Gap="1.5rem" class="fade-in-up">
+    <!-- Header -->
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenIcon Icon="delete_outline" Style="font-size: 2rem; color: var(--rz-danger);" />
+                <RadzenStack Gap="0">
+                    <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Trash</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body2" class="text-muted">
+                        Restore documents or delete them permanently.
+                    </RadzenText>
+                </RadzenStack>
+            </RadzenStack>
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+                @if (selectedDocuments.Any())
+                {
+                    <RadzenButton Icon="restore" Text="Restore Selected" ButtonStyle="ButtonStyle.Success" 
+                                  Click="@RestoreSelected" />
+                    <RadzenButton Icon="delete_forever" Text="Delete Forever" ButtonStyle="ButtonStyle.Danger" 
+                                  Click="@DeleteSelectedForever" />
+                }
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenCard>
+        @if (!isLoading && !documents.Any())
+        {
+             <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="padding: 3rem;">
+                <RadzenIcon Icon="delete_sweep" Style="font-size: 4rem; color: var(--rz-text-disabled);" />
+                <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-disabled);">Trash is empty</RadzenText>
+            </RadzenStack>
+        }
+        else
+        {
+            <RadzenDataGrid Data="@documents" TItem="Document" AllowFiltering="true" AllowSorting="true" 
+                            AllowPaging="true" PageSize="10" 
+                            SelectionMode="DataGridSelectionMode.Multiple" 
+                            @bind-Value="@selectedDocuments" class="rz-shadow-sm">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Document" Width="40px" Sortable="false" Filterable="false">
+                        <HeaderTemplate>
+                            <RadzenCheckBox TabIndex="-1" TriState="false" TValue="bool" 
+                                            Value="@(documents.Any() && selectedDocuments.Count == documents.Count())"
+                                            Change="@SelectAll" />
+                        </HeaderTemplate>
+                        <Template Context="doc">
+                            <RadzenCheckBox TabIndex="-1" TriState="false" Value="@selectedDocuments.Contains(doc)" 
+                                            TValue="bool" Change="@(selected => ToggleSelection(doc, selected))" />
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Document" Property="DocumentName" Title="Name" Width="250px">
+                        <Template Context="doc">
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                                <RadzenIcon Icon="@GetFileIcon(doc.Extension)" Style="font-size: 1.25rem;" />
+                                <RadzenText TextStyle="TextStyle.Body1">@doc.DocumentName</RadzenText>
+                            </RadzenStack>
+                            <RadzenText TextStyle="TextStyle.Caption" class="text-muted">Deleted: @doc.UpdatedDate.ToString("g")</RadzenText>
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Document" Property="DepartmentName" Title="Department" Width="150px" />
+                    <RadzenDataGridColumn TItem="Document" Property="UserName" Title="Deleted By" Width="150px">
+                        <Template Context="doc">
+                             @doc.UpdatedByName
+                        </Template>
+                    </RadzenDataGridColumn>
+
+                    <RadzenDataGridColumn TItem="Document" Context="doc" Filterable="false" Sortable="false" 
+                                        TextAlign="TextAlign.Center" Width="140px" Title="Actions">
+                        <Template Context="doc">
+                            <RadzenButton Icon="restore" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small" 
+                                          Click="@(() => RestoreDocument(doc))" Tooltip="Restore" />
+                            <RadzenButton Icon="delete_forever" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
+                                          Click="@(() => DeleteDocumentForever(doc))" Tooltip="Delete Forever" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    private IEnumerable<Document> documents = Enumerable.Empty<Document>();
+    private IList<Document> selectedDocuments = new List<Document>();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        try
+        {
+            documents = await DocumentService.GetDeletedDocumentsAsync();
+            selectedDocuments.Clear();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "Failed to load trash items.");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelectAll(bool selected)
+    {
+        selectedDocuments = selected ? documents.ToList() : new List<Document>();
+    }
+
+    private void ToggleSelection(Document doc, bool selected)
+    {
+        if (selected && !selectedDocuments.Contains(doc))
+            selectedDocuments.Add(doc);
+        else if (!selected)
+            selectedDocuments.Remove(doc);
+    }
+
+    private async Task RestoreDocument(Document doc)
+    {
+        await DocumentService.RestoreAsync(doc.DocumentId);
+        NotificationService.Notify(NotificationSeverity.Success, "Restored", $"Document '{doc.DocumentName}' restored.");
+        await LoadData();
+    }
+
+    private async Task RestoreSelected()
+    {
+        foreach (var doc in selectedDocuments)
+        {
+            await DocumentService.RestoreAsync(doc.DocumentId);
+        }
+        NotificationService.Notify(NotificationSeverity.Success, "Restored", $"{selectedDocuments.Count} documents restored.");
+        await LoadData();
+    }
+
+    private async Task DeleteDocumentForever(Document doc)
+    {
+        var confirmed = await DialogService.Confirm("Are you sure? This cannot be undone.", "Delete Forever", new ConfirmOptions() { OkButtonText = "Delete Forever", CancelButtonText = "Cancel" });
+        if (confirmed == true)
+        {
+            await DocumentService.PermanentlyDeleteAsync(doc.DocumentId);
+            NotificationService.Notify(NotificationSeverity.Warning, "Deleted", $"Document permanently deleted.");
+            await LoadData();
+        }
+    }
+
+    private async Task DeleteSelectedForever()
+    {
+        var confirmed = await DialogService.Confirm($"Permanently delete {selectedDocuments.Count} items?", "Delete Forever", new ConfirmOptions() { OkButtonText = "Delete Forever", CancelButtonText = "Cancel" });
+        if (confirmed == true)
+        {
+            foreach (var doc in selectedDocuments)
+            {
+                await DocumentService.PermanentlyDeleteAsync(doc.DocumentId);
+            }
+            NotificationService.Notify(NotificationSeverity.Warning, "Deleted", $"{selectedDocuments.Count} documents permanently deleted.");
+            await LoadData();
+        }
+    }
+
+    private static string GetFileIcon(string? ext) => ext?.ToLowerInvariant() switch
+    {
+        ".pdf" => "picture_as_pdf", ".doc" or ".docx" => "description",
+        ".xls" or ".xlsx" => "table_chart", ".jpg" or ".jpeg" or ".png" => "image",
+        _ => "insert_drive_file"
+    };
+}

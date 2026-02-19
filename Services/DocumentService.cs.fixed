@@ -1,0 +1,1177 @@
+﻿using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
+using DocumentManagementSystem.Hubs;
+using DocumentManagementSystem.Data.Repositories;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using DocumentManagementSystem.Exceptions;
+using DocumentManagementSystem.Models;
+using DocumentManagementSystem.Helpers;
+using System.Data;
+
+namespace DocumentManagementSystem.Services;
+
+/// <summary>
+/// Core service for managing document lifecycles, storage, and retrieval.
+/// </summary>
+/// <remarks>
+/// <b>Responsibilities:</b>
+/// - CRUD operations for Documents and Folders.
+/// - File Storage (Physical/CAS) via <see cref="IStorageService"/>.
+/// - Search Indexing via <see cref="ISearchService"/>.
+/// - Audit Logging via <see cref="IAuditService"/>.
+/// - Security/Permission checks (Admin vs User isolation).
+public class DocumentService : IDocumentService
+{
+    private readonly IDocumentRepository _documentRepository;
+    private readonly IAuditService _auditService;
+    private readonly ISearchService _searchService;
+    private readonly IStorageService _storageService;
+    private readonly ICompressionService _compressionService;
+    private readonly IHubContext<DocumentHub> _hubContext;
+    private readonly ILogger<DocumentService> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IAutoCategorizationService _autoCategorizationService;
+
+    public DocumentService(
+        IDocumentRepository documentRepository,
+        IStorageService storageService,
+        ICompressionService compressionService,
+        ISearchService searchService,
+        IAuditService auditService,
+        ILogger<DocumentService> logger,
+        IHttpContextAccessor httpContextAccessor,
+        IHubContext<DocumentHub> hubContext,
+        IAutoCategorizationService autoCategorizationService)
+    {
+        _documentRepository = documentRepository;
+        _storageService = storageService;
+        _compressionService = compressionService;
+        _searchService = searchService;
+        _auditService = auditService;
+        _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
+        _hubContext = hubContext;
+        _autoCategorizationService = autoCategorizationService;
+    }
+
+    /// <summary>
+    /// Security Helper: Extracts the unique integer ID of the current logged-in user.
+    /// Used for Ownership verification and Audit logging.
+    /// </summary>
+    private int? GetCurrentUserId()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        if (user == null || !user.Identity!.IsAuthenticated) return null;
+        
+        var claim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (claim != null && int.TryParse(claim.Value, out int id)) return id;
+        
+        return null; 
+    }
+
+
+    /// <summary>
+    /// Security Helper: Determines if the current user has "Super User" privileges.
+    /// Admins bypass row-level security checks in the Repository.
+    /// </summary>
+    private bool IsAdmin()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        if (user == null) return false;
+        // Check Username "admin" (seeded) or "Admin" Role
+        return user.Identity?.Name?.ToLower() == "admin" || user.IsInRole("Admin");
+    }
+
+    /// <summary>
+    /// Retrieves a document by ID. 
+    /// Note: This bridges to <see cref="IDocumentRepository.GetByIdAsync"/>.
+    /// </summary>
+    public async Task<Document?> GetByIdAsync(int id)
+    {
+        try
+        {
+            return await _documentRepository.GetByIdAsync(id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting document by ID {Id}", id);
+            return null;
+        }
+    }
+
+    public Document? GetById(int id)
+    {
+        return GetByIdAsync(id).GetAwaiter().GetResult();
+    }
+
+    private async Task<bool> CheckUserRightsAsync(int documentId, int userId)
+    {
+        if (IsAdmin()) return true;
+        var doc = await _documentRepository.GetByIdAsync(documentId);
+        if (doc == null) return false;
+        if (doc.UploadedBy == userId) return true;
+
+        // Check explicit rights (Dapper-style check via Repository if I add it, or just use GetByIdsAsync)
+        var accessible = await _documentRepository.GetByIdsAsync(new[] { documentId }, userId);
+        return accessible.Any();
+    }
+
+    private async Task<bool> CheckUserRightsAsync(Document doc, int userId)
+    {
+        if (IsAdmin()) return true;
+        if (doc.UploadedBy == userId) return true;
+        return await CheckUserRightsAsync(doc.DocumentId, userId);
+    }
+
+    /// <summary>
+    /// Retrieves all documents with integrated dynamic filtering and security.
+    /// </summary>
+    /// <remarks>
+    /// <b>Flow:</b>
+    /// 1. Determines if the caller is an Admin.
+    /// 2. If not an Admin, injects the Current User ID into the query.
+    /// 3. Repository uses the ID to filter out unauthorized records at the SQL level.
+    /// </remarks>
+    public async Task<IEnumerable<Document>> GetAllAsync(int? categoryId = null, int parentId = 0, string? batchLabel = null, bool includeDeleted = false, int? year = null, int? month = null, int? day = null)
+    {
+        try
+        {
+            int? userId = null;
+            if (!IsAdmin())
+            {
+                userId = GetCurrentUserId();
+            }
+
+            return await _documentRepository.GetAllAsync(categoryId, parentId, includeDeleted, batchLabel, year, month, day, userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting all documents");
+            return Enumerable.Empty<Document>();
+        }
+    }
+
+    public IEnumerable<Document> GetAll(int? categoryId = null, int parentId = 0, string? batchLabel = null, bool includeDeleted = false, int? year = null, int? month = null, int? day = null)
+    {
+        return GetAllAsync(categoryId, parentId, batchLabel, includeDeleted, year, month, day).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// The "Crown Jewel" of the system: Implements the safe, efficient document ingestion pipeline.
+    /// </summary>
+    /// <remarks>
+    /// <b>Process Logic:</b>
+    /// 1. <b>Quota Check:</b> Ensures the user isn't exceeding their allocated 100MB storage.
+    /// 2. <b>Buffering:</b> Converts non-seekable streams to <see cref="TempFileStream"/> for processing.
+    /// 3. <b>Hashing:</b> Generates a fingerprint (SHA256). Identifies duplicates immediately after calculation.
+    /// 4. <b>Compression:</b> Uses <see cref="ICompressionService"/> (Brotli/GZip) to minimize disk usage.
+    /// 5. <b>CAS Storage:</b> Saves to <see cref="IStorageService"/> using the <b>Hash as the key</b>.
+    /// 6. <b>Categorization:</b> Automatically assigns CategoryID based on filename/content heuristics.
+    /// 7. <b>Indexing:</b> Pushes searchable text into the Lucene engine.
+    /// 8. <b>Audit:</b> Records the event for compliance.
+    /// 9. <b>Notification:</b> Alerts other users in real-time via SignalR.
+    /// </remarks>
+    public async Task<iFishResponse> CreateAsync(Document document, Stream fileStream, string? userId = null)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            // Logic: Enforce hard quota limits on the server.
+            const long STORAGE_QUOTA_BYTES = 100 * 1024 * 1024; // 100MB
+            var totalSize = await GetTotalSizeAsync();
+            if (totalSize + fileStream.Length > STORAGE_QUOTA_BYTES)
+            {
+                response.Result = false;
+                response.ReturnCode = -2;
+                response.Message = "Upload failed: Storage quota exceeded.";
+                return response;
+            }
+
+            Stream effectiveStream = fileStream;
+            TempFileStream? tempBuffer = null;
+            
+            if (!fileStream.CanSeek)
+            {
+                tempBuffer = new TempFileStream();
+                await fileStream.CopyToAsync(tempBuffer);
+                tempBuffer.Position = 0;
+                effectiveStream = tempBuffer;
+            }
+
+            try 
+            {
+                document.FileHash = await CalculateHashAsync(effectiveStream);
+                _logger.LogInformation("Hash calculated for {Name}: {Hash}", document.DocumentName, document.FileHash);
+
+                var existingDuplicates = await FindByHashAsync(document.FileHash);
+                if (existingDuplicates.Any())
+                {
+                    document.IsDuplicate = true;
+                    document.DuplicateOf = existingDuplicates.First().DocumentId;
+                }
+
+                if (effectiveStream.CanSeek) effectiveStream.Position = 0;
+
+                var compressionResult = await _compressionService.CompressAsync(effectiveStream, document.DocumentName);
+                
+                try
+                {
+                    var compressedHash = await CalculateHashAsync(compressionResult.CompressedStream);
+                    
+                    if (compressionResult.CompressedStream.CanSeek)
+                        compressionResult.CompressedStream.Position = 0;
+                    
+                    var savedPath = await _storageService.SaveCasAsync(compressionResult.CompressedStream, compressedHash, document.Extension ?? "");
+                    
+                    document.Path = savedPath;
+                    document.CompressionAlgorithm = compressionResult.Algorithm;
+                    document.CompressedSize = compressionResult.CompressedSize;
+                }
+                finally
+                {
+                    if (compressionResult.CompressedStream != null)
+                    {
+                        await compressionResult.CompressedStream.DisposeAsync();
+                    }
+                }
+            }
+            finally
+            {
+                if (tempBuffer != null)
+                {
+                     await tempBuffer.DisposeAsync();
+                }
+            }
+            document.UploadedDate = DateTime.UtcNow;
+
+            if (int.TryParse(userId, out int uId))
+            {
+                 document.UploadedBy = uId;
+                 document.UpdatedBy = uId;
+            }
+
+            if (document.CategoryID == 0)
+            {
+                var catResponse = await _autoCategorizationService.CategorizeAsync(document, document.DocumentName);
+                if (catResponse.Result)
+                {
+                    document.CategoryID = (int)catResponse.RecordID;
+                }
+            }
+
+            document.DocumentId = await _documentRepository.CreateAsync(document);
+            _searchService.IndexDocument(document);
+            await _auditService.LogAsync(AuditAction.Create, document.DocumentId, document.DocumentName);
+            await _hubContext.Clients.All.SendAsync("DocumentChanged", "Created", document.DocumentId);
+
+            // ==========================================
+            // PERSIST PERMISSIONS & SEND NOTIFICATIONS
+            // ==========================================
+            if (document.UserDocumentRightsList != null && document.UserDocumentRightsList.Any())
+            {
+                foreach (var right in document.UserDocumentRightsList)
+                {
+                    if (string.IsNullOrEmpty(right.UserName)) continue;
+
+                    if (right.GroupId == -1)
+                    {
+                        // Resolve group name â†’ ID and grant access
+                        var groupId = await _documentRepository.GetGroupIdByNameAsync(right.UserName);
+                        if (groupId.HasValue)
+                        {
+                            await _documentRepository.GrantGroupAccessAsync(document.DocumentId, groupId.Value, right.Rights);
+                            _logger.LogInformation("Granted group '{Group}' (ID:{GroupId}) access to document {DocId}", right.UserName, groupId.Value, document.DocumentId);
+                        }
+                    }
+                    else
+                    {
+                        // Resolve user name â†’ ID and grant access
+                        var resolvedUserId = await _documentRepository.GetUserIdByNameAsync(right.UserName);
+                        if (resolvedUserId.HasValue)
+                        {
+                            await _documentRepository.GrantUserAccessAsync(document.DocumentId, resolvedUserId.Value, right.Rights);
+                            _logger.LogInformation("Granted user '{User}' (ID:{UserId}) access to document {DocId}", right.UserName, resolvedUserId.Value, document.DocumentId);
+
+                            // Notify the user via SignalR (Targeted)
+                            await _hubContext.Clients.User(resolvedUserId.Value.ToString()).SendAsync("FileShared", 
+                                right.UserName, 
+                                document.DocumentName,
+                                document.DocumentId);
+                        }
+                    }
+                }
+            }
+
+            response.Result = true;
+            response.RecordID = document.DocumentId;
+            response.Message = "Document created successfully";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating document {Name}", document.DocumentName);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    /// <summary>
+    /// Gets the current document count.
+    /// </summary>
+    public async Task<int> GetCountAsync()
+    {
+        int? userId = null;
+        if (!IsAdmin())
+        {
+            userId = GetCurrentUserId();
+        }
+        return await _documentRepository.GetCountAsync(userId);
+    }
+
+
+    public async Task<iFishResponse> UpdateAsync(Document document, string? userId = null)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            document.UpdatedDate = DateTime.UtcNow;
+            if (int.TryParse(userId, out int uId))
+                document.UpdatedBy = uId;
+
+            await _documentRepository.UpdateAsync(document);
+            _searchService.IndexDocument(document);
+            await _auditService.LogAsync(AuditAction.Update, document.DocumentId, document.DocumentName);
+            await _hubContext.Clients.All.SendAsync("DocumentChanged", "Updated", document.DocumentId);
+
+            response.Result = true;
+            response.RecordID = document.DocumentId;
+            response.Message = "Document updated successfully";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating document {Id}", document.DocumentId);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    public void Update(Document document, string? userId = null)
+    {
+        UpdateAsync(document, userId).GetAwaiter().GetResult();
+    }
+    /// <summary>
+    /// Soft-deletes a document by setting <c>IsDeleted = 1</c>.
+    /// </summary>
+    /// <remarks>
+    /// <b>Logic:</b>
+    /// - Marks as deleted in SQL.
+    /// - Removes from Lucene Index (so it doesn't appear in search).
+    /// - Logs Audit event.
+    /// </remarks>
+    public async Task<iFishResponse> DeleteAsync(int id)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            await _documentRepository.DeleteAsync(id);
+            _searchService.DeleteDocument(id);
+            await _auditService.LogAsync(AuditAction.Delete, id, null);
+            await _hubContext.Clients.All.SendAsync("DocumentChanged", "Deleted", id);
+            
+            response.Result = true;
+            response.RecordID = id;
+            response.Message = "Document deleted successfully";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error soft deleting document {Id}", id);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted document.
+    /// </summary>
+    public async Task<iFishResponse> RestoreAsync(int id)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            var restored = await _documentRepository.RestoreAsync(id);
+            if (!restored)
+            {
+                response.Result = false;
+                response.ReturnCode = -2;
+                response.Message = $"Document {id} not found";
+                return response;
+            }
+
+            var document = await GetByIdAsync(id);
+            if (document != null)
+            {
+                _searchService.IndexDocument(document);
+            }
+
+            await _hubContext.Clients.All.SendAsync("DocumentChanged", "Restored", id);
+
+            response.Result = true;
+            response.RecordID = id;
+            response.Message = "Document restored successfully";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error restoring document {Id}", id);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    /// <summary>
+    /// Permanently removes a document from DB and Storage.
+    /// </summary>
+    /// <remarks>
+    /// <b>Logic:</b>
+    /// 1. Checks if the file path is used by ANY other document (CAS check).
+    /// 2. If ref-count is 0, deletes physical file.
+    /// 3. Deletes DB record.
+    /// </remarks>
+    public async Task<iFishResponse> PermanentlyDeleteAsync(int id)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            var doc = await GetByIdAsync(id);
+            if (doc == null)
+            {
+                response.Result = false;
+                response.ReturnCode = -2;
+                response.Message = $"Document {id} not found";
+                return response;
+            }
+
+            await _documentRepository.DeleteAsync(id);
+
+            if (!string.IsNullOrEmpty(doc.Path))
+            {
+                var otherRefs = await _documentRepository.GetAllAsync(includeDeleted: true);
+                var isReferenced = otherRefs.Any(d => d.DocumentId != id && d.Path == doc.Path);
+                
+                if (!isReferenced)
+                {
+                    await _storageService.DeleteAsync(doc.Path);
+                }
+            }
+
+            _searchService.DeleteDocument(id);
+
+            response.Result = true;
+            response.RecordID = id;
+            response.Message = "Document permanently deleted";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error permanently deleting document {Id}", id);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    public async Task<IEnumerable<Document>> GetDeletedDocumentsAsync()
+    {
+        try
+        {
+            return await _documentRepository.GetAllAsync(includeDeleted: true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting deleted documents");
+            return Enumerable.Empty<Document>();
+        }
+    }
+    /// <summary>
+    /// Implements the High-Performance Hybrid Search Logic.
+    /// </summary>
+    /// <remarks>
+    /// <b>Process:</b>
+    /// 1. If query is empty, defaults to metadata filtering in SQL.
+    /// 2. <b>Search Phase 1:</b> Lucene finds matching Document IDs across full-text fields (fast).
+    /// 3. <b>Search Phase 2:</b> SQL retrieves the actual models for those IDs, applying User Permissions and Metadata joins.
+    /// 4. <b>Filtering:</b> Final category/folder filtering is applied in-memory for precision.
+    /// </remarks>
+    public async Task<IEnumerable<Document>> SearchAsync(string query, int? categoryId = null, int parentId = 0, string? batchLabel = null, int? year = null, int? month = null, int? day = null) 
+    { 
+        try 
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return await GetAllAsync(categoryId, parentId, batchLabel, false, year, month, day);
+            }
+
+            // Logic: Step 1 - Index lookup.
+            var matchingIds = _searchService.Search(query);
+            if (!matchingIds.Any()) return Enumerable.Empty<Document>();
+
+            // Logic: Step 2 - SQL security check.
+            int? userId = IsAdmin() ? null : GetCurrentUserId();
+            var documents = await _documentRepository.GetByIdsAsync(matchingIds, userId);
+
+            var filtered = documents.AsQueryable();
+            
+            if (parentId >= 0) filtered = filtered.Where(d => d.ParentID == parentId);
+            if (categoryId.HasValue) filtered = filtered.Where(d => d.CategoryID == categoryId.Value);
+            if (!string.IsNullOrEmpty(batchLabel))
+            {
+                if (batchLabel == "[No Label]") filtered = filtered.Where(d => d.BatchLabel == null);
+                else filtered = filtered.Where(d => d.BatchLabel == batchLabel);
+            }
+            if (year.HasValue) filtered = filtered.Where(d => d.UploadedDate.Year == year.Value);
+            if (month.HasValue) filtered = filtered.Where(d => d.UploadedDate.Month == month.Value);
+            if (day.HasValue) filtered = filtered.Where(d => d.UploadedDate.Day == day.Value);
+
+            return filtered.OrderByDescending(d => d.UploadedDate).ToList();
+        } 
+        catch (Exception ex) 
+        { 
+            _logger.LogError(ex, "Error searching documents with query {Query}", query);
+            return Enumerable.Empty<Document>(); 
+        }
+    }
+
+    public async Task<iFishResponse> CreateFolderAsync(string folderName, int categoryId, int locationId, string? userId = null)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            var folder = new Document
+            {
+                DocumentName = folderName,
+                CategoryID = categoryId,
+                LocationID = locationId,
+                Status = "Folder",
+                FileType = "Folder",
+                Extension = "Folder",
+                Path = "FOLDER",
+                UploadedDate = DateTime.UtcNow
+            };
+            
+            if (int.TryParse(userId, out int uId))
+            {
+                folder.UploadedBy = uId;
+                folder.UpdatedBy = uId;
+            }
+
+            folder.DocumentId = await _documentRepository.CreateFolderAsync(folder);
+
+            response.Result = true;
+            response.RecordID = folder.DocumentId;
+            response.Message = "Folder created successfully";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating folder {FolderName}", folderName);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    public iFishResponse CreateFolder(string folderName, int categoryId, int locationId, string? userId = null)
+    {
+        return CreateFolderAsync(folderName, categoryId, locationId, userId).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Specialized logic for handling file uploads from a Blazor/Controller <see cref="DocumentUploadModel"/>.
+    /// Handles temporary buffering and bridges to the core Create Pipeline.
+    /// </summary>
+    public async Task<iFishResponse> UploadDocumentAsync(DocumentUploadModel model, int userId)
+    {
+        var response = new iFishResponse();
+        if (model.File == null || model.File.Length == 0)
+        {
+            response.Result = false;
+            response.ReturnCode = -2;
+            response.Message = "File is empty";
+            return response;
+        }
+
+        var extension = Path.GetExtension(model.File.FileName).ToLowerInvariant();
+        
+        using var diskBuffer = new TempFileStream();
+        await model.File.CopyToAsync(diskBuffer);
+        diskBuffer.Position = 0;
+
+        var compressionResult = await _compressionService.CompressAsync(diskBuffer, model.File.FileName);
+        var streamToStore = compressionResult.CompressedStream;
+
+        try
+        {
+            string fileHash = await CalculateHashAsync(streamToStore);
+            streamToStore.Position = 0;
+            var storagePath = await _storageService.SaveCasAsync(streamToStore, fileHash, extension);
+
+            var document = new Document
+            {
+                UploadedBy = userId,
+                DocumentName = model.File.FileName,
+                FileType = model.File.ContentType,
+                FileSize = model.File.Length,
+                Path = storagePath,
+                FileHash = fileHash,
+                UploadedDate = DateTime.UtcNow,
+                CompressionAlgorithm = compressionResult.Algorithm,
+                CompressedSize = compressionResult.CompressedSize,
+                BatchLabel = model.BatchLabel,
+                CategoryID = model.CategoryId ?? 0,
+                Extension = extension
+            };
+
+            document.DocumentId = await _documentRepository.CreateAsync(document);
+            _searchService.IndexDocument(document);
+            await _auditService.LogAsync(AuditAction.Create, document.DocumentId, document.DocumentName);
+
+            response.Result = true;
+            response.RecordID = document.DocumentId;
+            response.Message = "Document uploaded successfully";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading document");
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        finally
+        {
+            compressionResult.CompressedStream.Dispose();
+        }
+        return response;
+    }
+
+    public iFishResponse UploadDocument(DocumentUploadModel model, int userId)
+    {
+        return UploadDocumentAsync(model, userId).GetAwaiter().GetResult();
+    }
+
+    public async Task<Document> GetDocumentAsync(int documentId, int userId)
+    {
+        var doc = await GetByIdAsync(documentId);
+        if (doc != null)
+        {
+            // Verify ownership or explicit permission
+            if (doc.UploadedBy == userId || await CheckUserRightsAsync(documentId, userId))
+            {
+                await _auditService.LogAsync(AuditAction.View, documentId, doc.DocumentName);
+                return doc;
+            }
+        }
+        throw new DocumentNotFoundException(documentId);
+    }
+
+    public Document GetDocument(int documentId, int userId)
+    {
+        return GetDocumentAsync(documentId, userId).GetAwaiter().GetResult()!;
+    }
+
+    public async Task<Stream> DownloadDocumentAsync(int documentId, int userId)
+    {
+        var document = await GetDocumentAsync(documentId, userId);
+        var stream = await DownloadAsync(documentId);
+        if (stream == null) throw new FileNotFoundException("File not found in storage");
+        return stream;
+    }
+
+    public Stream DownloadDocument(int documentId, int userId)
+    {
+        return DownloadDocumentAsync(documentId, userId).GetAwaiter().GetResult();
+    }
+
+    public iFishResponse DeleteDocument(int documentId, int userId)
+    {
+        return DeleteDocumentAsync(documentId, userId).GetAwaiter().GetResult();
+    }
+
+    public async Task<iFishResponse> DeleteDocumentAsync(int documentId, int userId)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            await GetDocumentAsync(documentId, userId);
+            var deleteResponse = await DeleteAsync(documentId);
+            return deleteResponse;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting document {Id}", documentId);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    public async Task<IEnumerable<Document>> SearchDocumentsAsync(string query, int userId)
+    {
+        // Unify with SearchAsync
+        return await SearchAsync(query);
+    }
+
+    public IEnumerable<Document> SearchDocuments(string queryStr, int userId)
+    {
+        return SearchDocumentsAsync(queryStr, userId).GetAwaiter().GetResult();
+    }
+
+
+    /// <summary>
+    /// Logical Aggregator: Convers SQL distinct dates into a Hierarchical Tree for the UI.
+    /// </summary>
+    public async Task<IEnumerable<ArchiveDateNode>> GetArchiveDatesAsync()
+    {
+        try
+        {
+            var years = new List<ArchiveDateNode>();
+            var results = await _documentRepository.GetArchiveDatesAsync();
+
+            foreach (var row in results)
+            {
+                int y = row.Year;
+                int m = row.Month;
+                int d = row.Day;
+
+                var yearNode = years.FirstOrDefault(n => n.Year == y);
+                if (yearNode == null)
+                {
+                    yearNode = new ArchiveDateNode { Text = y.ToString(), Year = y };
+                    years.Add(yearNode);
+                }
+
+                var monthName = new DateTime(y, m, 1).ToString("MMMM");
+                var monthNode = yearNode.Children.FirstOrDefault(n => n.Month == m);
+                if (monthNode == null)
+                {
+                    monthNode = new ArchiveDateNode { Text = monthName, Year = y, Month = m };
+                    yearNode.Children.Add(monthNode);
+                }
+
+                var dayNode = monthNode.Children.FirstOrDefault(n => n.Day == d);
+                if (dayNode == null)
+                {
+                    dayNode = new ArchiveDateNode { Text = $"{monthName} {d}{GetDaySuffix(d)}", Year = y, Month = m, Day = d };
+                    monthNode.Children.Add(dayNode);
+                }
+            }
+            return years;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting archive date nodes");
+            return Enumerable.Empty<ArchiveDateNode>();
+        }
+    }
+
+    private string GetDaySuffix(int day)
+    {
+        if (day >= 11 && day <= 13) return "th";
+        return (day % 10) switch
+        {
+            1 => "st",
+            2 => "nd",
+            3 => "rd",
+            _ => "th"
+        };
+    }
+
+
+    /// <summary>
+    /// Core Download Logic: Retrieves from Storage and handles transparent Decompression.
+    /// </summary>
+    public async Task<Stream?> DownloadAsync(int id) 
+    {
+        try 
+        {
+             var doc = await GetByIdAsync(id);
+             if (doc == null) return null;
+             var compressedStream = await _storageService.GetAsync(doc.Path);
+             if (compressedStream == null) return null;
+             
+             await _auditService.LogAsync(AuditAction.Download, id, doc.DocumentName);
+             
+             // Logic: If Brotli/Gzip was used, decompress on-the-fly for the user.
+             if (!string.IsNullOrEmpty(doc.CompressionAlgorithm) && doc.CompressionAlgorithm != "None")
+             {
+                 return await _compressionService.DecompressAsync(compressedStream, doc.CompressionAlgorithm);
+             }
+             
+             return compressedStream;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading document {Id}", id);
+            return null;
+        }
+    }
+    
+    public Stream? DownloadVersion(int versionId)
+    {
+        return DownloadVersionAsync(versionId).GetAwaiter().GetResult();
+    }
+
+    public async Task<Stream?> DownloadVersionAsync(int versionId)
+    {
+        try 
+        {
+            var version = await _documentRepository.GetVersionAsync(versionId);
+            if (version == null) return null;
+            return await _storageService.GetAsync(version.FilePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading version {Id}", versionId);
+            return null;
+        }
+    }
+
+    public string GetContentType(int id)
+    {
+         try {
+            var doc = GetById(id);
+            return doc?.FileType ?? "application/octet-stream";
+        } catch { return "application/octet-stream"; }
+    }
+
+    public Task<string> GetContentTypeAsync(int id)
+    {
+        return Task.Run(() => GetContentType(id));
+    }
+
+    public async Task<(Stream? Stream, string FileName, string ContentType)> DownloadVersionWithMetaAsync(int versionId)
+    {
+        var version = await _documentRepository.GetVersionAsync(versionId);
+        if (version == null) return (null, "", "application/octet-stream");
+
+        var stream = await _storageService.GetAsync(version.FilePath);
+        var contentType = GetContentTypeFromFileName(version.FileName);
+
+        return (stream, version.FileName, contentType);
+    }
+
+    public (Stream? Stream, string FileName, string ContentType) DownloadVersionWithMeta(int versionId)
+    {
+        return DownloadVersionWithMetaAsync(versionId).GetAwaiter().GetResult();
+    }
+
+    private string GetContentTypeFromFileName(string fileName)
+    {
+        var ext = Path.GetExtension(fileName)?.ToLowerInvariant() ?? "";
+        return ext switch
+        {
+            ".pdf" => "application/pdf",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".txt" => "text/plain",
+            _ => "application/octet-stream"
+        };
+    }
+    /// <summary>
+    /// Updates a document with a new file version.
+    /// </summary>
+    /// <remarks>
+    /// <b>Logic:</b>
+    /// 1. Archives current state to <c>DocumentVersions</c> table.
+    /// 2. Saves and Compresses new file.
+    /// 3. Updates main <c>Documents</c> record with new file pointer and increments <c>CurrentVersion</c>.
+    /// </remarks>
+    public async Task<iFishResponse> UpdateWithFileAsync(Document document, Stream fileStream, string? userId = null)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            var currentDoc = await GetByIdAsync(document.DocumentId);
+            if (currentDoc == null)
+            {
+                response.Result = false;
+                response.ReturnCode = -2;
+                response.Message = $"Document {document.DocumentId} not found";
+                return response;
+            }
+
+            await CreateVersionFromCurrentAsync(currentDoc);
+
+            Stream effectiveStream = fileStream;
+            TempFileStream? tempBuffer = null;
+
+            if (!fileStream.CanSeek)
+            {
+                tempBuffer = new TempFileStream();
+                await fileStream.CopyToAsync(tempBuffer);
+                tempBuffer.Position = 0;
+                effectiveStream = tempBuffer;
+            }
+            
+            try 
+            {
+                string fileHash = await CalculateHashAsync(effectiveStream);
+                var compressionResult = await _compressionService.CompressAsync(effectiveStream, document.DocumentName);
+                
+                string compressedHash = await CalculateHashAsync(compressionResult.CompressedStream);
+                var savedPath = await _storageService.SaveCasAsync(compressionResult.CompressedStream, compressedHash, document.Extension ?? "");
+                
+                compressionResult.CompressedStream.Dispose();
+    
+                document.Path = savedPath;
+                document.FileHash = fileHash;
+                document.UpdatedDate = DateTime.UtcNow;
+                if (int.TryParse(userId, out int uId)) document.UpdatedBy = uId;
+                document.CurrentVersion++;
+                document.CompressionAlgorithm = compressionResult.Algorithm;
+                document.CompressedSize = compressionResult.CompressedSize;
+
+                await _documentRepository.UpdateAsync(document);
+                _searchService.IndexDocument(document);
+                
+                response.Result = true;
+                response.RecordID = document.DocumentId;
+                response.Message = "Document version updated successfully";
+            }
+            finally
+            {
+                if (tempBuffer != null) tempBuffer.Dispose();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating document with new version");
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    public iFishResponse UpdateWithFile(Document document, Stream fileStream, string? userId = null)
+    {
+        return UpdateWithFileAsync(document, fileStream, userId).GetAwaiter().GetResult();
+    }
+
+    private async Task CreateVersionFromCurrentAsync(Document document)
+    {
+        var version = new DocumentVersion
+        {
+            DocumentId = document.DocumentId,
+            VersionNumber = document.CurrentVersion,
+            FilePath = document.Path,
+            FileName = document.DocumentName + (document.Extension ?? ""),
+            FileSize = document.FileSize,
+            CreatedBy = document.UpdatedBy,
+            CreatedDate = document.UpdatedDate
+        };
+        await _documentRepository.CreateVersionAsync(version);
+    }
+
+    public async Task<IEnumerable<DocumentVersion>> GetHistoryAsync(int id)
+    {
+        return await _documentRepository.GetHistoryAsync(id);
+    }
+
+    public IEnumerable<DocumentVersion> GetHistory(int id)
+    {
+        return GetHistoryAsync(id).GetAwaiter().GetResult();
+    }
+
+    public async Task<iFishResponse> RestoreVersionAsync(int versionId, string? userId = null)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            var version = await _documentRepository.GetVersionAsync(versionId);
+            if (version == null)
+            {
+                response.Result = false;
+                response.ReturnCode = -2;
+                response.Message = $"Version {versionId} not found";
+                return response;
+            }
+
+            var oldFileStream = await _storageService.GetAsync(version.FilePath);
+            if (oldFileStream == null)
+            {
+                response.Result = false;
+                response.ReturnCode = -2;
+                response.Message = "Version file not found in storage";
+                return response;
+            }
+
+            var doc = await GetByIdAsync(version.DocumentId);
+            if (doc == null)
+            {
+                response.Result = false;
+                response.ReturnCode = -2;
+                response.Message = $"Document {version.DocumentId} not found";
+                return response;
+            }
+
+            doc.DocumentName = Path.GetFileNameWithoutExtension(version.FileName);
+            doc.Extension = Path.GetExtension(version.FileName);
+            doc.FileSize = version.FileSize;
+            
+            var updateResponse = await UpdateWithFileAsync(doc, oldFileStream, userId);
+            return updateResponse;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error restoring version {Id}", versionId);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    public iFishResponse RestoreVersion(int versionId, string? userId = null)
+    {
+        return RestoreVersionAsync(versionId, userId).GetAwaiter().GetResult();
+    }
+
+    public async Task<long> GetTotalSizeAsync() 
+    {
+        int? userId = null;
+        if (!IsAdmin())
+        {
+            userId = GetCurrentUserId();
+        }
+        return await _documentRepository.GetTotalSizeAsync(userId);
+    }
+
+
+
+
+    // ==================== DUPLICATE DETECTION ====================
+    
+    /// <summary>
+    /// Identifies exact duplicates based on SHA256 file hash.
+    /// </summary>
+    /// <returns>Grouping of documents that share the same hash.</returns>
+    /// <remarks>
+    /// <b>Note:</b> Only considers active (non-deleted) documents.
+    /// </remarks>
+    public async Task<IEnumerable<IGrouping<string, Document>>> GetDuplicatesAsync()
+    {
+        return await _documentRepository.GetDuplicatesAsync();
+    }
+
+    /// <summary>
+    /// Calculates storage waste stats caused by duplicates.
+    /// </summary>
+    /// <returns>
+    /// - DuplicateGroups: Number of unique files that have copies.
+    /// - TotalDuplicateFiles: Total number of files involved in duplication.
+    /// - WastedBytes: Sum of sizes of redundant copies (Count-1 * Size).
+    /// </returns>
+    public async Task<(int DuplicateGroups, int TotalDuplicateFiles, long WastedBytes)> GetDuplicateStatsAsync()
+    {
+        return await _documentRepository.GetDuplicateStatsAsync();
+    }
+
+    public async Task<IEnumerable<Document>> FindByHashAsync(string fileHash)
+    {
+        return await _documentRepository.FindByHashAsync(fileHash);
+    }
+
+    private async Task<string> CalculateHashAsync(Stream stream)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        if (stream.CanSeek && stream.Position != 0) stream.Position = 0;
+        var hashBytes = await sha256.ComputeHashAsync(stream);
+        if (stream.CanSeek) stream.Position = 0;
+        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+    }
+
+    public async Task<iFishResponse> GrantUserAccessAsync(int documentId, int userId, int rights = 1)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            await _documentRepository.GrantUserAccessAsync(documentId, userId, rights);
+            response.Result = true;
+            response.RecordID = documentId;
+            response.Message = "User access granted";
+        }
+        catch (Exception ex)
+        {
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    public async Task<iFishResponse> GrantGroupAccessAsync(int documentId, int groupId, int rights = 1)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            await _documentRepository.GrantGroupAccessAsync(documentId, groupId, rights);
+            response.Result = true;
+            response.RecordID = documentId;
+            response.Message = "Group access granted";
+        }
+        catch (Exception ex)
+        {
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    public async Task<iFishResponse> RevokeUserAccessAsync(int documentId, int userId)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            await _documentRepository.RevokeUserAccessAsync(documentId, userId);
+            response.Result = true;
+            response.RecordID = documentId;
+            response.Message = "User access revoked";
+        }
+        catch (Exception ex)
+        {
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    public async Task<iFishResponse> RevokeGroupAccessAsync(int documentId, int groupId)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            await _documentRepository.RevokeGroupAccessAsync(documentId, groupId);
+            response.Result = true;
+            response.RecordID = documentId;
+            response.Message = "Group access revoked";
+        }
+        catch (Exception ex)
+        {
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+}

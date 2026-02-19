@@ -1,0 +1,99 @@
+﻿@inherits LayoutComponentBase
+
+
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" class="header-content">
+            <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            <RadzenImage Path="images/logo.png" Style="height: 32px;" AlternateText="DMS" />
+            <RadzenText TextStyle="TextStyle.H5" class="app-title">
+                Document Management System
+            </RadzenText>
+            <RadzenStack Style="flex: 1;" />
+            <RadzenTextBox Placeholder="Search documents..." @bind-Value="@searchQuery" 
+                           Style="width: 300px;" @onkeyup="HandleSearch" />
+            <RadzenButton Icon="search" ButtonStyle="ButtonStyle.Light" Click="@(args => DoSearch())" />
+            <AuthorizeView>
+                <Authorized>
+                    <RadzenProfileMenu>
+                        <Template>
+                            <RadzenGravatar Email="@context.User.Identity?.Name" />
+                        </Template>
+                        <ChildContent>
+                            <RadzenProfileMenuItem Text="Profile" Icon="account_circle" Path="/profile" />
+                            <RadzenProfileMenuItem Text="Settings" Icon="settings" Path="/settings" />
+                            <RadzenProfileMenuItem Text="Logout" Icon="logout" Path="/account/logout" />
+                        </ChildContent>
+                    </RadzenProfileMenu>
+                </Authorized>
+                <NotAuthorized>
+                    <RadzenButton Text="Login" Icon="login" ButtonStyle="ButtonStyle.Secondary" Click="@(() => NavigationManager.NavigateTo("/login"))" />
+                </NotAuthorized>
+            </AuthorizeView>
+        </RadzenStack>
+    </RadzenHeader>
+
+    <RadzenSidebar @bind-Expanded="@sidebarExpanded" Style="width: 280px">
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard" Path="/" />
+            <RadzenPanelMenuItem Text="Documents" Icon="description" Path="/browse" />
+            <RadzenPanelMenuItem Text="Upload" Icon="cloud_upload" Path="/upload" />
+            <RadzenPanelMenuItem Text="Recent" Icon="history" Path="/recent" />
+            <RadzenPanelMenuItem Text="Favorites" Icon="star" Path="/favorites" />
+            <RadzenPanelMenuItem Text="Trash" Icon="delete" Path="/trash" />
+            <RadzenPanelMenuItem Text="Duplicates" Icon="content_copy" Path="/duplicates" />
+            <RadzenPanelMenuItem Text="Administration" Icon="admin_panel_settings" Expanded="false">
+                <RadzenPanelMenuItem Text="Users" Icon="people" Path="/admin/users" />
+                <RadzenPanelMenuItem Text="Roles" Icon="security" Path="/admin/roles" />
+                <RadzenPanelMenuItem Text="Audit Logs" Icon="receipt_long" Path="/admin/audit" />
+                <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="/admin/settings" />
+            </RadzenPanelMenuItem>
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+
+    <RadzenBody>
+        <RadzenStack Class="main-content">
+            <ErrorBoundary @ref="errorBoundary">
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent Context="ex">
+                    <RadzenCard class="m-4" Style="border-left: 5px solid var(--rz-danger);">
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                            <RadzenIcon Icon="error_outline" Style="font-size: 2rem; color: var(--rz-danger);" />
+                            <RadzenStack Gap="0">
+                                <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-danger);">An unexpected error occurred.</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2">
+                                    Please try refreshing the page or contact support if the issue persists.
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Caption" class="mt-2 text-muted">
+                                    @ex.Message
+                                </RadzenText>
+                            </RadzenStack>
+                        </RadzenStack>
+                        <RadzenButton Text="Reload Page" Icon="refresh" ButtonStyle="ButtonStyle.Light" class="mt-3" 
+                                      Click="@(() => NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true))" />
+                    </RadzenCard>
+                </ErrorContent>
+            </ErrorBoundary>
+        </RadzenStack>
+    </RadzenBody>
+
+    <RadzenFooter>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" 
+                     AlignItems="AlignItems.Center" class="footer-content">
+            <RadzenText TextStyle="TextStyle.Caption" class="text-muted">
+                © @DateTime.Now.Year Document Management System. All rights reserved.
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Caption" class="text-muted">
+                Version 1.0.0
+            </RadzenText>
+        </RadzenStack>
+    </RadzenFooter>
+</RadzenLayout>
+
+<RadzenDialog />
+<RadzenNotification />
+<RadzenContextMenu />
+<RadzenTooltip />
+

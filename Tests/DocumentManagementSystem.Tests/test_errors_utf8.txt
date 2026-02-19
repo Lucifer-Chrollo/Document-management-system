@@ -1,0 +1,14 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  DocumentManagementSystem -> D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\bin\Debug\net8.0\DocumentManagementSystem.dll
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Tests\DocumentManagementSystem.Tests\Services\UserGroupServiceTests.cs(3,7): error CS0246: The type or namespace name 'Moq' could not be found (are you missing a using directive or an assembly reference?) [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Tests\DocumentManagementSystem.Tests\DocumentManagementSystem.Tests.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Tests\DocumentManagementSystem.Tests\Services\UserGroupServiceTests.cs(10,22): error CS0246: The type or namespace name 'Mock<>' could not be found (are you missing a using directive or an assembly reference?) [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Tests\DocumentManagementSystem.Tests\DocumentManagementSystem.Tests.csproj]
+
+Build FAILED.
+
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Tests\DocumentManagementSystem.Tests\Services\UserGroupServiceTests.cs(3,7): error CS0246: The type or namespace name 'Moq' could not be found (are you missing a using directive or an assembly reference?) [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Tests\DocumentManagementSystem.Tests\DocumentManagementSystem.Tests.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Tests\DocumentManagementSystem.Tests\Services\UserGroupServiceTests.cs(10,22): error CS0246: The type or namespace name 'Mock<>' could not be found (are you missing a using directive or an assembly reference?) [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Tests\DocumentManagementSystem.Tests\DocumentManagementSystem.Tests.csproj]
+    0 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:05.11

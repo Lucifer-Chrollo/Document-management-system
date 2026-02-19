@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Document Management System</title>
+    
+    <!-- Radzen CSS -->
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/material-base.css" />
+    
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    <!-- App CSS -->
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="DocumentManagementSystem.styles.css" />
+    
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <ReconnectModal />
+    
+    <!-- Radzen JS -->
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <script src="js/download.js"></script>
+    <script src="_framework/blazor.web.js"></script>
+    <script>
+        window.clickElement = (id) => {
+            const el = document.getElementById(id);
+            if (el) el.click();
+        };
+    </script>
+</body>
+
+</html>

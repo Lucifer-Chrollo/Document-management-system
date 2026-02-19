@@ -1,0 +1,97 @@
+@page "/admin/groups"
+@using Radzen
+@using Radzen.Blazor
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+@inject IUserGroupService UserGroupService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+
+<RadzenStack Gap="1rem" Style="padding: 2rem;">
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+        <RadzenText TextStyle="TextStyle.H4">User Groups</RadzenText>
+        <RadzenButton Text="Create New Group" Icon="add_circle" Click="@OnCreateGroup" ButtonStyle="ButtonStyle.Primary" />
+    </RadzenStack>
+
+    <RadzenDataGrid Data="@groups" TItem="UserGroup" IsLoading="@isLoading" AllowFiltering="true" AllowSorting="true">
+        <Columns>
+            <RadzenDataGridColumn TItem="UserGroup" Property="GroupName" Title="Group Name" />
+            <RadzenDataGridColumn TItem="UserGroup" Property="CanRead" Title="Read">
+                <Template Context="group">
+                    <RadzenBadge BadgeStyle="group.CanRead == 1 ? BadgeStyle.Success : BadgeStyle.Light" Text="@(group.CanRead == 1 ? "Yes" : "No")" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="UserGroup" Property="CanWrite" Title="Write">
+                <Template Context="group">
+                    <RadzenBadge BadgeStyle="group.CanWrite == 1 ? BadgeStyle.Success : BadgeStyle.Light" Text="@(group.CanWrite == 1 ? "Yes" : "No")" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="UserGroup" Property="CanDelete" Title="Delete">
+                <Template Context="group">
+                    <RadzenBadge BadgeStyle="group.CanDelete == 1 ? BadgeStyle.Success : BadgeStyle.Light" Text="@(group.CanDelete == 1 ? "Yes" : "No")" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="UserGroup" Property="MemberCount" Title="Members" />
+            <RadzenDataGridColumn TItem="UserGroup" Title="Actions" Width="150px" Sortable="false" Filterable="false">
+                <Template Context="group">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Click="@(() => OnEditGroup(group))" />
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Click="@(() => OnDeleteGroup(group))" />
+                    </RadzenStack>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenStack>
+
+@code {
+    private IEnumerable<UserGroup> groups = Enumerable.Empty<UserGroup>();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGroups();
+    }
+
+    private async Task LoadGroups()
+    {
+        isLoading = true;
+        try
+        {
+            groups = await UserGroupService.GetAllGroupsAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnCreateGroup()
+    {
+        // Simple placeholder for dialog or redirect
+        NotificationService.Notify(NotificationSeverity.Info, "Info", "Group creation dialog not yet implemented.");
+    }
+
+    private async Task OnEditGroup(UserGroup group)
+    {
+        NotificationService.Notify(NotificationSeverity.Info, "Info", $"Editing group {group.GroupName} not yet implemented.");
+    }
+
+    private async Task OnDeleteGroup(UserGroup group)
+    {
+        var confirmed = await DialogService.Confirm($"Delete group '{group.GroupName}'?", "Delete Group");
+        if (confirmed == true)
+        {
+            var response = await UserGroupService.DeleteGroupAsync(group.GroupId, 0); // UserID 0 for system
+            if (response.Result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Deleted", "Group deleted successfully.");
+                await LoadGroups();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
+            }
+        }
+    }
+}

@@ -1,0 +1,47 @@
+@page "/login/mfa"
+@layout DocumentManagementSystem.Components.Layout.EmptyLayout
+
+<PageTitle>Verify 2FA - DMS</PageTitle>
+
+<RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="height: 100vh; background-color: #f4f6f9;">
+    <RadzenCard class="rz-shadow-7" Style="width: 100%; max-width: 400px; padding: 2rem;">
+        <RadzenStack Gap="1.5rem">
+            <RadzenStack AlignItems="AlignItems.Center" Gap="0.5rem">
+                <RadzenIcon Icon="security" Style="font-size: 3rem; color: #4340d2;" />
+                <RadzenText TextStyle="TextStyle.H5">Two-Factor Authentication</RadzenText>
+                <RadzenText class="text-muted text-center">
+                    Enter the 6-digit code from your authenticator app
+                </RadzenText>
+            </RadzenStack>
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <RadzenAlert Severity="AlertSeverity.Error" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @ErrorMessage
+                </RadzenAlert>
+            }
+
+            <form method="post" action="/account/login/mfa">
+                <RadzenStack Gap="1rem">
+                    <RadzenColumn Size="12">
+                        <RadzenLabel Text="Authentication Code" />
+                        <input class="rz-textbox" name="code" required maxlength="6" pattern="[0-9]{6}"
+                               placeholder="000000" autocomplete="one-time-code"
+                               style="width: 100%; font-size: 1.5rem; text-align: center; letter-spacing: 0.5rem;" />
+                    </RadzenColumn>
+
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Verify" ButtonStyle="ButtonStyle.Primary" Style="width: 100%;" />
+                </RadzenStack>
+            </form>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+                <RadzenLink Path="/login" Text="← Back to Login" TextStyle="TextStyle.Body2" />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? ErrorMessage { get; set; }
+}

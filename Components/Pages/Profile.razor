@@ -1,0 +1,164 @@
+@page "/profile"
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>My Profile - DMS</PageTitle>
+
+<RadzenStack Gap="1.5rem" class="p-4" Style="max-width: 800px;">
+    <!-- Header -->
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+        <RadzenIcon Icon="account_circle" Style="font-size: 2rem; color: var(--rz-primary);" />
+        <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">My Profile</RadzenText>
+    </RadzenStack>
+
+    @if (currentUser != null)
+    {
+        <!-- User Info Card -->
+        <RadzenCard>
+            <RadzenStack Gap="1rem">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                    <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center"
+                                 Style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
+                        <RadzenText Style="font-size: 2rem; color: white; font-weight: bold;">
+                            @GetInitials()
+                        </RadzenText>
+                    </RadzenStack>
+                    <RadzenStack Gap="0.25rem">
+                        <RadzenText TextStyle="TextStyle.H5" Style="margin: 0;">
+                            @currentUser.FirstName @currentUser.LastName
+                        </RadzenText>
+                        <RadzenText class="text-muted">@@@currentUser.UserName</RadzenText>
+                        <RadzenText class="text-muted" Style="font-size: 0.85rem;">@currentUser.Email</RadzenText>
+                    </RadzenStack>
+                </RadzenStack>
+                
+                <RadzenRow Gap="1rem">
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Gap="0.25rem">
+                            <RadzenText class="text-muted" Style="font-size: 0.85rem;">Department</RadzenText>
+                            <RadzenText>@(currentUser.Department ?? "Not set")</RadzenText>
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="12" SizeMD="6">
+                        <RadzenStack Gap="0.25rem">
+                            <RadzenText class="text-muted" Style="font-size: 0.85rem;">Member Since</RadzenText>
+                            <RadzenText>@currentUser.CreatedDate.ToString("MMMM yyyy")</RadzenText>
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+
+                <!-- Storage Quota -->
+                <RadzenStack Gap="0.5rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                        <RadzenText class="text-muted" Style="font-size: 0.85rem;">Storage Used</RadzenText>
+                        <RadzenText Style="font-size: 0.85rem;">
+                            @FormatSize(currentUser.StorageUsedBytes) / @FormatSize(currentUser.StorageQuotaBytes)
+                        </RadzenText>
+                    </RadzenStack>
+                    <RadzenProgressBar Value="@storagePercentage" ShowValue="false" 
+                                       Style="height: 8px;" 
+                                       ProgressBarStyle="@(storagePercentage > 90 ? ProgressBarStyle.Danger : ProgressBarStyle.Primary)" />
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+
+        <!-- Quick Actions -->
+        <RadzenText TextStyle="TextStyle.H6">Settings & Features</RadzenText>
+
+        <RadzenRow Gap="1rem">
+            <!-- Security -->
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenCard Style="cursor: pointer; transition: all 0.2s; height: 100%;" 
+                            class="rz-shadow-3" @onclick="@(() => Navigation.NavigateTo("/profile/mfa"))">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                        <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center"
+                                     Style="width: 50px; height: 50px; background: #22c55e20; border-radius: 12px;">
+                            <RadzenIcon Icon="security" Style="font-size: 1.5rem; color: #22c55e;" />
+                        </RadzenStack>
+                        <RadzenStack Gap="0.25rem">
+                            <RadzenText Style="font-weight: 600;">Two-Factor Authentication</RadzenText>
+                            <RadzenText class="text-muted" Style="font-size: 0.85rem;">
+                                @(currentUser.TwoFactorEnabled ? "✓ Enabled" : "Not enabled")
+                            </RadzenText>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+
+            <!-- Mobile Upload -->
+            <RadzenColumn Size="12" SizeMD="6">
+                <RadzenCard Style="cursor: pointer; transition: all 0.2s; height: 100%;" 
+                            class="rz-shadow-3" @onclick="@(() => Navigation.NavigateTo("/profile/upload-qr"))">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                        <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center"
+                                     Style="width: 50px; height: 50px; background: #667eea20; border-radius: 12px;">
+                            <RadzenIcon Icon="qr_code_2" Style="font-size: 1.5rem; color: #667eea;" />
+                        </RadzenStack>
+                        <RadzenStack Gap="0.25rem">
+                            <RadzenText Style="font-weight: 600;">Mobile Upload</RadzenText>
+                            <RadzenText class="text-muted" Style="font-size: 0.85rem;">
+                                Upload files from your phone via QR code
+                            </RadzenText>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+
+        <!-- Last Login -->
+        @if (currentUser.LastLoginDate.HasValue)
+        {
+            <RadzenText class="text-muted" Style="font-size: 0.85rem;">
+                Last login: @currentUser.LastLoginDate.Value.ToString("MMMM dd, yyyy 'at' h:mm tt")
+            </RadzenText>
+        }
+    }
+    else
+    {
+        <RadzenCard>
+            <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="min-height: 200px;">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+                <RadzenText>Loading profile...</RadzenText>
+            </RadzenStack>
+        </RadzenCard>
+    }
+</RadzenStack>
+
+@code {
+    private ApplicationUser? currentUser;
+    private double storagePercentage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            currentUser = await UserManager.GetUserAsync(authState.User);
+            if (currentUser != null && currentUser.StorageQuotaBytes > 0)
+            {
+                storagePercentage = (double)currentUser.StorageUsedBytes / currentUser.StorageQuotaBytes * 100;
+            }
+        }
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024.0):F1} MB";
+        return $"{bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
+    }
+
+    private string GetInitials()
+    {
+        var first = !string.IsNullOrEmpty(currentUser?.FirstName) ? currentUser.FirstName[0].ToString().ToUpper() : "";
+        var last = !string.IsNullOrEmpty(currentUser?.LastName) ? currentUser.LastName[0].ToString().ToUpper() : "";
+        var initials = first + last;
+        return string.IsNullOrEmpty(initials) ? (currentUser?.UserName?[0].ToString().ToUpper() ?? "U") : initials;
+    }
+}

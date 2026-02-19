@@ -1,0 +1,189 @@
+﻿@page "/"
+@inject IDocumentService DocumentService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Dashboard - Document Management System</PageTitle>
+
+<RadzenStack Gap="1.5rem" class="fade-in-up">
+    <!-- Welcome Section -->
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+            <RadzenIcon Icon="waving_hand" Style="font-size: 2.5rem; color: #667eea;" />
+            <RadzenStack Gap="0.25rem">
+                <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Welcome to Document Management System</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body1" class="text-muted">
+                    Manage, organize, and share your documents efficiently
+                </RadzenText>
+            </RadzenStack>
+            <div style="flex: 1;"></div>
+            <RadzenButton Text="Upload Documents" Icon="cloud_upload" ButtonStyle="ButtonStyle.Primary" 
+                          Click="@(() => NavigationManager.NavigateTo("/upload"))" />
+        </RadzenStack>
+    </RadzenCard>
+
+    <!-- Stats Cards -->
+    <RadzenRow Gap="1.5rem">
+        <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+            <div class="stat-card">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <RadzenIcon Icon="description" />
+                    </div>
+                    <RadzenStack Gap="0">
+                        <span class="stat-value">@totalDocuments</span>
+                        <span class="stat-label">Total Documents</span>
+                    </RadzenStack>
+                </RadzenStack>
+            </div>
+        </RadzenColumn>
+        <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+            <div class="stat-card">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); color: white;">
+                        <RadzenIcon Icon="storage" />
+                    </div>
+                    <RadzenStack Gap="0">
+                        <span class="stat-value">@FormatFileSize(totalSize)</span>
+                        <span class="stat-label">Total Size</span>
+                    </RadzenStack>
+                </RadzenStack>
+            </div>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <!-- Main Content Row -->
+    <RadzenRow Gap="1.5rem">
+        <!-- Recent Documents -->
+        <RadzenColumn Size="12" SizeLG="8">
+            <RadzenCard>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
+                             JustifyContent="JustifyContent.SpaceBetween" class="mb-3">
+                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0;">
+                        <RadzenIcon Icon="history" /> Recent Documents
+                    </RadzenText>
+                    <RadzenButton Text="View All" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                  Click="@(() => NavigationManager.NavigateTo("/browse"))" />
+                </RadzenStack>
+
+                @if (recentDocuments.Any())
+                {
+                    <RadzenDataGrid Data="@recentDocuments" TItem="Document" AllowSorting="true"
+                                    RowClick="@OnDocumentClick" Style="cursor: pointer;">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="Document" Title="" Width="60px" Sortable="false">
+                                <Template Context="doc">
+                                    <div class="document-icon @GetIconClass(doc.Extension)">
+                                        <RadzenIcon Icon="@GetFileIcon(doc.Extension)" />
+                                    </div>
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="Document" Property="DocumentName" Title="Name">
+                                <Template Context="doc">
+                                    <RadzenStack Gap="0">
+                                        <RadzenText TextStyle="TextStyle.Body1" Style="font-weight: 500;">@doc.DocumentName</RadzenText>
+                                    </RadzenStack>
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="Document" Property="FileSize" Title="Size" Width="100px">
+                                <Template Context="doc">
+                                    @FormatFileSize(doc.FileSize)
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="Document" Property="UpdatedDate" Title="Modified" Width="150px">
+                                <Template Context="doc">
+                                    @doc.UpdatedDate.ToString("MMM dd, yyyy")
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="Document" Title="" Width="80px" Sortable="false">
+                                <Template Context="doc">
+                                    <RadzenButton Icon="download" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                                  Click="@(() => DownloadDocument(doc))" />
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                }
+                else
+                {
+                    <RadzenStack AlignItems="AlignItems.Center" Gap="1rem" Style="padding: 3rem;">
+                        <RadzenIcon Icon="folder_open" Style="font-size: 4rem; color: #ccc;" />
+                        <RadzenText TextStyle="TextStyle.Body1" class="text-muted">No documents yet</RadzenText>
+                        <RadzenButton Text="Upload Your First Document" Icon="cloud_upload" 
+                                      ButtonStyle="ButtonStyle.Primary"
+                                      Click="@(() => NavigationManager.NavigateTo("/upload"))" />
+                    </RadzenStack>
+                }
+            </RadzenCard>
+        </RadzenColumn>
+
+        <!-- Quick Actions -->
+        <RadzenColumn Size="12" SizeLG="4">
+            <RadzenStack Gap="1.5rem">
+                <!-- Quick Actions -->
+                <RadzenCard>
+                    <RadzenText TextStyle="TextStyle.H5" Style="margin-bottom: 1rem;">
+                        <RadzenIcon Icon="flash_on" /> Quick Actions
+                    </RadzenText>
+                    <RadzenStack Gap="0.75rem">
+                        <RadzenButton Text="Upload Documents" Icon="cloud_upload" ButtonStyle="ButtonStyle.Primary"
+                                      Style="width: 100%;" Click="@(() => NavigationManager.NavigateTo("/upload"))" />
+                        <RadzenButton Text="Browse All Documents" Icon="search" ButtonStyle="ButtonStyle.Light"
+                                      Style="width: 100%;" Click="@(() => NavigationManager.NavigateTo("/browse"))" />
+                    </RadzenStack>
+                </RadzenCard>
+
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    private int totalDocuments;
+    private long totalSize;
+    private IEnumerable<Document> recentDocuments = Enumerable.Empty<Document>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        totalDocuments = await DocumentService.GetCountAsync();
+        totalSize = await DocumentService.GetTotalSizeAsync();
+        recentDocuments = await DocumentService.GetAllAsync(); // Just get all for now, or filter top 10 if service supports
+        recentDocuments = recentDocuments.Take(10).ToList();
+    }
+
+    private void OnDocumentClick(DataGridRowMouseEventArgs<Document> args)
+    {
+        NavigationManager.NavigateTo($"/documents/{args.Data.DocumentId}");
+    }
+
+    private async Task DownloadDocument(Document doc)
+    {
+        // TODO: Implement download
+        await Task.CompletedTask;
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+        int order = 0;
+        double size = bytes;
+        while (size >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            size /= 1024;
+        }
+        return $"{size:0.##} {sizes[order]}";
+    }
+
+     private static string GetFileIcon(string? ext) => ext?.ToLowerInvariant() switch
+    {
+        ".pdf" => "picture_as_pdf", ".doc" or ".docx" => "description",
+        ".xls" or ".xlsx" => "table_chart", ".jpg" or ".jpeg" or ".png" => "image",
+        _ => "insert_drive_file"
+    };
+
+    private static string GetIconClass(string? ext) => ext?.ToLowerInvariant() switch
+    {
+        ".pdf" => "pdf", ".doc" or ".docx" => "word", ".xls" or ".xlsx" => "excel",
+        ".jpg" or ".jpeg" or ".png" => "image", _ => "default"
+    };
+}

@@ -1,0 +1,228 @@
+@page "/admin/audit"
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+@inject IAuditService AuditService
+@inject NavigationManager Navigation
+@inject NotificationService NotificationService
+
+<PageTitle>Audit Logs - DMS</PageTitle>
+
+<RadzenStack Gap="1.5rem" class="p-4">
+    <!-- Header -->
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenIcon Icon="receipt_long" Style="font-size: 2rem; color: var(--rz-primary);" />
+            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Audit Trail</RadzenText>
+        </RadzenStack>
+        <RadzenButton Text="Refresh" Icon="refresh" Click="@LoadLogs" ButtonStyle="ButtonStyle.Light" />
+    </RadzenStack>
+
+    <!-- Stats Cards -->
+    <RadzenRow Gap="1rem">
+        <RadzenColumn Size="12" SizeMD="2">
+            <RadzenCard class="h-100">
+                <RadzenStack AlignItems="AlignItems.Center">
+                    <RadzenText TextStyle="TextStyle.H4" class="mb-0">@stats.TotalActions</RadzenText>
+                    <RadzenText class="text-muted" Style="font-size: 0.8rem;">Total Actions</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="6" SizeMD="2">
+            <RadzenCard class="h-100">
+                <RadzenStack AlignItems="AlignItems.Center">
+                    <RadzenText TextStyle="TextStyle.H4" class="mb-0" Style="color: var(--rz-info);">@stats.ViewCount</RadzenText>
+                    <RadzenText class="text-muted" Style="font-size: 0.8rem;">Views</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="6" SizeMD="2">
+            <RadzenCard class="h-100">
+                <RadzenStack AlignItems="AlignItems.Center">
+                    <RadzenText TextStyle="TextStyle.H4" class="mb-0" Style="color: var(--rz-success);">@stats.DownloadCount</RadzenText>
+                    <RadzenText class="text-muted" Style="font-size: 0.8rem;">Downloads</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="6" SizeMD="2">
+            <RadzenCard class="h-100">
+                <RadzenStack AlignItems="AlignItems.Center">
+                    <RadzenText TextStyle="TextStyle.H4" class="mb-0" Style="color: var(--rz-warning);">@stats.CreateCount</RadzenText>
+                    <RadzenText class="text-muted" Style="font-size: 0.8rem;">Created</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="6" SizeMD="2">
+            <RadzenCard class="h-100">
+                <RadzenStack AlignItems="AlignItems.Center">
+                    <RadzenText TextStyle="TextStyle.H4" class="mb-0" Style="color: var(--rz-danger);">@stats.DeleteCount</RadzenText>
+                    <RadzenText class="text-muted" Style="font-size: 0.8rem;">Deleted</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+        <RadzenColumn Size="6" SizeMD="2">
+            <RadzenCard class="h-100">
+                <RadzenStack AlignItems="AlignItems.Center">
+                    <RadzenText TextStyle="TextStyle.H4" class="mb-0">@stats.UniqueUsers</RadzenText>
+                    <RadzenText class="text-muted" Style="font-size: 0.8rem;">Users</RadzenText>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+
+    <!-- Filters -->
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
+            <RadzenStack Gap="0.25rem">
+                <RadzenLabel Text="Action" />
+                <RadzenDropDown @bind-Value="@filterAction" Data="@actionTypes" Placeholder="All Actions" 
+                                Style="width: 150px;" AllowClear="true" />
+            </RadzenStack>
+            <RadzenStack Gap="0.25rem">
+                <RadzenLabel Text="From Date" />
+                <RadzenDatePicker @bind-Value="@filterFromDate" DateFormat="yyyy-MM-dd" Style="width: 150px;" />
+            </RadzenStack>
+            <RadzenStack Gap="0.25rem">
+                <RadzenLabel Text="To Date" />
+                <RadzenDatePicker @bind-Value="@filterToDate" DateFormat="yyyy-MM-dd" Style="width: 150px;" />
+            </RadzenStack>
+            <RadzenButton Text="Apply Filters" Icon="filter_list" Click="@LoadLogs" />
+            <RadzenButton Text="Clear" Icon="clear" ButtonStyle="ButtonStyle.Light" Click="@ClearFilters" />
+        </RadzenStack>
+    </RadzenCard>
+
+    <!-- Logs Grid -->
+    <RadzenCard>
+        @if (isLoading)
+        {
+            <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="min-height: 200px;">
+                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large" />
+                <RadzenText>Loading audit logs...</RadzenText>
+            </RadzenStack>
+        }
+        else
+        {
+            <RadzenDataGrid Data="@logs" TItem="AuditLog" AllowFiltering="true" AllowSorting="true" 
+                            AllowPaging="true" PageSize="20" PagerHorizontalAlign="HorizontalAlign.Center"
+                            FilterMode="FilterMode.Simple" Density="Density.Compact">
+                <Columns>
+                    <RadzenDataGridColumn TItem="AuditLog" Property="Timestamp" Title="Time" Width="160px" 
+                                          FormatString="{0:MMM dd, yyyy HH:mm}" />
+                    <RadzenDataGridColumn TItem="AuditLog" Property="Action" Title="Action" Width="120px">
+                        <Template Context="log">
+                            <RadzenBadge BadgeStyle="@GetActionBadgeStyle(log.Action)" Text="@log.Action" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AuditLog" Property="DocumentName" Title="Document" Width="250px">
+                        <Template Context="log">
+                            @if (log.DocumentId.HasValue)
+                            {
+                                <RadzenLink Path="@($"/document/{log.DocumentId}")" Text="@(log.DocumentName ?? $"Doc #{log.DocumentId}")" />
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AuditLog" Property="UserName" Title="User" Width="150px" />
+                    <RadzenDataGridColumn TItem="AuditLog" Property="IpAddress" Title="IP" Width="120px" />
+                    <RadzenDataGridColumn TItem="AuditLog" Property="Success" Title="Status" Width="80px" TextAlign="TextAlign.Center">
+                        <Template Context="log">
+                            @if (log.Success)
+                            {
+                                <RadzenIcon Icon="check_circle" Style="color: var(--rz-success);" />
+                            }
+                            else
+                            {
+                                <RadzenIcon Icon="error" Style="color: var(--rz-danger);" title="@log.ErrorMessage" />
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="AuditLog" Property="Details" Title="Details" Width="200px">
+                        <Template Context="log">
+                            <span style="font-size: 0.85rem; color: var(--rz-text-secondary);">
+                                @TruncateDetails(log.Details)
+                            </span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    private IEnumerable<AuditLog> logs = Enumerable.Empty<AuditLog>();
+    private AuditStats stats = new();
+    private bool isLoading = true;
+    
+    // Filters
+    private string? filterAction;
+    private DateTime? filterFromDate;
+    private DateTime? filterToDate;
+    
+    private readonly string[] actionTypes = new[] 
+    { 
+        AuditAction.View, AuditAction.Download, AuditAction.Create, 
+        AuditAction.Update, AuditAction.Delete, AuditAction.Restore,
+        AuditAction.Login, AuditAction.Logout
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLogs();
+    }
+
+    private async Task LoadLogs()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            logs = await AuditService.GetLogsAsync(
+                action: filterAction,
+                fromDate: filterFromDate,
+                toDate: filterToDate?.AddDays(1), // Include full day
+                limit: 500
+            );
+            stats = await AuditService.GetStatsAsync(filterFromDate, filterToDate?.AddDays(1));
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "Failed to load audit logs.");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ClearFilters()
+    {
+        filterAction = null;
+        filterFromDate = null;
+        filterToDate = null;
+        await LoadLogs();
+    }
+
+    private static BadgeStyle GetActionBadgeStyle(string action) => action switch
+    {
+        AuditAction.View or AuditAction.Preview => BadgeStyle.Info,
+        AuditAction.Download => BadgeStyle.Success,
+        AuditAction.Create or AuditAction.VersionUpload => BadgeStyle.Primary,
+        AuditAction.Update => BadgeStyle.Warning,
+        AuditAction.Delete or AuditAction.PermanentDelete => BadgeStyle.Danger,
+        AuditAction.Restore or AuditAction.VersionRestore => BadgeStyle.Secondary,
+        AuditAction.Login => BadgeStyle.Light,
+        AuditAction.Logout => BadgeStyle.Light,
+        _ => BadgeStyle.Light
+    };
+
+    private static string TruncateDetails(string? details)
+    {
+        if (string.IsNullOrEmpty(details)) return "-";
+        return details.Length > 50 ? details[..50] + "..." : details;
+    }
+}

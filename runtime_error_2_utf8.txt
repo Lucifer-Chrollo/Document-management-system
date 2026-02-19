@@ -1,0 +1,51 @@
+﻿Using launch settings from D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Properties\launchSettings.json...
+Building...
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-2cmq-823j-5qj8
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-5x7m-6737-26cr
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-63p8-c4ww-9cg7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-g85r-6x2q-45w7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-qxrv-gp6x-rc23
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-rxmq-m78w-7wmc
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-2cmq-823j-5qj8
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-5x7m-6737-26cr
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-63p8-c4ww-9cg7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-g85r-6x2q-45w7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-qxrv-gp6x-rc23
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-rxmq-m78w-7wmc
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(37,21): warning RZ10012: Found markup element with unexpected name 'RadzenBreadcrumb'. If this is intended to be a component, add a @using directive for its namespace. [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(38,25): warning RZ10012: Found markup element with unexpected name 'RadzenBreadcrumbItem'. If this is intended to be a component, add a @using directive for its namespace. [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(39,25): warning RZ10012: Found markup element with unexpected name 'RadzenBreadcrumbItem'. If this is intended to be a component, add a @using directive for its namespace. [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(42,29): warning RZ10012: Found markup element with unexpected name 'RadzenBreadcrumbItem'. If this is intended to be a component, add a @using directive for its namespace. [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(47,29): warning RZ10012: Found markup element with unexpected name 'RadzenBreadcrumbItem'. If this is intended to be a component, add a @using directive for its namespace. [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Controllers\AccountController.cs(34,9): warning CS0162: Unreachable code detected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Program.cs(58,28): error CS0246: The type or namespace name 'IDocumentRepository' could not be found (are you missing a using directive or an assembly reference?) [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Program.cs(58,49): error CS0246: The type or namespace name 'DocumentRepository' could not be found (are you missing a using directive or an assembly reference?) [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Data\Repositories\DocumentRepository.cs(782,36): warning CS8604: Possible null reference argument for parameter 'item' in 'void List<string>.Add(string item)'. [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor.cs(106,57): warning CS8601: Possible null reference assignment. [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor.cs(119,32): warning CS8601: Possible null reference assignment. [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\UploadQr.razor(285,26): warning CS0168: The variable 'ex' is declared but never used [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Trash.razor(115,26): warning CS0168: The variable 'ex' is declared but never used [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\AuditLogs.razor(191,26): warning CS0168: The variable 'ex' is declared but never used [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Duplicates.razor(146,26): warning CS0168: The variable 'ex' is declared but never used [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(58,96): warning CS4014: Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call. [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\DocumentView.razor(331,26): warning CS0168: The variable 'ex' is declared but never used [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\DocumentView.razor(345,26): warning CS0168: The variable 'ex' is declared but never used [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+dotnet : 
+At line:1 char:1
++ dotnet run > 
+runtime_error_2.txt 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (:String   
+ ) [], RemoteExce    
+ption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+The build failed. 
+Fix the build errors 
+and run again.

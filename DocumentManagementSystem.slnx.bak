@@ -1,0 +1,8 @@
+<Solution>
+  <!--
+  <Folder Name="/Tests/">
+    <Project Path="Tests/DocumentManagementSystem.Tests/DocumentManagementSystem.Tests.csproj" />
+  </Folder>
+  -->
+  <Project Path="DocumentManagementSystem.csproj" />
+</Solution>

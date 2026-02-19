@@ -1,0 +1,45 @@
+## [Visual Studio]
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+
+## [Visual Studio Code]
+.vscode/
+
+## [Build Results]
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+
+## [Logs]
+*.log
+startup_error_utf8.log
+runtime_error_utf8.txt
+vuln_report.txt
+test_build_diag.txt
+run_log.txt
+
+## [OS]
+.DS_Store
+Thumbs.db
+
+## [User-specific files]
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## [Local Settings]
+appsettings.Development.json
+
+## [Lucene Index]
+LuceneIndex/
+
+## [Document Storage]
+DocumentStorage/

@@ -1,0 +1,211 @@
+@page "/upload"
+@attribute [Authorize]
+@using DocumentManagementSystem.Helpers
+@using System.IO
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Data
+
+<PageTitle>Add Documents - DMS</PageTitle>
+
+<RadzenStack Gap="1.5rem" class="fade-in-up" Style="max-width: 900px; margin: 0 auto;">
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" class="mb-3">
+            <RadzenIcon Icon="note_add" Style="font-size: 2rem; color: #667eea;" />
+            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Add Documents</RadzenText>
+        </RadzenStack>
+
+        <RadzenTemplateForm Data="@documentMetadata" Submit="@((Document args) => OnSubmit())">
+            <RadzenRow Gap="1rem">
+                <!-- Batch Label -->
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenLabel Text="Group / Tag (Optional)" Component="BatchLabel" />
+                    <RadzenTextBox Name="BatchLabel" @bind-Value="@documentMetadata.BatchLabel" Style="width: 100%;" 
+                                   Placeholder="e.g. Monthly Reports (Leave blank for individual files)" />
+                </RadzenColumn>
+
+                <!-- Shared Category -->
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenLabel Text="Category" Component="Category" />
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                         <RadzenDropDown Name="Category" Data="@categories" TextProperty="CategoryName" ValueProperty="CategoryId"
+                                    @bind-Value="@documentMetadata.CategoryID" Style="flex: 1;" Placeholder="Select Category" />
+                         <RadzenButton Icon="add" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Medium" Click="@(args => CreateCategoryDialog())" 
+                                       ToolTip="Create New Category" />
+                    </RadzenStack>
+                    <RadzenRequiredValidator Component="Category" Text="Category is required" DefaultValue="0" />
+                </RadzenColumn>
+
+                <!-- Shared Location -->
+                <RadzenColumn Size="12" SizeMD="6">
+                     <RadzenLabel Text="Location" Component="Location" />
+                     <RadzenDropDown Name="Location" Data="@locations" TextProperty="LocationName" ValueProperty="LocationId"
+                                     @bind-Value="@documentMetadata.LocationID" Style="width: 100%;" Placeholder="Select Location" />
+                     <RadzenRequiredValidator Component="Location" Text="Location is required" DefaultValue="0" />
+                </RadzenColumn>
+
+                <!-- Password (Optional) -->
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenLabel Text="Password (Apply to all)" Component="Password" />
+                    <RadzenPassword Name="Password" @bind-Value="@documentMetadata.Password" Style="width: 100%;" AutoComplete="false" />
+                    <RadzenCheckBox @bind-Value="@showPassword" Name="ShowPassword" />
+                    <RadzenLabel Text="Show Password" Component="ShowPassword" Style="margin-left: 5px;" />
+                </RadzenColumn>
+
+                <!-- Upload Date -->
+                <RadzenColumn Size="12" SizeMD="6">
+                    <RadzenLabel Text="Upload Date" Component="UploadedDate" />
+                    <RadzenDatePicker Name="UploadedDate" @bind-Value="@documentMetadata.UploadedDate" Style="width: 100%;" Disabled="true" />
+                </RadzenColumn>
+
+                <!-- Batch Upload Zone -->
+                <RadzenColumn Size="12">
+                    <RadzenLabel Text="Upload Documents" Style="display: block; margin-bottom: 0.5rem;" />
+                    <RadzenStack Class="@($"drop-zone {(isDragOver ? "drag-over" : "")}")" 
+                         @ondragover="() => isDragOver = true" 
+                         @ondragleave="() => isDragOver = false"
+                         @ondrop="() => isDragOver = false"
+                         AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="1rem">
+                        <InputFile OnChange="@OnFilesSelected" class="drop-zone-input" title="" multiple />
+                        <RadzenStack Class="drop-zone-content" AlignItems="AlignItems.Center" Gap="0.5rem">
+                            <RadzenIcon Icon="file_upload" class="drop-zone-icon" />
+                            <RadzenText TextStyle="TextStyle.H6" class="drop-zone-text">
+                                Drag and drop files here or click to browse
+                            </RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption" class="drop-zone-hint">
+                                Support for PDF, Word, Excel, and Images (Max 500MB per file)
+                            </RadzenText>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenColumn>
+
+                <!-- Selected Files List -->
+                @if (selectedFiles.Any())
+                {
+                    <RadzenColumn Size="12">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-2">Files to Upload (@selectedFiles.Count)</RadzenText>
+                        <RadzenCard Style="padding: 0;">
+                            <RadzenDataGrid Data="@batchItems" TItem="BatchItem" AllowColumnResize="true" Density="Density.Compact"
+                                            Style="max-height: 300px; border: none;">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="BatchItem" Title="Original Name" Width="200px">
+                                        <Template Context="item">
+                                            <RadzenText TextStyle="TextStyle.Caption">@item.File.Name</RadzenText>
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="BatchItem" Title="Save As Name">
+                                        <Template Context="item">
+                                            <RadzenTextBox @bind-Value="@item.SaveAsName" Style="width: 100%;" />
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="BatchItem" Title="Size" Width="100px">
+                                        <Template Context="item">
+                                            @FormatFileSize(item.File.Size)
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="BatchItem" Title="Action" Width="60px" TextAlign="TextAlign.Center">
+                                        <Template Context="item">
+                                            <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" 
+                                                          Click="@(() => RemoveFile(item.File))" Disabled="@isUploading" />
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                </Columns>
+                            </RadzenDataGrid>
+                        </RadzenCard>
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" class="mt-2">
+                             <RadzenButton Text="Clear All" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" 
+                                           Click="@(() => { selectedFiles.Clear(); batchItems.Clear(); })" Disabled="@isUploading" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                }
+
+                <!-- Rights For Users Section -->
+                <RadzenColumn Size="12">
+                    <RadzenStack Style="border-top: 1px solid #eee; margin: 1rem 0; padding-top: 1rem;">
+                        <RadzenText TextStyle="TextStyle.H6" class="text-primary mb-3">Rights For Users (Apply to all)</RadzenText>
+                        
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" class="mb-3">
+                            <RadzenCheckBox @bind-Value="@useGroups" Name="UseGroups" />
+                            <RadzenLabel Text="Use Groups" Component="UseGroups" />
+                            
+                            <RadzenTextBox Placeholder="User Name" @bind-Value="@userSearch" Style="width: 200px;" />
+                            <RadzenButton Icon="person_search" ButtonStyle="ButtonStyle.Light" />
+
+                            <RadzenCheckBox @bind-Value="@canRead" Name="CanRead" /> <RadzenLabel Text="Read" Component="CanRead" />
+                            <RadzenCheckBox @bind-Value="@canWrite" Name="CanWrite" /> <RadzenLabel Text="Write" Component="CanWrite" />
+                            <RadzenCheckBox @bind-Value="@canDelete" Name="CanDelete" /> <RadzenLabel Text="Delete" Component="CanDelete" />
+                            
+                            <RadzenButton Text="Add" ButtonStyle="ButtonStyle.Light" Click="@(args => AddUserRight())" />
+                        </RadzenStack>
+
+                        <RadzenDataGrid Data="@documentMetadata.UserDocumentRightsList" TItem="UserDocumentRights" Density="Density.Compact" 
+                                        Style="height: 150px; border: 1px solid #e0e0e0;" EmptyText="No additional sharing rights defined.">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="UserDocumentRights" Property="UserName" Title="User / Group Name" Width="200px">
+                                    <Template Context="right">
+                                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                                            <RadzenIcon Icon="@(right.GroupId.HasValue && right.GroupId.Value != -1 ? "group" : "person")" Style="font-size: 1.2rem; color: #666;" />
+                                            <RadzenText TextStyle="TextStyle.Body2">@right.UserName</RadzenText>
+                                        </RadzenStack>
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="UserDocumentRights" Title="Permissions">
+                                    <Template Context="right">
+                                        @{
+                                            var parts = right.RightsName?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+                                            foreach (var p in parts)
+                                            {
+                                                var trimmed = p.Trim();
+                                                var style = trimmed == "Delete" ? ButtonStyle.Danger : (trimmed == "Write" ? ButtonStyle.Warning : ButtonStyle.Info);
+                                                <RadzenBadge Text="@trimmed" IsPill="true" class="mr-1" ButtonStyle="@style" />
+                                            }
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="UserDocumentRights" Title="Remove" Width="80px" TextAlign="TextAlign.Center">
+                                    <Template Context="right">
+                                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" 
+                                                      Click="@(() => RemoveUserRight(right))" Variant="Variant.Flat" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                    </RadzenStack>
+                </RadzenColumn>
+            </RadzenRow>
+
+            @if (isUploading)
+            {
+                <RadzenRow class="mt-4">
+                    <RadzenColumn Size="12">
+                        <RadzenStack Gap="1rem">
+                            <RadzenStack Gap="0.25rem">
+                                <RadzenText TextStyle="TextStyle.Subtitle2">@batchStatusText</RadzenText>
+                                <RadzenProgressBar Value="@batchProgress" Max="100" ShowValue="true" />
+                            </RadzenStack>
+                            
+                            <RadzenStack Gap="0.25rem">
+                                <RadzenText TextStyle="TextStyle.Caption">Uploading: @currentFileName</RadzenText>
+                                <RadzenProgressBar Value="@fileProgress" Max="100" ShowValue="false" />
+                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                                    <RadzenText TextStyle="TextStyle.Caption">@FormatFileSize(bytesUploaded) / @FormatFileSize(totalBytesForCurrentFile)</RadzenText>
+                                    <RadzenText TextStyle="TextStyle.Caption">@($"{fileProgress:0}%")</RadzenText>
+                                </RadzenStack>
+                            </RadzenStack>
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+            }
+            
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="1rem" class="mt-4">
+                <RadzenButton Text="Close" ButtonStyle="ButtonStyle.Light" Click="@(() => NavigationManager.NavigateTo("/browse"))" />
+                <RadzenButton Text="@(isUploading ? "Uploading..." : "Upload All")" ButtonType="ButtonType.Submit" 
+                               ButtonStyle="ButtonStyle.Primary" Icon="cloud_upload" IsBusy="@isUploading" 
+                               Disabled="@(!selectedFiles.Any() || isUploading)" />
+            </RadzenStack>
+        </RadzenTemplateForm>
+    </RadzenCard>
+</RadzenStack>
+
+
+
+

@@ -1,0 +1,207 @@
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject IMfaService MfaService
+@inject NotificationService NotificationService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<RadzenCard Style="margin-bottom: 1.5rem;">
+    <RadzenStack Gap="1rem">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                <RadzenIcon Icon="security" Style="color: var(--rz-primary);" />
+                <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0;">2FA Security</RadzenText>
+            </RadzenStack>
+             @if (isMfaEnabled)
+             {
+                 <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="On" />
+             }
+             else
+             {
+                 <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="Off" />
+             }
+        </RadzenStack>
+
+        @if (isLoading)
+        {
+             <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small" />
+        }
+        else if (isMfaEnabled)
+        {
+            <RadzenText TextStyle="TextStyle.Caption" class="text-muted">
+                Your account is protected.
+            </RadzenText>
+             <RadzenButton Text="Manage" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Light" Click="@OnManageClick" />
+        }
+        else if (setupStep == 0)
+        {
+             <RadzenText TextStyle="TextStyle.Caption">
+                Secure your account with Two-Factor Authentication.
+            </RadzenText>
+            <RadzenButton Text="Enable 2FA" Size="ButtonSize.Small" Icon="lock" ButtonStyle="ButtonStyle.Primary" Click="@StartSetup" />
+        }
+        else if (setupStep == 1)
+        {
+            <RadzenText TextStyle="TextStyle.Caption">Scan QR Code:</RadzenText>
+            <div style="text-align: center;">
+                 <img src="https://chart.googleapis.com/chart?chs=150x150&chld=M|0&cht=qr&chl=@Uri.EscapeDataString(provisioningUri)" 
+                      alt="QR Code" style="border: 1px solid #ddd; padding: 5px; border-radius: 4px; width: 100%; max-width: 150px;" />
+            </div>
+             <RadzenTextBox Value="@tempSecret" ReadOnly="true" Style="font-family: monospace; text-align: center; font-size: 0.8rem; width: 100%; margin-top: 5px;" />
+             <RadzenButton Text="Next" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Primary" Click="@(() => setupStep = 2)" Style="width: 100%;" />
+        }
+        else if (setupStep == 2)
+        {
+             <RadzenText TextStyle="TextStyle.Caption">Enter 6-digit Code:</RadzenText>
+             <RadzenTextBox @bind-Value="@verificationCode" Placeholder="000000" 
+                           Style="font-size: 1.5rem; text-align: center; letter-spacing: 0.25rem; width: 100%;"
+                           MaxLength="6" />
+            
+             @if (!string.IsNullOrEmpty(errorMessage))
+             {
+                 <RadzenText TextStyle="TextStyle.Caption" Style="color: var(--rz-danger);">@errorMessage</RadzenText>
+             }
+
+             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Style="margin-top: 5px;">
+                  <RadzenButton Icon="arrow_back" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(() => setupStep = 1)" />
+                  <RadzenButton Text="Verify" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Success" Click="@VerifyAndEnable" IsBusy="@isVerifying" Style="flex: 1;" />
+             </RadzenStack>
+        }
+        else if (setupStep == 99)
+        {
+             <RadzenText TextStyle="TextStyle.Caption" class="text-danger">
+                Disable Two-Factor Auth?
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Caption" class="text-muted">
+                Your account will be less secure.
+            </RadzenText>
+             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Style="margin-top: 5px;">
+                  <RadzenButton Text="Cancel" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(() => setupStep = 0)" Style="flex: 1;" />
+                  <RadzenButton Text="Disable" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Click="@DisableMfa" Style="flex: 1;" />
+             </RadzenStack>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private bool isLoading = true;
+    private bool isMfaEnabled;
+    private int setupStep = 0;
+    private string tempSecret = "";
+    private string provisioningUri = "";
+    private string verificationCode = "";
+    private string errorMessage = "";
+    private bool isVerifying;
+    private ApplicationUser? currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMfaStatus();
+    }
+
+    public async Task LoadMfaStatus()
+    {
+        isLoading = true;
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                currentUser = await UserManager.GetUserAsync(authState.User);
+                if (currentUser != null)
+                {
+                    isMfaEnabled = currentUser.TwoFactorEnabled;
+                }
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void StartSetup()
+    {
+        tempSecret = MfaService.GenerateSecret();
+        provisioningUri = MfaService.GetProvisioningUri(tempSecret, currentUser?.Email ?? "user", "DMS");
+        setupStep = 1;
+    }
+
+    private async Task VerifyAndEnable()
+    {
+        errorMessage = "";
+        isVerifying = true;
+        StateHasChanged();
+
+        try
+        {
+            if (string.IsNullOrEmpty(verificationCode) || verificationCode.Length != 6)
+            {
+                errorMessage = "Invalid code.";
+                return;
+            }
+
+            if (!MfaService.ValidateCode(tempSecret, verificationCode))
+            {
+                errorMessage = "Wrong code.";
+                return;
+            }
+
+            if (currentUser != null)
+            {
+                currentUser.MfaSecret = tempSecret;
+                currentUser.TwoFactorEnabled = true;
+                currentUser.MfaSetupDate = DateTime.UtcNow;
+                
+                var result = await UserManager.UpdateAsync(currentUser);
+                if (result.Succeeded)
+                {
+                    NotificationService.Notify(NotificationSeverity.Success, "Success", "2FA Enabled!");
+                    isMfaEnabled = true;
+                    setupStep = 0;
+                    await OnChanged.InvokeAsync();
+                }
+                else
+                {
+                    errorMessage = "Save failed.";
+                }
+            }
+        }
+        finally
+        {
+            isVerifying = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void OnManageClick()
+    {
+        // Navigate or simple disable? 
+        // User said "exact working", so maybe just disable button?
+        // But "UI Card" implies compact.
+        // I'll reset to step 0 allow re-setup or disable?
+        // For now, I'll toggle a small menu or just disable.
+        // Actually, I'll show a "Disable" button directly here.
+        setupStep = 99; // Manage Mode
+    }
+    
+    private async Task DisableMfa()
+    {
+        if (currentUser != null)
+        {
+            currentUser.MfaSecret = null;
+            currentUser.TwoFactorEnabled = false;
+            currentUser.MfaSetupDate = null;
+            await UserManager.UpdateAsync(currentUser);
+            isMfaEnabled = false;
+            setupStep = 0;
+            NotificationService.Notify(NotificationSeverity.Info, "Disabled", "2FA Disabled.");
+            await OnChanged.InvokeAsync();
+        }
+    }
+
+    // Add Manage Mode UI rendering in main block (simple switch)
+}

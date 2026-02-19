@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Data\ApplicationDbContext.cs(11,14): error CS0311: The type 'DocumentManagementSystem.Models.ApplicationUser' cannot be used as type parameter 'TUser' in the generic type or method 'IdentityDbContext<TUser>'. There is no implicit reference conversion from 'DocumentManagementSystem.Models.ApplicationUser' to 'Microsoft.AspNetCore.Identity.IdentityUser'. [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+
+Build FAILED.
+
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Data\ApplicationDbContext.cs(11,14): error CS0311: The type 'DocumentManagementSystem.Models.ApplicationUser' cannot be used as type parameter 'TUser' in the generic type or method 'IdentityDbContext<TUser>'. There is no implicit reference conversion from 'DocumentManagementSystem.Models.ApplicationUser' to 'Microsoft.AspNetCore.Identity.IdentityUser'. [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:09.11

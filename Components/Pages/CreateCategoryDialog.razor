@@ -1,0 +1,26 @@
+@inject DialogService DialogService
+@using Radzen
+
+<RadzenStack Gap="1.5rem" Style="padding: 1rem;">
+    <RadzenStack Gap="0.5rem">
+        <RadzenLabel Text="Category Name" Component="CategoryName" />
+        <RadzenTextBox @bind-Value="@categoryName" Name="CategoryName" Style="width: 100%;" 
+                       @onkeyup="@(e => { if(e.Key == "Enter") OnSave(); })" />
+    </RadzenStack>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="1rem">
+        <RadzenButton Text="Cancel" Click="@(() => DialogService.Close(null))" ButtonStyle="ButtonStyle.Light" />
+        <RadzenButton Text="Create" Click="@OnSave" ButtonStyle="ButtonStyle.Primary" Disabled="@string.IsNullOrWhiteSpace(categoryName)" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    private string categoryName = string.Empty;
+
+    private void OnSave()
+    {
+        if (!string.IsNullOrWhiteSpace(categoryName))
+        {
+            DialogService.Close(categoryName);
+        }
+    }
+}

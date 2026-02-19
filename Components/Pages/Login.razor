@@ -1,0 +1,72 @@
+@page "/login"
+@layout DocumentManagementSystem.Components.Layout.EmptyLayout
+@inject NavigationManager NavigationManager
+
+<PageTitle>Login - DMS</PageTitle>
+
+<RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="height: 100vh; background-color: #f4f6f9;">
+    <RadzenCard class="rz-shadow-7" Style="width: 100%; max-width: 400px; padding: 2rem;">
+        <RadzenStack Gap="1.5rem">
+            <RadzenStack AlignItems="AlignItems.Center" Gap="0.5rem">
+                <RadzenIcon Icon="lock" Style="font-size: 3rem; color: #4340d2;" />
+                <RadzenText TextStyle="TextStyle.H5">Sign In</RadzenText>
+            </RadzenStack>
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <RadzenAlert Severity="AlertSeverity.Error" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @ErrorMessage
+                </RadzenAlert>
+            }
+            
+            @if (!string.IsNullOrEmpty(SuccessMessage))
+            {
+                <RadzenAlert Severity="AlertSeverity.Success" Variant="Variant.Flat" Shade="Shade.Lighter">
+                    @SuccessMessage
+                </RadzenAlert>
+            }
+
+            <form method="post" action="/account/login">
+                <RadzenStack Gap="1rem">
+                    <RadzenColumn Size="12">
+                        <RadzenLabel Text="Username" />
+                        <input class="rz-textbox" style="width: 100%;" name="username" required placeholder="admin" />
+                    </RadzenColumn>
+                    
+                    <RadzenColumn Size="12">
+                        <RadzenLabel Text="Password" />
+                        <input class="rz-textbox" style="width: 100%;" type="password" name="password" required placeholder="Admin@123" />
+                    </RadzenColumn>
+                    
+                    <input type="hidden" name="returnUrl" value="@ReturnUrl" />
+
+                    <RadzenButton ButtonType="ButtonType.Submit" Text="Sign In" ButtonStyle="ButtonStyle.Primary" Style="width: 100%;" />
+                </RadzenStack>
+            </form>
+
+            <RadzenText TextStyle="TextStyle.Caption" TextAlign="TextAlign.Center" Style="margin: 0.5rem 0;">OR</RadzenText>
+
+            <form method="post" action="/account/loginexternal">
+                <input type="hidden" name="provider" value="Google" />
+                <input type="hidden" name="returnUrl" value="@ReturnUrl" />
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Sign in with Google" Icon="google" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Style="width: 100%;" />
+            </form>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+                <RadzenText TextStyle="TextStyle.Body2">Don't have an account?</RadzenText>
+                <RadzenLink Path="/register" Text="Sign Up" TextStyle="TextStyle.Body2" />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+</RadzenStack>
+
+@code {
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? ErrorMessage { get; set; }
+    
+    [SupplyParameterFromQuery(Name = "message")]
+    public string? SuccessMessage { get; set; }
+
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; } = "/";
+}

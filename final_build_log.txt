@@ -1,0 +1,22 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\DocumentView.razor(144,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(148,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(161,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(173,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(223,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Upload.razor(143,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+  DocumentManagementSystem -> C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\bin\Debug\net8.0\DocumentManagementSystem.dll
+
+Build succeeded.
+
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\DocumentView.razor(144,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(148,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(161,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(173,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(223,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Upload.razor(143,26): warning CS0168: The variable 'ex' is declared but never used [C:\Users\tajee\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+    6 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:08.75

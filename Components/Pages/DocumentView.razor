@@ -1,0 +1,426 @@
+@page "/documents/{Id:int}"
+@inject IDocumentService DocumentService
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+@using DocumentManagementSystem.Models
+@using Microsoft.JSInterop
+
+<PageTitle>@(document?.DocumentName ?? "Document") - DMS</PageTitle>
+
+@if (isDownloading)
+{
+    <div class="download-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <RadzenCard Style="width: 400px; padding: 2rem;">
+            <RadzenStack Gap="1rem">
+                <RadzenText TextStyle="TextStyle.H6">Downloading Document...</RadzenText>
+                <RadzenProgressBar Value="@downloadProgress" Max="100" />
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenText TextStyle="TextStyle.Caption">@FormatFileSize(bytesDownloaded) / @FormatFileSize(totalBytesToDownload)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Caption">@($"{downloadProgress:0}%")</RadzenText>
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+    </div>
+}
+
+@if (document == null)
+{
+    <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="min-height: 400px;">
+        <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <RadzenText>Loading document...</RadzenText>
+    </RadzenStack>
+}
+else
+{
+    <RadzenStack Gap="1.5rem" class="fade-in-up">
+        <!-- Header -->
+        <RadzenCard>
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Click="@GoBack" />
+                <div class="document-icon @GetIconClass(document.Extension)" 
+                     style="width: 56px; height: 56px; font-size: 1.75rem;">
+                    <RadzenIcon Icon="@GetFileIcon(document.Extension)" />
+                </div>
+                <RadzenStack Gap="0" Style="flex: 1;">
+                    <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">@document.DocumentName</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Body2" class="text-muted">@document.Path</RadzenText>
+                </RadzenStack>
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                    <RadzenButton Text="Download" Icon="download" ButtonStyle="ButtonStyle.Primary" Click="@DownloadDocument" />
+                    <RadzenButton Text="New Version" Icon="upload_file" ButtonStyle="ButtonStyle.Info" Click="@UploadNewVersion" />
+                    <RadzenButton Text="Edit" Icon="edit" ButtonStyle="ButtonStyle.Secondary" Click="@ShowEditDialog" />
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Click="@DeleteDocument" />
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+
+        <RadzenRow Gap="1.5rem">
+            <!-- Document Details -->
+            <RadzenColumn Size="12" SizeLG="8">
+                <RadzenStack Gap="1.5rem">
+                    
+                    @if (IsImage(document.Extension))
+                    {
+                        <!-- Image Preview -->
+                        <RadzenCard>
+                            <RadzenText TextStyle="TextStyle.H6" class="mb-3">
+                                <RadzenIcon Icon="visibility" /> Preview
+                            </RadzenText>
+                            <div style="text-align: center; background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                                <img src="/api/files/preview/@document.DocumentId" 
+                                     style="max-width: 100%; max-height: 600px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 4px;" 
+                                     alt="Document Preview" />
+                            </div>
+                        </RadzenCard>
+                    }
+
+                    <!-- Comments Details -->
+                    <RadzenCard>
+                        <RadzenText TextStyle="TextStyle.H6" class="mb-3">
+                            <RadzenIcon Icon="comment" /> Comments
+                        </RadzenText>
+                        
+                        @if (document.CommentsList?.Any() == true)
+                        {
+                            <RadzenDataGrid Data="@document.CommentsList" TItem="Comments" Density="Density.Compact">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="Comments" Property="CommentBy" Title="User" Width="120px" />
+                                    <RadzenDataGridColumn TItem="Comments" Property="CommentText" Title="Comment" />
+                                    <RadzenDataGridColumn TItem="Comments" Property="CommentDate" Title="Date" Width="150px" FormatString="{0:g}" />
+                                </Columns>
+                            </RadzenDataGrid>
+                        }
+                        else
+                        {
+                            <RadzenText class="text-muted">No comments yet.</RadzenText>
+                        }
+                    </RadzenCard>
+
+                    <!-- User Rights -->
+                    <RadzenCard>
+                        <RadzenText TextStyle="TextStyle.H6" class="mb-3">
+                            <RadzenIcon Icon="lock_person" /> User Rights
+                        </RadzenText>
+                         @if (document.UserDocumentRightsList?.Any() == true)
+                        {
+                            <RadzenDataGrid Data="@document.UserDocumentRightsList" TItem="UserDocumentRights" Density="Density.Compact">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="UserDocumentRights" Property="UserName" Title="User" />
+                                    <RadzenDataGridColumn TItem="UserDocumentRights" Property="RightsName" Title="Permissions" />
+                                </Columns>
+                            </RadzenDataGrid>
+                        }
+                        else
+                        {
+                            <RadzenText class="text-muted">No specific user rights assigned.</RadzenText>
+                        }
+                    </RadzenCard>
+
+                    <!-- Version History -->
+                    <RadzenCard>
+                        <RadzenText TextStyle="TextStyle.H6" class="mb-3">
+                            <RadzenIcon Icon="history" /> Version History
+                        </RadzenText>
+                        @if (history.Any())
+                        {
+                            <RadzenDataGrid Data="@history" TItem="DocumentVersion" Density="Density.Compact" PageSize="5" AllowPaging="true">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="DocumentVersion" Property="VersionNumber" Title="Ver" Width="60px" />
+                                    <RadzenDataGridColumn TItem="DocumentVersion" Property="CreatedDate" Title="Date" FormatString="{0:g}" />
+                                    <RadzenDataGridColumn TItem="DocumentVersion" Title="Size" Width="80px">
+                                        <Template Context="v">@FormatFileSize(v.FileSize)</Template>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="DocumentVersion" Context="v" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="130px">
+                                        <Template Context="v">
+                                            <RadzenButton Icon="visibility" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Info" 
+                                                          Click="@(() => PreviewVersion(v))" Tooltip="Preview" />
+                                            <RadzenButton Icon="download" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Light" 
+                                                          Click="@(() => DownloadVersion(v))" Tooltip="Download" />
+                                            <RadzenButton Icon="restore" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Warning" 
+                                                          Click="@(() => RestoreVersion(v))" Tooltip="Restore" />
+                                        </Template>
+                                    </RadzenDataGridColumn>
+                                </Columns>
+                            </RadzenDataGrid>
+                        }
+                        else
+                        {
+                            <RadzenText class="text-muted">No previous versions.</RadzenText>
+                        }
+                    </RadzenCard>
+
+                </RadzenStack>
+            </RadzenColumn>
+
+            <!-- Sidebar -->
+            <RadzenColumn Size="12" SizeLG="4">
+                <RadzenStack Gap="1.5rem">
+                    <!-- Properties -->
+                    <RadzenCard>
+                        <RadzenText TextStyle="TextStyle.H6" class="mb-3">
+                            <RadzenIcon Icon="list" /> Properties
+                        </RadzenText>
+                        <RadzenStack Gap="0.75rem">
+                            @PropertyRow("Extension", document.Extension)
+                            @PropertyRow("Size", FormatFileSize(document.FileSize))
+                            @if (document.CompressedSize.HasValue && document.CompressedSize < document.FileSize)
+                            {
+                                @PropertyRow("Compressed", FormatFileSize(document.CompressedSize.Value))
+                            }
+                            @PropertyRow("Category", document.CategoryName)
+                            @PropertyRow("Department", document.DepartmentName)
+                            @PropertyRow("Location", document.LocationName)
+                            @PropertyRow("Status", document.Status)
+                        </RadzenStack>
+                    </RadzenCard>
+
+                    <!-- Timestamps -->
+                    <RadzenCard>
+                        <RadzenText TextStyle="TextStyle.H6" class="mb-3">
+                            <RadzenIcon Icon="schedule" /> Timestamps
+                        </RadzenText>
+                        <RadzenStack Gap="0.75rem">
+                            @PropertyRow("Uploaded", document.UploadedDate.ToString("MMM dd, yyyy HH:mm"))
+                            @PropertyRow("Updated", document.UpdatedDate.ToString("MMM dd, yyyy HH:mm"))
+                            @PropertyRow("By User", document.UserName)
+                            @PropertyRow("Updated By", document.UpdatedByName)
+                        </RadzenStack>
+                    </RadzenCard>
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenStack>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Document? document;
+    private IEnumerable<DocumentVersion> history = Enumerable.Empty<DocumentVersion>();
+    
+    private bool isDownloading = false;
+    private double downloadProgress = 0;
+    private long bytesDownloaded = 0;
+    private long totalBytesToDownload = 0;
+    private DotNetObjectReference<DocumentView>? dotNetHelper;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            document = await DocumentService.GetByIdAsync(Id);
+            if (document == null)
+            {
+                NotificationService.Notify(new NotificationMessage 
+                { 
+                    Severity = NotificationSeverity.Error, 
+                    Summary = "Error", 
+                    Detail = "Document not found or error loading data." 
+                });
+            }
+            else
+            {
+                await LoadHistory();
+            }
+        }
+        catch (Exception)
+        {
+            NotificationService.Notify(new NotificationMessage 
+            { 
+                Severity = NotificationSeverity.Error, 
+                Summary = "Error", 
+                Detail = "An unexpected error occurred while loading the document." 
+            });
+        }
+    }
+
+    private void GoBack()
+    {
+        if (document?.CategoryID > 0)
+            NavigationManager.NavigateTo($"/browse/{document.CategoryID}");
+        else
+            NavigationManager.NavigateTo("/browse");
+    }
+
+    private async Task DownloadDocument()
+    {
+        if (document == null) return;
+
+        isDownloading = true;
+        downloadProgress = 0;
+        bytesDownloaded = 0;
+        totalBytesToDownload = document.FileSize;
+        StateHasChanged();
+
+        try
+        {
+            dotNetHelper = DotNetObjectReference.Create(this);
+            var url = $"/api/files/download/{Id}";
+            var fileName = document.DocumentName + (document.Extension ?? "");
+            
+            await JSRuntime.InvokeVoidAsync("downloadWithProgress", url, fileName, dotNetHelper);
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", $"Download failed: {ex.Message}");
+        }
+        finally
+        {
+            isDownloading = false;
+            StateHasChanged();
+        }
+    }
+
+    [JSInvokable]
+    public void OnDownloadProgress(long receivedLength, long totalLength)
+    {
+        bytesDownloaded = receivedLength;
+        if (totalLength > 0)
+        {
+            totalBytesToDownload = totalLength;
+            downloadProgress = (double)receivedLength / totalLength * 100;
+        }
+        else if (totalBytesToDownload > 0)
+        {
+             downloadProgress = (double)receivedLength / totalBytesToDownload * 100;
+        }
+        
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        dotNetHelper?.Dispose();
+    }
+
+    private async Task ShowEditDialog()
+    {
+        // TODO: Implement edit dialog
+    }
+
+    private async Task UploadNewVersion()
+    {
+        var result = await DialogService.OpenAsync<UploadVersionDialog>($"New Version: {document?.DocumentName}",
+               new Dictionary<string, object> { { "DocumentId", Id }, { "DocumentName", document?.DocumentName ?? "" } },
+               new DialogOptions() { Width = "500px", Height = "auto", Resizable = false, Draggable = true });
+
+        if (result == true)
+        {
+            document = await DocumentService.GetByIdAsync(Id); // Reload doc
+            await LoadHistory();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadHistory()
+    {
+        history = await DocumentService.GetHistoryAsync(Id);
+    }
+
+    private async Task DownloadVersion(DocumentVersion version)
+    {
+        try
+        {
+             // Use JS download for version
+             var url = $"/api/files/download/version/{version.VersionId}";
+             var fileName = version.FileName;
+             await JSRuntime.InvokeVoidAsync("triggerFileDownload", url, fileName);
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "Download failed.");
+        }
+    }
+
+    private async Task PreviewVersion(DocumentVersion version)
+    {
+        try
+        {
+            // Open preview in new tab
+            var url = $"/api/files/preview/version/{version.VersionId}";
+            await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "Preview failed.");
+        }
+    }
+
+    private async Task RestoreVersion(DocumentVersion version)
+    {
+        var confirmed = await DialogService.Confirm($"Restore version {version.VersionNumber}? This will create a new version.", "Restore Version");
+        if (confirmed == true)
+        {
+            var success = await DocumentService.RestoreVersionAsync(version.VersionId);
+            if (success.Result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Restored", "Version restored successfully.");
+                document = await DocumentService.GetByIdAsync(Id);
+                await LoadHistory();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Error", "Failed to restore version.");
+            }
+        }
+    }
+
+    private async Task DeleteDocument()
+    {
+        var confirmed = await DialogService.Confirm(
+            $"Are you sure you want to delete '{document?.DocumentName}'?",
+            "Delete Document",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+
+        if (confirmed == true)
+        {
+            await DocumentService.DeleteAsync(Id);
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Deleted",
+                Detail = "Document moved to trash",
+                Duration = 3000
+            });
+            GoBack();
+        }
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        int order = 0;
+        double size = bytes;
+        while (size >= 1024 && order < sizes.Length - 1) { order++; size /= 1024; }
+        return $"{size:0.##} {sizes[order]}";
+    }
+
+    private static string GetFileIcon(string? ext) => ext?.ToLowerInvariant() switch
+    {
+        ".pdf" => "picture_as_pdf", ".doc" or ".docx" => "description",
+        ".xls" or ".xlsx" => "table_chart", ".jpg" or ".jpeg" or ".png" => "image",
+        _ => "insert_drive_file"
+    };
+
+    private static string GetIconClass(string? ext) => ext?.ToLowerInvariant() switch
+    {
+        ".pdf" => "pdf", ".doc" or ".docx" => "word", ".xls" or ".xlsx" => "excel",
+        ".jpg" or ".jpeg" or ".png" or ".webp" => "image", _ => "default"
+    };
+
+    private static bool IsImage(string? ext)
+    {
+        var e = ext?.ToLowerInvariant();
+        return e == ".jpg" || e == ".jpeg" || e == ".png" || e == ".webp" || e == ".bmp" || e == ".gif";
+    }
+
+    private RenderFragment PropertyRow(string label, string? value) => __builder =>
+    {
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenText TextStyle="TextStyle.Body2" class="text-muted">@label</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body2" Style="font-weight: 500;">@(value ?? "N/A")</RadzenText>
+        </RadzenStack>
+    };
+}

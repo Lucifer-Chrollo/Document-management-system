@@ -1,0 +1,237 @@
+@page "/browse"
+@page "/browse/{CategoryId:int}"
+@page "/browse/{CategoryId:int}/{ParentId:int}"
+@using Radzen.Blazor
+@attribute [Authorize]
+@inherits Fluxor.Blazor.Web.Components.FluxorComponent
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Data
+@using Microsoft.JSInterop
+
+<PageTitle>Browse Documents - DMS</PageTitle>
+
+@if (isDownloading)
+{
+    <RadzenStack Style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999;" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+        <RadzenCard Style="width: 400px; padding: 2rem;">
+            <RadzenStack Gap="1rem">
+                <RadzenText TextStyle="TextStyle.H6">Downloading Document...</RadzenText>
+                <RadzenProgressBar Value="@downloadProgress" Max="100" />
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenText TextStyle="TextStyle.Caption">@FormatFileSize(bytesDownloaded) / @FormatFileSize(totalBytesToDownload)</RadzenText>
+                    <RadzenText TextStyle="TextStyle.Caption">@($"{downloadProgress:0}%")</RadzenText>
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenStack>
+}
+
+<RadzenStack Gap="1.5rem" class="fade-in-up">
+    <!-- Header -->
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                <RadzenIcon Icon="folder_open" Style="font-size: 2rem; color: var(--rz-primary);" />
+                <RadzenStack Gap="0">
+                    <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Documents</RadzenText>
+                    <RadzenBreadcrumb>
+                        <RadzenBreadcrumbItem Text="Dashboard" Path="/" />
+                        <RadzenBreadcrumbItem Text="Browse" Path="/browse" />
+                        @if (CategoryId > 0)
+                        {
+                            <RadzenBreadcrumbItem Text="@(categories.FirstOrDefault(c => c.CategoryId == CategoryId)?.CategoryName ?? "Category")" 
+                                                   Path="@($"/browse/{CategoryId}")" />
+                        }
+                        @if (parentFolder != null)
+                        {
+                            <RadzenBreadcrumbItem Text="@parentFolder.DocumentName" />
+                        }
+                    </RadzenBreadcrumb>
+                </RadzenStack>
+            </RadzenStack>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+                <RadzenDropDown TValue="string" Data="@batchLabels" Placeholder="Filter by Batch..." 
+                                @bind-Value="@selectedBatchLabel" Change="@LoadData" Clearable="true"
+                                Style="width: 200px;" />
+                <RadzenTextBox Placeholder="Search documents..." @bind-Value="@searchQuery" 
+                               Style="width: 250px;" @onkeyup="@((e) => { if(e.Key == "Enter") Search(); })" />
+                <RadzenButton Icon="search" Click="@(args => Search())" ButtonStyle="ButtonStyle.Primary" />
+                <RadzenButton Icon="add" Text="New Document" Click="@(() => NavigationManager.NavigateTo("/upload"))" 
+                               ButtonStyle="ButtonStyle.Success" />
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenRow>
+        <!-- Categories Sidebar -->
+        <RadzenColumn Size="12" SizeMD="3">
+            <!-- MFA Card -->
+            <DocumentManagementSystem.Components.MfaSetupCard />
+            
+            <!-- Mobile Upload Card -->
+            <DocumentManagementSystem.Components.MobileUploadCard />
+
+            <RadzenCard Style="padding: 0;">
+                <RadzenStack Gap="0">
+                    <RadzenStack Style="padding: 1rem; border-bottom: 1px solid var(--rz-divider);">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0;">Categories</RadzenText>
+                    </RadzenStack>
+                    <RadzenListBox Data="@categories" TValue="int?" @bind-Value="@selectedCategoryId"
+                                   TextProperty="CategoryName" ValueProperty="CategoryId"
+                                   Style="width: 100%; border: none;" Change="@OnCategoryChange">
+                        <Template Context="cat">
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                                <RadzenIcon Icon="folder" Style="font-size: 1.25rem; color: #ffca28;" />
+                                <RadzenText TextStyle="TextStyle.Body2">@((cat as Category)?.CategoryName)</RadzenText>
+                            </RadzenStack>
+                        </Template>
+                    </RadzenListBox>
+                </RadzenStack>
+            </RadzenCard>
+
+            <!-- Archive Sidebar -->
+            <RadzenCard Style="padding: 0; margin-top: 1.5rem;">
+                <RadzenStack Gap="0">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Style="padding: 1rem; border-bottom: 1px solid var(--rz-divider);">
+                        <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0;">Archives</RadzenText>
+                        @if (selectedYear.HasValue)
+                        {
+                            <RadzenButton Icon="clear" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Light" Click="@(args => ClearDateFilter())" />
+                        }
+                    </RadzenStack>
+                    <RadzenStack Style="max-height: 400px; overflow-y: auto; padding: 0.5rem;">
+                        <RadzenTree Data="@archiveNodes" Change="@OnTreeChange">
+                            <RadzenTreeLevel TextProperty="Text" ChildrenProperty="Children" />
+                        </RadzenTree>
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <!-- Document Grid -->
+        <RadzenColumn Size="12" SizeMD="9">
+            <RadzenCard>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="mb-3">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                        @if (ParentId > 0)
+                        {
+                            <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" 
+                                           Click="@(args => GoBack())" class="me-2" />
+                        }
+                        <RadzenText TextStyle="TextStyle.Subtitle1">
+                            @(parentFolder != null ? parentFolder.DocumentName : "Documents in this Category")
+                        </RadzenText>
+                    </RadzenStack>
+                    @if (selectedDocuments.Any())
+                    {
+                        <RadzenButton Icon="delete" Text="Delete Selected" ButtonStyle="ButtonStyle.Danger" 
+                                       Size="ButtonSize.Small" Click="@(args => DeleteSelected())" />
+                    }
+                </RadzenStack>
+
+                <RadzenDataGrid Data="@documents" TItem="Document" AllowFiltering="true" AllowSorting="true" 
+                                AllowPaging="true" PageSize="10" PagerHorizontalAlign="HorizontalAlign.Left" 
+                                ShowPagingSummary="true" SelectionMode="DataGridSelectionMode.Multiple" 
+                                @bind-Value="@selectedDocuments" class="rz-shadow-sm"
+                                IsLoading="@isLoading">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="Document" Width="40px" Sortable="false" Filterable="false">
+                            <HeaderTemplate>
+                                <RadzenCheckBox TabIndex="-1" TriState="false" TValue="bool" 
+                                                Value="@(documents.Any() && selectedDocuments.Count == documents.Count())"
+                                                Change="@SelectAll" />
+                            </HeaderTemplate>
+                            <Template Context="doc">
+                                <RadzenCheckBox TabIndex="-1" TriState="false" Value="@selectedDocuments.Contains(doc)" 
+                                                TValue="bool" Change="@(selected => ToggleSelection(doc, selected))" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        
+                        <RadzenDataGridColumn TItem="Document" Property="DocumentName" Title="Name" Width="250px">
+                            <Template Context="doc">
+                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                                    <RadzenIcon Icon="@(doc.Status == "Folder" ? "folder" : GetFileIcon(doc.Extension))" 
+                                                Style="@(doc.Status == "Folder" ? "font-size: 1.25rem; color: #ffca28;" : "font-size: 1.25rem;")" />
+                                    <RadzenStack Gap="0">
+                                        @if (doc.Status == "Folder")
+                                        {
+                                            <RadzenLink Path="@($"/browse/{doc.CategoryID}/{doc.DocumentId}")" Text="@doc.DocumentName" 
+                                                        Style="font-weight: bold; color: var(--rz-primary);" />
+                                        }
+                                        else
+                                        {
+                                            <RadzenLink Path="@($"/documents/{doc.DocumentId}")" Text="@doc.DocumentName" 
+                                                        Style="font-weight: 500;" />
+                                        }
+                                        @if (!string.IsNullOrEmpty(doc.BatchLabel))
+                                        {
+                                            <RadzenBadge Text="@doc.BatchLabel" BadgeStyle="BadgeStyle.Light" 
+                                                         Style="font-size: 0.6rem; padding: 0.2rem 0.4rem; border-radius: 4px; border: 1px solid #ddd;" />
+                                        }
+                                    </RadzenStack>
+                                </RadzenStack>
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem="Document" Property="CategoryName" Title="Category" Width="150px" />
+                        
+                        <RadzenDataGridColumn TItem="Document" Property="FileSize" Title="Size" Width="150px">
+                             <Template Context="doc">
+                                <RadzenStack Gap="0">
+                                    <RadzenText TextStyle="TextStyle.Body2">@FormatFileSize(doc.FileSize)</RadzenText>
+                                    @if (doc.CompressedSize.HasValue && doc.CompressedSize < doc.FileSize)
+                                    {
+                                        <RadzenText TextStyle="TextStyle.Caption" class="text-success">
+                                            (@FormatFileSize(doc.CompressedSize.Value) compressed)
+                                        </RadzenText>
+                                    }
+                                </RadzenStack>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        
+                        <RadzenDataGridColumn TItem="Document" Property="DepartmentName" Title="Department" Width="150px" />
+                        
+                        <RadzenDataGridColumn TItem="Document" Property="LocationName" Title="Location Name" Width="150px" />
+                        
+                        <RadzenDataGridColumn TItem="Document" Property="UploadedDate" Title="Uploaded Date" Width="150px">
+                            <Template Context="doc">
+                                @doc.UploadedDate.ToString("MMM dd, yyyy")
+                            </Template>
+                        </RadzenDataGridColumn>
+                        
+                        <RadzenDataGridColumn TItem="Document" Property="Status" Title="Status" Width="100px">
+                            <Template Context="doc">
+                                <RadzenBadge BadgeStyle="@(doc.Status == "Active" ? BadgeStyle.Success : BadgeStyle.Warning)" 
+                                             Text="@doc.Status" />
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem="Document" Context="doc" Filterable="false" Sortable="false" 
+                                            TextAlign="TextAlign.Center" Width="120px" Title="Actions">
+                            <Template Context="doc">
+                                <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.ExtraSmall" 
+                                               Click="@(() => PreviewDocument(doc))" Disabled="@(doc.Status == "Folder")" Tooltip="Preview" />
+                                <RadzenButton Icon="download" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.ExtraSmall" 
+                                               Click="@(() => DownloadDocument(doc))" Disabled="@(doc.Status == "Folder")" Tooltip="Download" />
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall" />
+                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" 
+                                               Click="@(() => DeleteDocument(doc))" Tooltip="Delete" />
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem="Document" Width="60px" Sortable="false" Filterable="false">
+                            <Template Context="doc">
+                                @if(doc.CommentsList?.Any() == true)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@doc.CommentsList.Count.ToString()" />
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenStack>
+
