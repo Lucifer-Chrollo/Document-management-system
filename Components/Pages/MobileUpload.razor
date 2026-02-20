@@ -301,7 +301,17 @@
 
     private void HandleFileSelected(InputFileChangeEventArgs e)
     {
-        selectedFiles = e.GetMultipleFiles(10).ToList();
+        var incomingFiles = e.GetMultipleFiles(10).ToList();
+        
+        // Prevent adding duplicates by name or exceeding max session limit
+        foreach (var file in incomingFiles)
+        {
+            if (!selectedFiles.Any(f => f.Name == file.Name) && 
+                (selectedFiles.Count + (session?.FilesUploaded ?? 0)) < (session?.MaxFiles ?? 10))
+            {
+                selectedFiles.Add(file);
+            }
+        }
         uploadError = "";
         StateHasChanged();
     }
@@ -343,20 +353,33 @@
                         Status = "Active"
                     };
 
-                    await DocumentService.CreateAsync(document, ms);
+                    var response = await DocumentService.CreateAsync(document, ms);
+                    if (!response.Result)
+                    {
+                        uploadError += $"Error uploading {file.Name}: {response.Message}\n";
+                        continue; // Skip incrementing file count for failed document
+                    }
+
                     await UploadSessionService.IncrementFileCountAsync(Token);
                     uploadedCount++;
                 }
                 catch (Exception ex)
                 {
-                    uploadError = $"Error uploading {file.Name}: {ex.Message}";
+                    // Accumulate errors instead of an outright crash for all files
+                    uploadError += $"Error uploading {file.Name}: {ex.Message}\n";
                 }
             }
 
             if (uploadedCount > 0)
             {
-                uploadSuccess = true;
-                selectedFiles.Clear();
+                if (string.IsNullOrEmpty(uploadError)) {
+                    uploadSuccess = true;
+                    selectedFiles.Clear();
+                } else {
+                    // Remove successfully uploaded files from the list so they aren't retried
+                    selectedFiles.RemoveAll(f => !uploadError.Contains(f.Name));
+                }
+                
                 await LoadSession(); // Refresh counts
             }
         }

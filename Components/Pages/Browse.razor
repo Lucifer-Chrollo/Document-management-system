@@ -214,6 +214,11 @@
                                                Click="@(() => PreviewDocument(doc))" Disabled="@(doc.Status == "Folder")" Tooltip="Preview" />
                                 <RadzenButton Icon="download" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.ExtraSmall" 
                                                Click="@(() => DownloadDocument(doc))" Disabled="@(doc.Status == "Folder")" Tooltip="Download" />
+                                <RadzenButton Icon="share" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.ExtraSmall" 
+                                              Click="@(() => OnShareDocument(doc))" 
+                                              @onclick:stopPropagation="true" 
+                                              Title="Share with Group" 
+                                              Disabled="@(doc.Status == "Folder")" />
                                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall" />
                                 <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" 
                                                Click="@(() => DeleteDocument(doc))" Tooltip="Delete" />

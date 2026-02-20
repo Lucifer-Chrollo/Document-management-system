@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
+using Radzen.Blazor;
 using DocumentManagementSystem.Models;
 using DocumentManagementSystem.Services;
 using DocumentManagementSystem.Helpers;
@@ -21,6 +22,9 @@ public partial class Upload
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     [Inject] private NotificationService NotificationService { get; set; } = default!;
     [Inject] private AuthenticationStateProvider AuthenticationStateProvider { get; set; } = default!;
+    [Inject] private IUserGroupService UserGroupService { get; set; } = default!;
+
+    private RadzenDataGrid<UserDocumentRights> rightsGrid = default!;
 
     private Document documentMetadata = new Document { UploadedDate = DateTime.Now };
     private List<IBrowserFile> selectedFiles = new();
@@ -95,12 +99,7 @@ public partial class Upload
             // Rights = 7 means (1 + 2 + 4), i.e., Read + Write + Delete (Full Access).
             // "Power" is a default placeholder user created here to ensure someone always has full control.
             // ====================================================================================
-            documentMetadata.UserDocumentRightsList.Add(new UserDocumentRights
-            {
-                UserName = "Power",
-                RightsName = "Read,Write,Delete",
-                Rights = 7 
-            });
+            // No default permissions added initially.
 
             await InvokeAsync(StateHasChanged);
         }
@@ -140,10 +139,10 @@ public partial class Upload
     }
 
     /// <summary>
-    /// Adds a user or group permission to the document metadata.
+    /// Adds a user or expands a group into individual users for the document metadata.
     /// Constructs the 'Rights' integer by combining selected checkboxes.
     /// </summary>
-    private void AddUserRight()
+    private async Task AddUserRight()
     {
         if (string.IsNullOrWhiteSpace(userSearch))
         {
@@ -165,15 +164,68 @@ public partial class Upload
             return;
         }
 
-        // Add to the list
-        documentMetadata.UserDocumentRightsList.Add(new UserDocumentRights
+        if (useGroups)
         {
-            UserName = userSearch,
-            RightsName = string.Join(", ", rightsList),
-            Rights = calculatedRights,
-            UserId = useGroups ? 0 : -1,
-            GroupId = useGroups ? -1 : null
-        });
+            try
+            {
+                // Fetch all groups matching the search string (case-insensitive)
+                var allGroups = await UserGroupService.GetAllGroupsAsync();
+                var targetGroup = allGroups.FirstOrDefault(g => g.GroupName.Equals(userSearch, StringComparison.OrdinalIgnoreCase));
+
+                if (targetGroup == null)
+                {
+                    NotificationService.Notify(NotificationSeverity.Error, "Not Found", $"Could not find a group named '{userSearch}'.");
+                    return;
+                }
+
+                // Expand the group into individual users
+                var members = await UserGroupService.GetGroupMembersDetailedAsync(targetGroup.GroupId);
+                
+                if (!members.Any())
+                {
+                    NotificationService.Notify(NotificationSeverity.Warning, "Empty Group", $"The group '{targetGroup.GroupName}' has no members.");
+                    return;
+                }
+
+                int addedCount = 0;
+                foreach (var member in members)
+                {
+                    // Prevent duplicate user entries
+                    if (!documentMetadata.UserDocumentRightsList.Any(r => r.UserId == member.UserId))
+                    {
+                        documentMetadata.UserDocumentRightsList.Add(new UserDocumentRights
+                        {
+                            UserName = !string.IsNullOrWhiteSpace(member.UserName) ? member.UserName.Trim() : member.Email ?? $"User {member.UserId}",
+                            RightsName = string.Join(", ", rightsList),
+                            Rights = calculatedRights,
+                            UserId = member.UserId,
+                            GroupId = null 
+                        });
+                        addedCount++;
+                    }
+                }
+                
+                NotificationService.Notify(NotificationSeverity.Success, "Group Expanded", $"Added {addedCount} members from group '{targetGroup.GroupName}'.");
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Error", $"Failed to expand group: {ex.Message}");
+                return;
+            }
+        }
+        else
+        {
+            // Legacy single user behavior
+            documentMetadata.UserDocumentRightsList.Add(new UserDocumentRights
+            {
+                UserName = userSearch,
+                RightsName = string.Join(", ", rightsList),
+                Rights = calculatedRights,
+                UserId = 0, // Placeholder if no explicit lookup is done
+                GroupId = null
+            });
+            NotificationService.Notify(NotificationSeverity.Info, "Success", $"Added sharing rights for {documentMetadata.UserDocumentRightsList.Last().UserName}");
+        }
 
         // Reset inputs
         userSearch = string.Empty;
@@ -181,13 +233,19 @@ public partial class Upload
         
         // Force UI update
         StateHasChanged();
-        
-        NotificationService.Notify(NotificationSeverity.Info, "Success", $"Added sharing rights for {documentMetadata.UserDocumentRightsList.Last().UserName}");
+        if (rightsGrid != null)
+        {
+            await rightsGrid.Reload();
+        }
     }
 
-    private void RemoveUserRight(UserDocumentRights right)
+    private async Task RemoveUserRight(UserDocumentRights right)
     {
         documentMetadata.UserDocumentRightsList.Remove(right);
+        if (rightsGrid != null)
+        {
+            await rightsGrid.Reload();
+        }
     }
 
     /// <summary>

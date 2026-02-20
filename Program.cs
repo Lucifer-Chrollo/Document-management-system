@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Practices.EnterpriseLibrary.Data;
 using Microsoft.Practices.EnterpriseLibrary.Data.Sql;
 using Radzen;
+using Fluxor;
+using Fluxor.Blazor.Web.ReduxDevTools;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +77,7 @@ builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<ISearchService, LuceneSearchService>();
 builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IUserGroupService, UserGroupService>();
 builder.Services.AddSingleton<IMfaService, MfaService>();
 builder.Services.AddScoped<IUploadSessionService, UploadSessionService>();
 builder.Services.AddScoped<IAutoCategorizationService, AutoCategorizationService>();
@@ -82,6 +85,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IBatchService, BatchService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IDocumentConversionService, DocumentConversionService>();
 builder.Services.AddHttpContextAccessor();
 
 // Add session support for MFA
@@ -99,9 +103,26 @@ builder.Services.AddSession(options =>
 // Add controllers for API endpoints
 builder.Services.AddControllers();
 
-// Add Razor Components
+// Add Interactive Server Components
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents(options =>
+    {
+        options.DetailedErrors = true;
+        // Increase SignalR message size to 100MB to allow large InputFile streams to pass through
+        options.RootComponents.MaxJSRootComponents = 100;
+        options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(5);
+    })
+    .AddHubOptions(options =>
+    {
+        options.MaximumReceiveMessageSize = 100 * 1024 * 1024; // 100MB 
+    });
+
+// Add Fluxor State Management
+builder.Services.AddFluxor(options =>
+{
+    options.ScanAssemblies(typeof(Program).Assembly);
+    options.UseReduxDevTools();
+});
 
 // Add HTTP context accessor
 builder.Services.AddHttpContextAccessor();

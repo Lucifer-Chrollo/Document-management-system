@@ -23,10 +23,10 @@ public class UserGroupService : IUserGroupService
     public async Task<IEnumerable<UserGroup>> GetAllGroupsAsync()
     {
         var sql = @"
-            SELECT g.*, u.FName + ' ' + u.LName as CreatorName,
+            SELECT g.*, COALESCE(u.FirstName, '') + ' ' + COALESCE(u.LastName, '') as CreatorName,
                    (SELECT COUNT(1) FROM UserGroupMembers WHERE GroupId = g.GroupId) as MemberCount
             FROM UserGroups g
-            LEFT JOIN Users u ON g.CreatedBy = u.UserID
+            LEFT JOIN Users u ON g.CreatedBy = u.Id
             ORDER BY g.GroupName";
         
         DbCommand command = _db.GetSqlStringCommand(sql);
@@ -42,10 +42,10 @@ public class UserGroupService : IUserGroupService
     public async Task<UserGroup?> GetGroupByIdAsync(int groupId)
     {
         var sql = @"
-            SELECT g.*, u.FName + ' ' + u.LName as CreatorName,
+            SELECT g.*, COALESCE(u.FirstName, '') + ' ' + COALESCE(u.LastName, '') as CreatorName,
                    (SELECT COUNT(1) FROM UserGroupMembers WHERE GroupId = g.GroupId) as MemberCount
             FROM UserGroups g
-            LEFT JOIN Users u ON g.CreatedBy = u.UserID
+            LEFT JOIN Users u ON g.CreatedBy = u.Id
             WHERE g.GroupId = @GroupId";
         
         DbCommand command = _db.GetSqlStringCommand(sql);
@@ -62,9 +62,9 @@ public class UserGroupService : IUserGroupService
     public async Task<IEnumerable<DmsUser>> GetUsersInGroupAsync(int groupId)
     {
         var sql = @"
-            SELECT u.* 
+            SELECT u.Id as UserID, u.UserName as LoginName, u.FirstName as FName, u.LastName as LName, u.Email 
             FROM Users u
-            INNER JOIN UserGroupMembers gm ON u.UserID = gm.UserId
+            INNER JOIN UserGroupMembers gm ON u.Id = gm.UserId
             WHERE gm.GroupId = @GroupId";
 
         DbCommand command = _db.GetSqlStringCommand(sql);
@@ -82,9 +82,9 @@ public class UserGroupService : IUserGroupService
     public async Task<IEnumerable<UserGroupMember>> GetGroupMembersDetailedAsync(int groupId)
     {
         var sql = @"
-            SELECT gm.*, u.FName + ' ' + u.LName as UserName, u.LoginName as Email
+            SELECT gm.*, u.UserName as UserName, u.Email as Email
             FROM UserGroupMembers gm
-            INNER JOIN Users u ON gm.UserId = u.UserID
+            INNER JOIN Users u ON gm.UserId = u.Id
             WHERE gm.GroupId = @GroupId";
 
         DbCommand command = _db.GetSqlStringCommand(sql);
@@ -119,12 +119,34 @@ public class UserGroupService : IUserGroupService
         return list;
     }
 
+    public async Task<IEnumerable<UserGroup>> GetGroupsCreatedByUserAsync(int userId)
+    {
+        var sql = @"
+            SELECT g.*, COALESCE(u.FirstName, '') + ' ' + COALESCE(u.LastName, '') as CreatorName,
+                   (SELECT COUNT(1) FROM UserGroupMembers WHERE GroupId = g.GroupId) as MemberCount
+            FROM UserGroups g
+            LEFT JOIN Users u ON g.CreatedBy = u.Id
+            WHERE g.CreatedBy = @UserId
+            ORDER BY g.GroupName";
+
+        DbCommand command = _db.GetSqlStringCommand(sql);
+        _db.AddInParameter(command, "@UserId", DbType.Int32, userId);
+
+        var list = new List<UserGroup>();
+        using var reader = _db.ExecuteReader(command);
+        while (reader.Read())
+        {
+            list.Add(MapUserGroup(reader));
+        }
+        return list;
+    }
+
     public async Task<IEnumerable<ApplicationUser>> SearchUsersAsync(string searchTerm)
     {
         var sql = @"
-            SELECT UserID as Id, LoginName as UserName, FName as FirstName, LName as LastName
+            SELECT Id, UserName, FirstName, LastName
             FROM Users
-            WHERE FName LIKE @Term OR LName LIKE @Term OR LoginName LIKE @Term";
+            WHERE FirstName LIKE @Term OR LastName LIKE @Term OR UserName LIKE @Term OR Email LIKE @Term";
         
         DbCommand command = _db.GetSqlStringCommand(sql);
         _db.AddInParameter(command, "@Term", DbType.String, $"%{searchTerm}%");

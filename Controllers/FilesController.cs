@@ -10,11 +10,13 @@ namespace DocumentManagementSystem.Controllers;
 public class FilesController : ControllerBase
 {
     private readonly IDocumentService _documentService;
+    private readonly IDocumentConversionService _conversionService;
     private readonly ILogger<FilesController> _logger;
 
-    public FilesController(IDocumentService documentService, ILogger<FilesController> logger)
+    public FilesController(IDocumentService documentService, IDocumentConversionService conversionService, ILogger<FilesController> logger)
     {
         _documentService = documentService;
+        _conversionService = conversionService;
         _logger = logger;
     }
 
@@ -23,25 +25,47 @@ public class FilesController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("Preview requested for document ID: {Id}", id);
+            
             var document = await _documentService.GetByIdAsync(id);
             if (document == null)
             {
-                return NotFound();
+                _logger.LogWarning("Preview: Document {Id} not found by GetByIdAsync", id);
+                return NotFound($"Document {id} not found");
             }
+
+            _logger.LogInformation("Preview: Document found - Name: {Name}, Extension: {Ext}, Path: {Path}", 
+                document.DocumentName, document.Extension, document.Path);
 
             var stream = await _documentService.DownloadAsync(id);
             if (stream == null)
             {
-                return NotFound();
+                _logger.LogWarning("Preview: DownloadAsync returned null for document {Id}", id);
+                return NotFound($"File content not available for document {id}");
             }
 
             var contentType = document.FileType ?? "application/octet-stream";
             var ext = document.Extension?.ToLowerInvariant() ?? "";
 
+            // Convert Word documents to PDF for inline preview
+            if (_conversionService.CanConvertToPreview(ext))
+            {
+                _logger.LogInformation("Preview: Converting {Ext} to PDF for document {Id}", ext, id);
+                var pdfStream = await _conversionService.ConvertWordToPdfAsync(stream, ext);
+                if (pdfStream != null)
+                {
+                    await stream.DisposeAsync();
+                    Response.Headers.Append("Content-Disposition", $"inline; filename=\"{Path.GetFileNameWithoutExtension(document.DocumentName)}.pdf\"");
+                    return File(pdfStream, "application/pdf");
+                }
+            }
+
             // Override Content-Type for known previewable types to ensure browser handling
             if (ext == ".pdf") contentType = "application/pdf";
             else if (ext == ".jpg" || ext == ".jpeg") contentType = "image/jpeg";
             else if (ext == ".png") contentType = "image/png";
+            else if (ext == ".gif") contentType = "image/gif";
+            else if (ext == ".webp") contentType = "image/webp";
             else if (ext == ".txt") contentType = "text/plain";
             
             // Force inline disposition
@@ -52,9 +76,10 @@ public class FilesController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error serving file preview for document {Id}", id);
-            return StatusCode(500, "Internal server error");
+            return StatusCode(500, $"Preview error: {ex.Message}");
         }
     }
+
     [HttpGet("download/{id}")]
     public async Task<IActionResult> GetDownload(int id)
     {

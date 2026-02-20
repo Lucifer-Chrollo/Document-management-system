@@ -1,0 +1,32 @@
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(25,21): error CS1003: Syntax error, ',' expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(25,22): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(25,23): error CS1525: Invalid expression term ',' [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(25,23): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(25,23): error CS1513: } expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(25,47): error CS1011: Empty character literal [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(25,80): error CS1011: Empty character literal [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(25,98): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(25,98): error CS1513: } expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(26,28): error CS1026: ) expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(26,28): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(26,37): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(26,59): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(26,84): error CS1003: Syntax error, ',' expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(26,86): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(26,86): error CS1525: Invalid expression term 'as' [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(26,100): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(27,29): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(28,18): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(28,29): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(28,34): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(28,52): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(29,22): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(29,33): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(29,33): error CS1010: Newline in constant [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Services\UserGroupService.cs(29,35): error CS1002: ; expected [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+
+Build FAILED.
+    12 Warning(s)
+    26 Error(s)
+
+Time Elapsed 00:00:02.48

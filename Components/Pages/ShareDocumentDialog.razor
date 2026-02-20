@@ -1,0 +1,48 @@
+@using Radzen
+@using Radzen.Blazor
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+@inject IUserGroupService UserGroupService
+@inject DialogService DialogService
+
+<RadzenStack Gap="1.5rem">
+    <RadzenText TextStyle="TextStyle.Body1">Share <b>@DocumentName</b> with a group:</RadzenText>
+
+    <RadzenFormField Text="Select Group" Variant="Variant.Outlined" Style="width: 100%;">
+        <RadzenDropDown TValue="int" Data="@groups" TextProperty="GroupName" ValueProperty="GroupId" @bind-Value="@selectedGroupId" />
+    </RadzenFormField>
+
+    <RadzenText TextStyle="TextStyle.Subtitle2">Permissions for this Group</RadzenText>
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+        <RadzenSelectBar @bind-Value="@rights" TValue="int">
+            <Items>
+                <RadzenSelectBarItem Text="Read Only" Value="1" />
+                <RadzenSelectBarItem Text="Read/Write" Value="3" />
+                <RadzenSelectBarItem Text="Full Control" Value="7" />
+            </Items>
+        </RadzenSelectBar>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+        <RadzenButton Text="Cancel" Click="@(() => DialogService.Close(null))" ButtonStyle="ButtonStyle.Light" />
+        <RadzenButton Text="Share" Click="@OnShare" ButtonStyle="ButtonStyle.Primary" Disabled="@(selectedGroupId == 0)" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter] public string DocumentName { get; set; } = "";
+    
+    private IEnumerable<UserGroup> groups = Enumerable.Empty<UserGroup>();
+    private int selectedGroupId;
+    private int rights = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        groups = await UserGroupService.GetAllGroupsAsync();
+    }
+
+    private void OnShare()
+    {
+        DialogService.Close(new { GroupId = selectedGroupId, Rights = rights });
+    }
+}

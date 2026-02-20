@@ -1,0 +1,45 @@
+@using Radzen
+@using Radzen.Blazor
+@using DocumentManagementSystem.Models
+@inject DialogService DialogService
+
+<RadzenTemplateForm TItem="UserGroup" Data="@group" Submit="@OnSubmit">
+    <RadzenStack Gap="1.5rem">
+        <RadzenFormField Text="Group Name" Variant="Variant.Outlined">
+            <RadzenTextBox @bind-Value="@group.GroupName" Name="GroupName" Style="width: 100%;" />
+            <RadzenRequiredValidator Component="GroupName" Text="Group name is required" />
+        </RadzenFormField>
+
+        <RadzenText TextStyle="TextStyle.Subtitle2">Default Permissions</RadzenText>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+            <RadzenCheckBox @bind-Value="@canRead" Name="Read" TValue="bool" />
+            <RadzenLabel Text="Read" Component="Read" />
+            
+            <RadzenCheckBox @bind-Value="@canWrite" Name="Write" TValue="bool" />
+            <RadzenLabel Text="Write" Component="Write" />
+            
+            <RadzenCheckBox @bind-Value="@canDelete" Name="Delete" TValue="bool" />
+            <RadzenLabel Text="Delete" Component="Delete" />
+        </RadzenStack>
+
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+            <RadzenButton Text="Cancel" Click="@(() => DialogService.Close(null))" ButtonStyle="ButtonStyle.Light" />
+            <RadzenButton Text="Create" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    private UserGroup group = new();
+    private bool canRead = true;
+    private bool canWrite = false;
+    private bool canDelete = false;
+
+    private void OnSubmit(UserGroup model)
+    {
+        model.CanRead = canRead ? 1 : 0;
+        model.CanWrite = canWrite ? 1 : 0;
+        model.CanDelete = canDelete ? 1 : 0;
+        DialogService.Close(model);
+    }
+}

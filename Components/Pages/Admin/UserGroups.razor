@@ -1,43 +1,63 @@
-@page "/admin/groups"
+@page "/groups"
 @using Radzen
 @using Radzen.Blazor
 @using DocumentManagementSystem.Models
 @using DocumentManagementSystem.Services
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IUserGroupService UserGroupService
 @inject NotificationService NotificationService
 @inject DialogService DialogService
+@inject AuthenticationStateProvider AuthStateProvider
+@* @attribute [Authorize(Roles = "Admin")] - Removed so any user can access groups *@
 
 <RadzenStack Gap="1rem" Style="padding: 2rem;">
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
-        <RadzenText TextStyle="TextStyle.H4">User Groups</RadzenText>
-        <RadzenButton Text="Create New Group" Icon="add_circle" Click="@OnCreateGroup" ButtonStyle="ButtonStyle.Primary" />
+    <!-- Header Area -->
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+        <RadzenIcon Icon="group" Style="font-size: 1.5rem;" />
+        <RadzenText TextStyle="TextStyle.H5" class="m-0" Style="color: #2b5797;">Manage User Groups</RadzenText>
     </RadzenStack>
 
-    <RadzenDataGrid Data="@groups" TItem="UserGroup" IsLoading="@isLoading" AllowFiltering="true" AllowSorting="true">
+    <hr style="border-top: 2px solid #e0e0e0; margin: 0;" />
+
+    <!-- Inline Add New Group Form -->
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" class="mt-2 mb-3">
+        <RadzenIcon Icon="add" Style="font-size: 1.8rem; color: #0078d4; font-weight: bold;" />
+        <RadzenText TextStyle="TextStyle.H6" class="m-0" Style="color: #0078d4; font-weight: bold;">Add New Group</RadzenText>
+        
+        <RadzenTextBox @bind-Value="newGroupName" Placeholder="" Style="width: 250px; border: 1px solid #ccc; border-radius: 0;" />
+        
+        <RadzenButton Text="Add" Click="@OnAddGroup" Disabled="@string.IsNullOrWhiteSpace(newGroupName)" 
+                      ButtonStyle="ButtonStyle.Light" Style="border: 1px solid #aaa; border-radius: 0; padding: 0 20px; color: #333;" />
+    </RadzenStack>
+
+    <!-- Data Grid -->
+    <RadzenDataGrid Data="@groups" TItem="UserGroup" IsLoading="@isLoading"
+                    Style="border: 1px solid #ccc; border-radius: 0;"
+                    AllowColumnResize="true" AllowSorting="true">
         <Columns>
+            <RadzenDataGridColumn TItem="UserGroup" Property="GroupId" Title="Index" Width="80px" />
             <RadzenDataGridColumn TItem="UserGroup" Property="GroupName" Title="Group Name" />
-            <RadzenDataGridColumn TItem="UserGroup" Property="CanRead" Title="Read">
+            <RadzenDataGridColumn TItem="UserGroup" Title="Allowed Permissions">
                 <Template Context="group">
-                    <RadzenBadge BadgeStyle="group.CanRead == 1 ? BadgeStyle.Success : BadgeStyle.Light" Text="@(group.CanRead == 1 ? "Yes" : "No")" />
+                    @{
+                        var perms = new List<string>();
+                        if (group.CanRead == 1) perms.Add("Read");
+                        if (group.CanWrite == 1) perms.Add("Write");
+                        if (group.CanDelete == 1) perms.Add("Delete");
+                        
+                        // Handle legacy "Full Control" visualization if needed, or just comma-separated
+                        var displayContent = perms.Count == 3 ? "Full Control" : string.Join(", ", perms);
+                        <RadzenText TextStyle="TextStyle.Body2" class="m-0">@displayContent</RadzenText>
+                    }
                 </Template>
             </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="UserGroup" Property="CanWrite" Title="Write">
+            <RadzenDataGridColumn TItem="UserGroup" Property="MemberCount" Title="Total Users" Width="120px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn TItem="UserGroup" Title="Action" Width="120px" TextAlign="TextAlign.Center" Sortable="false">
                 <Template Context="group">
-                    <RadzenBadge BadgeStyle="group.CanWrite == 1 ? BadgeStyle.Success : BadgeStyle.Light" Text="@(group.CanWrite == 1 ? "Yes" : "No")" />
-                </Template>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="UserGroup" Property="CanDelete" Title="Delete">
-                <Template Context="group">
-                    <RadzenBadge BadgeStyle="group.CanDelete == 1 ? BadgeStyle.Success : BadgeStyle.Light" Text="@(group.CanDelete == 1 ? "Yes" : "No")" />
-                </Template>
-            </RadzenDataGridColumn>
-            <RadzenDataGridColumn TItem="UserGroup" Property="MemberCount" Title="Members" />
-            <RadzenDataGridColumn TItem="UserGroup" Title="Actions" Width="150px" Sortable="false" Filterable="false">
-                <Template Context="group">
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Click="@(() => OnEditGroup(group))" />
-                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Click="@(() => OnDeleteGroup(group))" />
-                    </RadzenStack>
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" 
+                                  Click="@(() => OnEditGroup(group))" Style="color: #0078d4; background: transparent;" Tooltip="Edit Group Users & Permissions" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" 
+                                  Click="@(() => OnDeleteGroup(group))" Style="color: #d32f2f; background: transparent; font-weight: bold;" Tooltip="Delete Group" />
                 </Template>
             </RadzenDataGridColumn>
         </Columns>
@@ -47,45 +67,73 @@
 @code {
     private IEnumerable<UserGroup> groups = Enumerable.Empty<UserGroup>();
     private bool isLoading = true;
+    private int currentUserId;
+    private string newGroupName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var idClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            int.TryParse(idClaim?.Value, out currentUserId);
+        }
         await LoadGroups();
     }
 
     private async Task LoadGroups()
     {
         isLoading = true;
-        try
-        {
-            groups = await UserGroupService.GetAllGroupsAsync();
-        }
-        finally
-        {
-            isLoading = false;
-        }
+        try { groups = await UserGroupService.GetGroupsCreatedByUserAsync(currentUserId); }
+        finally { isLoading = false; }
     }
 
-    private async Task OnCreateGroup()
+    private async Task OnAddGroup()
     {
-        // Simple placeholder for dialog or redirect
-        NotificationService.Notify(NotificationSeverity.Info, "Info", "Group creation dialog not yet implemented.");
+        if (string.IsNullOrWhiteSpace(newGroupName)) return;
+
+        var newGroup = new UserGroup 
+        { 
+            GroupName = newGroupName.Trim(),
+            // Default to no permissions as per UI flow (can be configured in Edit dialog)
+            CanRead = 0,
+            CanWrite = 0,
+            CanDelete = 0
+        };
+
+        var response = await UserGroupService.CreateGroupAsync(newGroup, currentUserId);
+        if (response.Result)
+        {
+            NotificationService.Notify(NotificationSeverity.Success, "Success", "Group created successfully.");
+            newGroupName = string.Empty; // clear input
+            await LoadGroups();
+        }
+        else
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
+        }
     }
 
     private async Task OnEditGroup(UserGroup group)
     {
-        NotificationService.Notify(NotificationSeverity.Info, "Info", $"Editing group {group.GroupName} not yet implemented.");
+        var result = await DialogService.OpenAsync<GroupUsersDialog>("Group Users", 
+            new Dictionary<string, object> { { "GroupId", group.GroupId }, { "currentUserId", currentUserId } },
+            new DialogOptions() { Width = "700px", Height = "500px", Resizable = true, Draggable = true });
+        
+        // Reload in case permissions or counts changed
+        await LoadGroups();
     }
 
     private async Task OnDeleteGroup(UserGroup group)
     {
-        var confirmed = await DialogService.Confirm($"Delete group '{group.GroupName}'?", "Delete Group");
+        var confirmed = await DialogService.Confirm($"Delete group '{group.GroupName}'?", "Confirm Delete");
         if (confirmed == true)
         {
-            var response = await UserGroupService.DeleteGroupAsync(group.GroupId, 0); // UserID 0 for system
+            var response = await UserGroupService.DeleteGroupAsync(group.GroupId, currentUserId);
             if (response.Result)
             {
-                NotificationService.Notify(NotificationSeverity.Success, "Deleted", "Group deleted successfully.");
+                NotificationService.Notify(NotificationSeverity.Success, "Deleted", "Group removed successfully.");
                 await LoadGroups();
             }
             else

@@ -123,9 +123,9 @@ public class UploadSessionService : IUploadSessionService
 
     private const string SQL_UPDATE_SESSION = @"
         UPDATE UploadSessions 
-        SET IsActive = CASE WHEN @Verified = 1 THEN 1 ELSE IsActive END,
-            IpAddress = CASE WHEN @Verified = 1 THEN @IpAddress ELSE IpAddress END,
-            LastAccess = @Now
+        SET IsPinVerified = CASE WHEN @Verified = 1 THEN 1 ELSE IsPinVerified END,
+            UploaderIpAddress = CASE WHEN @Verified = 1 THEN @UploaderIpAddress ELSE UploaderIpAddress END,
+            LastAccessedAt = @Now
         WHERE Token = @Token";
 
     private const string SQL_INCREMENT_FAILED = "UPDATE UploadSessions SET FailedAttempts = FailedAttempts + 1 WHERE Token = @Token";
@@ -402,7 +402,7 @@ public class UploadSessionService : IUploadSessionService
         using var command = new SqlCommand(SQL_UPDATE_SESSION, connection);
         command.Parameters.Add("@Token", SqlDbType.NVarChar).Value = token;
         command.Parameters.Add("@Verified", SqlDbType.Bit).Value = verified;
-        command.Parameters.Add("@IpAddress", SqlDbType.NVarChar).Value = (object?)ipAddress ?? DBNull.Value;
+        command.Parameters.Add("@UploaderIpAddress", SqlDbType.NVarChar).Value = (object?)ipAddress ?? DBNull.Value;
         command.Parameters.Add("@Now", SqlDbType.DateTime).Value = DateTime.UtcNow;
 
         command.ExecuteNonQuery();

@@ -104,8 +104,27 @@ public class DocumentService : IDocumentService
             var doc = await _documentRepository.GetByIdAsync(id);
             if (doc != null)
             {
-                doc.UserDocumentRightsList = (await _documentRepository.GetRightsAsync(id)).ToList();
-                doc.CommentsList = (await _commentService.GetByDocumentIdAsync(id)).ToList();
+                // Load rights - non-fatal if it fails
+                try
+                {
+                    doc.UserDocumentRightsList = (await _documentRepository.GetRightsAsync(id)).ToList();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to load rights for document {Id}, continuing without them", id);
+                    doc.UserDocumentRightsList = new List<UserDocumentRights>();
+                }
+
+                // Load comments - non-fatal if it fails
+                try
+                {
+                    doc.CommentsList = (await _commentService.GetByDocumentIdAsync(id)).ToList();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to load comments for document {Id}, continuing without them", id);
+                    doc.CommentsList = new List<Models.Comments>();
+                }
             }
             return doc;
         }
@@ -828,19 +847,50 @@ public class DocumentService : IDocumentService
         try 
         {
              var doc = await GetByIdAsync(id);
-             if (doc == null) return null;
-             var compressedStream = await _storageService.GetAsync(doc.Path);
-             if (compressedStream == null) return null;
+             if (doc == null)
+             {
+                 _logger.LogWarning("DownloadAsync: GetByIdAsync returned null for document {Id}", id);
+                 return null;
+             }
+             
+             _logger.LogInformation("DownloadAsync: Document {Id} found. Path={Path}, Compression={Comp}", 
+                 id, doc.Path, doc.CompressionAlgorithm);
+             
+             var storageStream = await _storageService.GetAsync(doc.Path);
+             if (storageStream == null) 
+             {
+                 _logger.LogWarning("DownloadAsync: StorageService.GetAsync returned null for path '{Path}'", doc.Path);
+                 return null;
+             }
+             
+             // Buffer into a seekable MemoryStream if the storage returns a non-seekable stream
+             // (e.g. CryptoStream from encrypted .enc files). Decompression requires seeking.
+             Stream seekableStream;
+             if (!storageStream.CanSeek)
+             {
+                 var ms = new MemoryStream();
+                 await storageStream.CopyToAsync(ms);
+                 ms.Position = 0;
+                 await storageStream.DisposeAsync();
+                 seekableStream = ms;
+                 _logger.LogInformation("DownloadAsync: Buffered non-seekable stream to MemoryStream, {Len} bytes", ms.Length);
+             }
+             else
+             {
+                 seekableStream = storageStream;
+                 _logger.LogInformation("DownloadAsync: Got seekable stream from storage");
+             }
              
              await _auditService.LogAsync(AuditAction.Download, id, doc.DocumentName);
              
              // Logic: If Brotli/Gzip was used, decompress on-the-fly for the user.
              if (!string.IsNullOrEmpty(doc.CompressionAlgorithm) && doc.CompressionAlgorithm != "None")
              {
-                 return await _compressionService.DecompressAsync(compressedStream, doc.CompressionAlgorithm);
+                 _logger.LogInformation("DownloadAsync: Decompressing with {Algo}", doc.CompressionAlgorithm);
+                 return await _compressionService.DecompressAsync(seekableStream, doc.CompressionAlgorithm);
              }
              
-             return compressedStream;
+             return seekableStream;
         }
         catch (Exception ex)
         {

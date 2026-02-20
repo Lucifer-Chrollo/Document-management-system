@@ -14,7 +14,7 @@
 </RadzenStack>
 
 @code {
-    private string categoryName = string.Empty;
+    [Parameter] public string categoryName { get; set; } = string.Empty;
 
     private void OnSave()
     {

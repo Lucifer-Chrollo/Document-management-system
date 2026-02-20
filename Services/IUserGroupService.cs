@@ -16,6 +16,7 @@ public interface IUserGroupService
     Task<IEnumerable<DmsUser>> GetUsersInGroupAsync(int groupId);
     Task<IEnumerable<UserGroupMember>> GetGroupMembersDetailedAsync(int groupId);
     Task<IEnumerable<UserGroup>> GetGroupsForUserAsync(int userId);
+    Task<IEnumerable<UserGroup>> GetGroupsCreatedByUserAsync(int userId);
     Task<IEnumerable<ApplicationUser>> SearchUsersAsync(string searchTerm);
 
     // Write Operations (return iFishResponse)

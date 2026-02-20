@@ -3,6 +3,7 @@ using Microsoft.JSInterop;
 using Radzen;
 using DocumentManagementSystem.Models;
 using DocumentManagementSystem.Services;
+using DocumentManagementSystem.Data.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,6 +17,7 @@ public partial class Browse : Fluxor.Blazor.Web.Components.FluxorComponent, IDis
     [Inject] private NotificationService NotificationService { get; set; } = default!;
     [Inject] private DialogService DialogService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] private IDocumentRepository DocumentRepository { get; set; } = default!;
 
     [Parameter] public int? CategoryId { get; set; }
     [Parameter] public int? ParentId { get; set; }
@@ -213,7 +215,17 @@ public partial class Browse : Fluxor.Blazor.Web.Components.FluxorComponent, IDis
 
     private async Task PreviewDocument(Document doc)
     {
-        await JSRuntime.InvokeVoidAsync("open", $"/api/files/preview/{doc.DocumentId}", "_blank");
+        await DialogService.OpenAsync<DocumentPreview>(
+            $"Preview: {doc.DocumentName}",
+            new Dictionary<string, object> { { "DocumentId", doc.DocumentId } },
+            new DialogOptions
+            {
+                Width = "90vw",
+                Height = "85vh",
+                Resizable = true,
+                Draggable = true,
+                CloseDialogOnOverlayClick = true
+            });
     }
 
     private async Task DownloadDocument(Document doc)
@@ -281,6 +293,26 @@ public partial class Browse : Fluxor.Blazor.Web.Components.FluxorComponent, IDis
             selectedDocuments.Clear();
             await LoadData();
             NotificationService.Notify(NotificationSeverity.Success, "Success", "Documents deleted.");
+        }
+    }
+
+    private async Task OnShareDocument(Document doc)
+    {
+        var result = await DialogService.OpenAsync<ShareDocumentDialog>("Share Document", 
+            new Dictionary<string, object> { { "DocumentName", doc.DocumentName } });
+
+        if (result != null)
+        {
+            try 
+            {
+                var shareData = (dynamic)result;
+                await DocumentRepository.GrantGroupAccessAsync(doc.DocumentId, shareData.GroupId, shareData.Rights);
+                NotificationService.Notify(NotificationSeverity.Success, "Shared", $"File successfully shared with the group.");
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Error", $"Could not share document: {ex.Message}");
+            }
         }
     }
 

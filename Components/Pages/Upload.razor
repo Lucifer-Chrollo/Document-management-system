@@ -127,17 +127,17 @@
                             <RadzenCheckBox @bind-Value="@useGroups" Name="UseGroups" />
                             <RadzenLabel Text="Use Groups" Component="UseGroups" />
                             
-                            <RadzenTextBox Placeholder="User Name" @bind-Value="@userSearch" Style="width: 200px;" />
+                            <RadzenTextBox Placeholder="@(useGroups ? "Group Name" : "User Name")" @bind-Value="@userSearch" Style="width: 200px;" />
                             <RadzenButton Icon="person_search" ButtonStyle="ButtonStyle.Light" />
 
                             <RadzenCheckBox @bind-Value="@canRead" Name="CanRead" /> <RadzenLabel Text="Read" Component="CanRead" />
                             <RadzenCheckBox @bind-Value="@canWrite" Name="CanWrite" /> <RadzenLabel Text="Write" Component="CanWrite" />
                             <RadzenCheckBox @bind-Value="@canDelete" Name="CanDelete" /> <RadzenLabel Text="Delete" Component="CanDelete" />
                             
-                            <RadzenButton Text="Add" ButtonStyle="ButtonStyle.Light" Click="@(args => AddUserRight())" />
+                            <RadzenButton Text="Add" ButtonStyle="ButtonStyle.Light" Click="@(async args => await AddUserRight())" />
                         </RadzenStack>
 
-                        <RadzenDataGrid Data="@documentMetadata.UserDocumentRightsList" TItem="UserDocumentRights" Density="Density.Compact" 
+                        <RadzenDataGrid @ref="rightsGrid" Data="@documentMetadata.UserDocumentRightsList" TItem="UserDocumentRights" Density="Density.Compact" 
                                         Style="height: 150px; border: 1px solid #e0e0e0;" EmptyText="No additional sharing rights defined.">
                             <Columns>
                                 <RadzenDataGridColumn TItem="UserDocumentRights" Property="UserName" Title="User / Group Name" Width="200px">
@@ -164,7 +164,7 @@
                                 <RadzenDataGridColumn TItem="UserDocumentRights" Title="Remove" Width="80px" TextAlign="TextAlign.Center">
                                     <Template Context="right">
                                         <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" 
-                                                      Click="@(() => RemoveUserRight(right))" Variant="Variant.Flat" />
+                                                      Click="@(async () => await RemoveUserRight(right))" Variant="Variant.Flat" />
                                     </Template>
                                 </RadzenDataGridColumn>
                             </Columns>
