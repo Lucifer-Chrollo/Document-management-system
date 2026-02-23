@@ -5,6 +5,7 @@
 @inject NavigationManager Navigation
 @inject NotificationService NotificationService
 @inject DialogService DialogService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Duplicate Files - DMS</PageTitle>
 
@@ -130,6 +131,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+
         await LoadDuplicates();
     }
 

@@ -57,8 +57,12 @@
                 <RadzenTextBox Placeholder="Search documents..." @bind-Value="@searchQuery" 
                                Style="width: 250px;" @onkeyup="@((e) => { if(e.Key == "Enter") Search(); })" />
                 <RadzenButton Icon="search" Click="@(args => Search())" ButtonStyle="ButtonStyle.Primary" />
-                <RadzenButton Icon="add" Text="New Document" Click="@(() => NavigationManager.NavigateTo("/upload"))" 
-                               ButtonStyle="ButtonStyle.Success" />
+                <AuthorizeView>
+                    <Authorized>
+                        <RadzenButton Icon="add" Text="New Document" Click="@(() => NavigationManager.NavigateTo("/upload"))" 
+                                       ButtonStyle="ButtonStyle.Success" />
+                    </Authorized>
+                </AuthorizeView>
             </RadzenStack>
         </RadzenStack>
     </RadzenCard>

@@ -904,6 +904,11 @@ public class DocumentService : IDocumentService
         return DownloadVersionAsync(versionId).GetAwaiter().GetResult();
     }
 
+    public Task<DocumentVersion?> GetVersionAsync(int versionId)
+    {
+        return _documentRepository.GetVersionAsync(versionId);
+    }
+
     public async Task<Stream?> DownloadVersionAsync(int versionId)
     {
         try 

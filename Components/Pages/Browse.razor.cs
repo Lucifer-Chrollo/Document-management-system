@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using Radzen;
 using DocumentManagementSystem.Models;
@@ -18,6 +19,7 @@ public partial class Browse : Fluxor.Blazor.Web.Components.FluxorComponent, IDis
     [Inject] private DialogService DialogService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
     [Inject] private IDocumentRepository DocumentRepository { get; set; } = default!;
+    [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
     [Parameter] public int? CategoryId { get; set; }
     [Parameter] public int? ParentId { get; set; }
@@ -46,7 +48,18 @@ public partial class Browse : Fluxor.Blazor.Web.Components.FluxorComponent, IDis
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        categories = await CategoryService.GetCategoriesAsync();
+
+        // Load categories scoped to current user (admin sees all)
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var isAdmin = user.Identity?.Name?.ToLower() == "admin";
+        var idClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+        if (isAdmin)
+            categories = await CategoryService.GetCategoriesAsync();
+        else if (idClaim != null && int.TryParse(idClaim.Value, out var userId))
+            categories = await CategoryService.GetCategoriesByUserAsync(userId);
+
         batchLabels = await DocumentService.GetBatchLabelsAsync();
         await LoadArchiveNodes();
     }

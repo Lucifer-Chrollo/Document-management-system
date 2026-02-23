@@ -4,6 +4,7 @@
 @inject NavigationManager NavigationManager
 @inject DialogService DialogService
 @inject NotificationService NotificationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @using DocumentManagementSystem.Models
 @using DocumentManagementSystem.Services
 
@@ -101,6 +102,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+
         await LoadData();
     }
 

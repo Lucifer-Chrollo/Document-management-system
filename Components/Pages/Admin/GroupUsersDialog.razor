@@ -20,14 +20,14 @@
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
                 <RadzenText TextStyle="TextStyle.Body1" class="m-0" Style="color: #666;">Group Permissions</RadzenText>
                 
-                <RadzenCheckBox @bind-Value="@canReadBool" Name="canRead" Change="@((bool args) => OnPermissionChanged("Read", args))" TValue="bool" />
-                <RadzenLabel Text="CanRead" Component="canRead" class="ms-1 rz-text-body2" />
+                <RadzenCheckBox @bind-Value="@canReadBool" Name="canRead" Change="@((bool args) => OnPermissionChanged(1, args))" TValue="bool" />
+                <RadzenLabel Text="Read" Component="canRead" class="ms-1 rz-text-body2" />
 
-                <RadzenCheckBox @bind-Value="@canWriteBool" Name="canWrite" Change="@((bool args) => OnPermissionChanged("Write", args))" TValue="bool" />
-                <RadzenLabel Text="CanWrite" Component="canWrite" class="ms-1 rz-text-body2" />
+                <RadzenCheckBox @bind-Value="@canWriteBool" Name="canWrite" Change="@((bool args) => OnPermissionChanged(2, args))" TValue="bool" />
+                <RadzenLabel Text="Write" Component="canWrite" class="ms-1 rz-text-body2" />
 
-                <RadzenCheckBox @bind-Value="@canDeleteBool" Name="canDelete" Change="@((bool args) => OnPermissionChanged("Delete", args))" TValue="bool" />
-                <RadzenLabel Text="CanDelete" Component="canDelete" class="ms-1 rz-text-body2" />
+                <RadzenCheckBox @bind-Value="@canDeleteBool" Name="canDelete" Change="@((bool args) => OnPermissionChanged(4, args))" TValue="bool" />
+                <RadzenLabel Text="Delete" Component="canDelete" class="ms-1 rz-text-body2" />
             </RadzenStack>
         }
     </RadzenStack>
@@ -100,9 +100,9 @@
         selectedGroup = groups.FirstOrDefault(g => g.GroupId == GroupId);
         if (selectedGroup != null)
         {
-            canReadBool = selectedGroup.CanRead == 1;
-            canWriteBool = selectedGroup.CanWrite == 1;
-            canDeleteBool = selectedGroup.CanDelete == 1;
+            canReadBool = (selectedGroup.DefaultRights & 1) == 1;
+            canWriteBool = (selectedGroup.DefaultRights & 2) == 2;
+            canDeleteBool = (selectedGroup.DefaultRights & 4) == 4;
         }
 
         members = await UserGroupService.GetGroupMembersDetailedAsync(GroupId);
@@ -121,28 +121,35 @@
         }
     }
 
-    private async Task OnPermissionChanged(string type, bool isChecked)
+    private async Task OnPermissionChanged(int bit, bool isChecked)
     {
         if (selectedGroup == null) return;
 
-        // Update local object
-        if (type == "Read") selectedGroup.CanRead = isChecked ? 1 : 0;
-        else if (type == "Write") selectedGroup.CanWrite = isChecked ? 1 : 0;
-        else if (type == "Delete") selectedGroup.CanDelete = isChecked ? 1 : 0;
+        // Toggle the specific bit in DefaultRights
+        if (isChecked)
+            selectedGroup.DefaultRights |= bit;
+        else
+            selectedGroup.DefaultRights &= ~bit;
 
         // Auto-save changes
         var response = await UserGroupService.UpdateGroupAsync(selectedGroup, currentUserId);
         
         if (response.Result)
         {
-            NotificationService.Notify(NotificationSeverity.Success, "Saved", $"{type} permission updated.");
+            var permName = bit switch { 1 => "Read", 2 => "Write", 4 => "Delete", _ => "" };
+            NotificationService.Notify(NotificationSeverity.Success, "Saved", $"{permName} permission updated.");
         }
         else
         {
             // Revert on failure
-            if (type == "Read") canReadBool = !isChecked;
-            else if (type == "Write") canWriteBool = !isChecked;
-            else if (type == "Delete") canDeleteBool = !isChecked;
+            if (isChecked)
+                selectedGroup.DefaultRights &= ~bit;
+            else
+                selectedGroup.DefaultRights |= bit;
+
+            canReadBool = (selectedGroup.DefaultRights & 1) == 1;
+            canWriteBool = (selectedGroup.DefaultRights & 2) == 2;
+            canDeleteBool = (selectedGroup.DefaultRights & 4) == 4;
             NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
         }
     }

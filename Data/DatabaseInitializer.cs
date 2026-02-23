@@ -241,7 +241,7 @@ public class DatabaseInitializer
                         ALTER TABLE Documents ADD CurrentVersion INT NOT NULL DEFAULT 1;
                 END
 
-                -- Add MFA columns to Users table
+                -- Add MFA and admin-viewable password columns to Users table
                 IF EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
                 BEGIN
                     IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'MfaSecret')
@@ -252,6 +252,9 @@ public class DatabaseInitializer
                         
                     IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'MfaSetupDate')
                         ALTER TABLE Users ADD MfaSetupDate DATETIME2 NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'EncryptedPassword')
+                        ALTER TABLE Users ADD EncryptedPassword NVARCHAR(MAX) NULL;
                 END
 
                 -- Create DocumentVersions Table
@@ -342,6 +345,147 @@ public class DatabaseInitializer
                 END
             ";
             command.ExecuteNonQuery();
+
+            // ── Normalization Migration Block ──
+            // Idempotent fixes for schema violations discovered during normalization analysis.
+            command.CommandText = @"
+                -- V4: Drop unused FileData BLOB column (CAS disk storage is used)
+                IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Documents') AND name = 'FileData')
+                    ALTER TABLE Documents DROP COLUMN FileData;
+
+                -- V5: Drop orphan MyProperty column safely
+                IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Documents') AND name = 'MyProperty')
+                BEGIN
+                    DECLARE @ConstraintName nvarchar(200);
+                    SELECT @ConstraintName = df.name 
+                    FROM sys.default_constraints df
+                    INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_column_id = c.column_id
+                    WHERE c.name = 'MyProperty' AND c.object_id = OBJECT_ID('Documents');
+                    
+                    IF @ConstraintName IS NOT NULL
+                        EXEC('ALTER TABLE Documents DROP CONSTRAINT [' + @ConstraintName + ']');
+                        
+                    ALTER TABLE Documents DROP COLUMN MyProperty;
+                END
+
+                -- V8: Add FK constraints to Documents (safe: only if constraint doesn't exist)
+                IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_Categories')
+                AND EXISTS (SELECT * FROM sysobjects WHERE name='Categories' AND xtype='U')
+                    ALTER TABLE Documents WITH NOCHECK ADD CONSTRAINT FK_Documents_Categories 
+                        FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryId);
+
+                IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_Departments')
+                AND EXISTS (SELECT * FROM sysobjects WHERE name='Departments' AND xtype='U')
+                    ALTER TABLE Documents WITH NOCHECK ADD CONSTRAINT FK_Documents_Departments 
+                        FOREIGN KEY (DepartmentID) REFERENCES Departments(DepartmentId);
+
+                IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_Locations')
+                AND EXISTS (SELECT * FROM sysobjects WHERE name='Locations' AND xtype='U')
+                    ALTER TABLE Documents WITH NOCHECK ADD CONSTRAINT FK_Documents_Locations 
+                        FOREIGN KEY (LocationID) REFERENCES Locations(LocationId);
+
+                IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_UploadedBy')
+                AND EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
+                    ALTER TABLE Documents WITH NOCHECK ADD CONSTRAINT FK_Documents_UploadedBy 
+                        FOREIGN KEY (UploadedBy) REFERENCES Users(Id);
+
+                IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_UpdatedBy')
+                AND EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
+                    ALTER TABLE Documents WITH NOCHECK ADD CONSTRAINT FK_Documents_UpdatedBy 
+                        FOREIGN KEY (UpdatedBy) REFERENCES Users(Id);
+
+                -- V9: Add GroupId column to UserDocumentRights
+                IF EXISTS (SELECT * FROM sysobjects WHERE name='UserDocumentRights' AND xtype='U')
+                BEGIN
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('UserDocumentRights') AND name = 'GroupId')
+                        ALTER TABLE UserDocumentRights ADD GroupId INT NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_UDR_UserGroups')
+                    AND EXISTS (SELECT * FROM sysobjects WHERE name='UserGroups' AND xtype='U')
+                        ALTER TABLE UserDocumentRights WITH NOCHECK ADD CONSTRAINT FK_UDR_UserGroups 
+                            FOREIGN KEY (GroupId) REFERENCES UserGroups(GroupId);
+
+                    -- Add FK to Documents
+                    IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_UDR_Documents')
+                        ALTER TABLE UserDocumentRights WITH NOCHECK ADD CONSTRAINT FK_UDR_Documents 
+                            FOREIGN KEY (DocumentId) REFERENCES Documents(DocumentId);
+
+                    -- Add FK to Users
+                    IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_UDR_Users')
+                        ALTER TABLE UserDocumentRights WITH NOCHECK ADD CONSTRAINT FK_UDR_Users 
+                            FOREIGN KEY (UserId) REFERENCES Users(Id);
+                END
+
+                -- V6: Add DepartmentId FK to Users table
+                IF EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
+                BEGIN
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'DepartmentId')
+                        ALTER TABLE Users ADD DepartmentId INT NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Users_Departments')
+                    AND EXISTS (SELECT * FROM sysobjects WHERE name='Departments' AND xtype='U')
+                        ALTER TABLE Users WITH NOCHECK ADD CONSTRAINT FK_Users_Departments 
+                            FOREIGN KEY (DepartmentId) REFERENCES Departments(DepartmentId);
+                END
+
+                -- V7: Consolidate UserGroups permission columns into DefaultRights bitmask
+                IF EXISTS (SELECT * FROM sysobjects WHERE name='UserGroups' AND xtype='U')
+                BEGIN
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('UserGroups') AND name = 'DefaultRights')
+                    BEGIN
+                        ALTER TABLE UserGroups ADD DefaultRights INT NOT NULL DEFAULT 0;
+
+                        -- Migrate existing data: CanRead=1, CanWrite=2, CanDelete=4
+                        EXEC('UPDATE UserGroups 
+                        SET DefaultRights = 
+                            (CASE WHEN CanRead > 0 THEN 1 ELSE 0 END) |
+                            (CASE WHEN CanWrite > 0 THEN 2 ELSE 0 END) |
+                            (CASE WHEN CanDelete > 0 THEN 4 ELSE 0 END)');
+                    END
+                END
+
+                -- Add missing Categories columns (exist in model but not DDL)
+                IF EXISTS (SELECT * FROM sysobjects WHERE name='Categories' AND xtype='U')
+                BEGIN
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Categories') AND name = 'IsDeleted')
+                        ALTER TABLE Categories ADD IsDeleted BIT NOT NULL DEFAULT 0;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Categories') AND name = 'Description')
+                        ALTER TABLE Categories ADD Description NVARCHAR(1000) NULL;
+                END
+
+                -- Add FK on tblComment to Documents (COMMENTED OUT DUE TO DATA TYPE MISMATCH)
+                /*
+                IF EXISTS (SELECT * FROM sysobjects WHERE name='tblComment' AND xtype='U')
+                BEGIN
+                    IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Comment_Documents')
+                        ALTER TABLE tblComment WITH NOCHECK ADD CONSTRAINT FK_Comment_Documents 
+                            FOREIGN KEY (DocumentID) REFERENCES Documents(DocumentId);
+
+                    IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Comment_Users')
+                        ALTER TABLE tblComment WITH NOCHECK ADD CONSTRAINT FK_Comment_Users 
+                            FOREIGN KEY (CommentBy) REFERENCES Users(Id);
+                END
+                */
+
+                -- Add FK on DocumentVersions to Users (CreatedBy)
+                IF EXISTS (SELECT * FROM sysobjects WHERE name='DocumentVersions' AND xtype='U')
+                BEGIN
+                    IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_DocVersions_Users')
+                        ALTER TABLE DocumentVersions WITH NOCHECK ADD CONSTRAINT FK_DocVersions_Users 
+                            FOREIGN KEY (CreatedBy) REFERENCES Users(Id);
+                END
+
+                -- Add CreatedBy column to Categories for per-user scoping
+                IF EXISTS (SELECT * FROM sysobjects WHERE name='Categories' AND xtype='U')
+                BEGIN
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Categories') AND name = 'CreatedBy')
+                        ALTER TABLE Categories ADD CreatedBy INT NULL;
+                END
+            ";
+            command.ExecuteNonQuery();
+            _logger.LogInformation("Normalization migration applied successfully.");
+
             _logger.LogInformation("Database schema verified/created successfully via ADO.NET.");
         }
         catch (Exception ex)

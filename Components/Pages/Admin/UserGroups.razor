@@ -41,12 +41,11 @@
                 <Template Context="group">
                     @{
                         var perms = new List<string>();
-                        if (group.CanRead == 1) perms.Add("Read");
-                        if (group.CanWrite == 1) perms.Add("Write");
-                        if (group.CanDelete == 1) perms.Add("Delete");
+                        if ((group.DefaultRights & 1) == 1) perms.Add("Read");
+                        if ((group.DefaultRights & 2) == 2) perms.Add("Write");
+                        if ((group.DefaultRights & 4) == 4) perms.Add("Delete");
                         
-                        // Handle legacy "Full Control" visualization if needed, or just comma-separated
-                        var displayContent = perms.Count == 3 ? "Full Control" : string.Join(", ", perms);
+                        var displayContent = perms.Count == 3 ? "Full Control" : (perms.Count == 0 ? "None" : string.Join(", ", perms));
                         <RadzenText TextStyle="TextStyle.Body2" class="m-0">@displayContent</RadzenText>
                     }
                 </Template>
@@ -68,6 +67,7 @@
     private IEnumerable<UserGroup> groups = Enumerable.Empty<UserGroup>();
     private bool isLoading = true;
     private int currentUserId;
+    private bool isAdmin = false;
     private string newGroupName = string.Empty;
 
     protected override async Task OnInitializedAsync()
@@ -76,6 +76,7 @@
         var user = authState.User;
         if (user.Identity?.IsAuthenticated == true)
         {
+            isAdmin = user.Identity.Name?.ToLower() == "admin";
             var idClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             int.TryParse(idClaim?.Value, out currentUserId);
         }
@@ -85,7 +86,13 @@
     private async Task LoadGroups()
     {
         isLoading = true;
-        try { groups = await UserGroupService.GetGroupsCreatedByUserAsync(currentUserId); }
+        try 
+        { 
+            if (isAdmin)
+                groups = await UserGroupService.GetAllGroupsAsync();
+            else
+                groups = await UserGroupService.GetGroupsCreatedByUserAsync(currentUserId); 
+        }
         finally { isLoading = false; }
     }
 
@@ -96,10 +103,7 @@
         var newGroup = new UserGroup 
         { 
             GroupName = newGroupName.Trim(),
-            // Default to no permissions as per UI flow (can be configured in Edit dialog)
-            CanRead = 0,
-            CanWrite = 0,
-            CanDelete = 0
+            DefaultRights = 0 // No permissions by default
         };
 
         var response = await UserGroupService.CreateGroupAsync(newGroup, currentUserId);

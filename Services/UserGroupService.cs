@@ -165,6 +165,33 @@ public class UserGroupService : IUserGroupService
         return list;
     }
 
+    public async Task<IEnumerable<ApplicationUser>> GetAllUsersAsync()
+    {
+        var sql = @"
+            SELECT Id, UserName, Email, FirstName, LastName, Department, IsActive, EncryptedPassword
+            FROM Users
+            ORDER BY UserName";
+        
+        DbCommand command = _db.GetSqlStringCommand(sql);
+
+        var list = new List<ApplicationUser>();
+        using var reader = _db.ExecuteReader(command);
+        while (reader.Read())
+        {
+            list.Add(new ApplicationUser {
+                Id = reader.GetInt32(0),
+                UserName = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                Email = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                FirstName = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                LastName = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                Department = reader.IsDBNull(5) ? null : reader.GetString(5),
+                IsActive = reader.IsDBNull(6) ? true : reader.GetBoolean(6),
+                EncryptedPassword = reader.IsDBNull(7) ? null : reader.GetString(7)
+            });
+        }
+        return list;
+    }
+
     // ==================== WRITE OPERATIONS (iFishResponse) ====================
 
     public async Task<iFishResponse> CreateGroupAsync(UserGroup group, int createdByUserId)
@@ -176,17 +203,15 @@ public class UserGroupService : IUserGroupService
             group.CreatedDate = DateTime.UtcNow;
 
             var sql = @"
-                INSERT INTO UserGroups (GroupName, CreatedBy, CreatedDate, CanRead, CanWrite, CanDelete)
-                VALUES (@GroupName, @CreatedBy, @CreatedDate, @CanRead, @CanWrite, @CanDelete);
+                INSERT INTO UserGroups (GroupName, CreatedBy, CreatedDate, DefaultRights)
+                VALUES (@GroupName, @CreatedBy, @CreatedDate, @DefaultRights);
                 SELECT CAST(SCOPE_IDENTITY() as int);";
 
             DbCommand command = _db.GetSqlStringCommand(sql);
             _db.AddInParameter(command, "@GroupName", DbType.String, group.GroupName);
             _db.AddInParameter(command, "@CreatedBy", DbType.Int32, group.CreatedBy);
             _db.AddInParameter(command, "@CreatedDate", DbType.DateTime, group.CreatedDate);
-            _db.AddInParameter(command, "@CanRead", DbType.Int32, group.CanRead);
-            _db.AddInParameter(command, "@CanWrite", DbType.Int32, group.CanWrite);
-            _db.AddInParameter(command, "@CanDelete", DbType.Int32, group.CanDelete);
+            _db.AddInParameter(command, "@DefaultRights", DbType.Int32, group.DefaultRights);
 
             var newId = Convert.ToInt32(_db.ExecuteScalar(command));
             response.Result = true;
@@ -210,16 +235,12 @@ public class UserGroupService : IUserGroupService
             var sql = @"
                 UPDATE UserGroups 
                 SET GroupName = @GroupName, 
-                    CanRead = @CanRead, 
-                    CanWrite = @CanWrite, 
-                    CanDelete = @CanDelete
+                    DefaultRights = @DefaultRights
                 WHERE GroupId = @GroupId";
 
             DbCommand command = _db.GetSqlStringCommand(sql);
             _db.AddInParameter(command, "@GroupName", DbType.String, group.GroupName);
-            _db.AddInParameter(command, "@CanRead", DbType.Int32, group.CanRead);
-            _db.AddInParameter(command, "@CanWrite", DbType.Int32, group.CanWrite);
-            _db.AddInParameter(command, "@CanDelete", DbType.Int32, group.CanDelete);
+            _db.AddInParameter(command, "@DefaultRights", DbType.Int32, group.DefaultRights);
             _db.AddInParameter(command, "@GroupId", DbType.Int32, group.GroupId);
 
             _db.ExecuteNonQuery(command);
@@ -330,9 +351,7 @@ public class UserGroupService : IUserGroupService
             GroupName = GetString(reader, "GroupName"),
             CreatedBy = GetInt(reader, "CreatedBy"),
             CreatedDate = GetDateTime(reader, "CreatedDate"),
-            CanRead = GetInt(reader, "CanRead"),
-            CanWrite = GetInt(reader, "CanWrite"),
-            CanDelete = GetInt(reader, "CanDelete"),
+            DefaultRights = GetInt(reader, "DefaultRights"),
             CreatorName = GetString(reader, "CreatorName"),
             MemberCount = GetInt(reader, "MemberCount")
         };

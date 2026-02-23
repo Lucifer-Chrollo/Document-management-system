@@ -17,11 +17,12 @@ public class CategoryService : ICategoryService
     private readonly ILogger<CategoryService> _logger;
 
     private const string SQL_SELECT_ALL = "SELECT * FROM Categories";
+    private const string SQL_SELECT_BY_USER = "SELECT * FROM Categories WHERE CreatedBy = @UserId AND (IsDeleted = 0 OR IsDeleted IS NULL) ORDER BY CategoryName";
     private const string SQL_SELECT_BY_ID = "SELECT * FROM Categories WHERE CategoryId = @CategoryId";
     private const string SQL_GET_MAX_ID = "SELECT MAX(CategoryId) FROM Categories";
     private const string SQL_INSERT = @"
-        INSERT INTO Categories (CategoryId, CategoryName, CreatedDate, UpdatedDate)
-        VALUES (@CategoryId, @CategoryName, @CreatedDate, @UpdatedDate);";
+        INSERT INTO Categories (CategoryId, CategoryName, CreatedDate, UpdatedDate, CreatedBy)
+        VALUES (@CategoryId, @CategoryName, @CreatedDate, @UpdatedDate, @CreatedBy);";
     private const string SQL_UPDATE = @"
         UPDATE Categories 
         SET CategoryName = @CategoryName, UpdatedDate = @UpdatedDate
@@ -55,6 +56,32 @@ public class CategoryService : ICategoryService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting categories after retries");
+            return Enumerable.Empty<Category>();
+        }
+    }
+
+    public async Task<IEnumerable<Category>> GetCategoriesByUserAsync(int userId)
+    {
+        try
+        {
+            return ResiliencyPolicies.GetSqlRetryPolicy(_logger, "GetCategoriesByUser").Execute(() =>
+            {
+                var categories = new List<Category>();
+                DbCommand command = _db.GetSqlStringCommand(SQL_SELECT_BY_USER);
+                _db.AddInParameter(command, "@UserId", DbType.Int32, userId);
+                using (IDataReader reader = _db.ExecuteReader(command))
+                {
+                    while (reader.Read())
+                    {
+                        categories.Add(MapCategory(reader));
+                    }
+                }
+                return (IEnumerable<Category>)categories;
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting categories for user {UserId}", userId);
             return Enumerable.Empty<Category>();
         }
     }
@@ -109,6 +136,7 @@ public class CategoryService : ICategoryService
                 _db.AddInParameter(command, "@CategoryName", DbType.String, category.CategoryName);
                 _db.AddInParameter(command, "@CreatedDate", DbType.DateTime, category.CreatedDate);
                 _db.AddInParameter(command, "@UpdatedDate", DbType.DateTime, category.UpdatedDate);
+                _db.AddInParameter(command, "@CreatedBy", DbType.Int32, (object?)category.CreatedBy ?? DBNull.Value);
 
                 _db.ExecuteNonQuery(command);
             });
@@ -198,6 +226,7 @@ public class CategoryService : ICategoryService
         try { cat.Description = reader["Description"] == DBNull.Value ? null : Convert.ToString(reader["Description"]); } catch {}
         try { cat.CategoryOrder = reader["CategoryOrder"] == DBNull.Value ? 0 : Convert.ToInt32(reader["CategoryOrder"]); } catch {}
         try { cat.IsDeleted = reader["IsDeleted"] == DBNull.Value ? false : Convert.ToBoolean(reader["IsDeleted"]); } catch {}
+    try { cat.CreatedBy = reader["CreatedBy"] == DBNull.Value ? null : Convert.ToInt32(reader["CreatedBy"]); } catch {}
 
         return cat;
     }

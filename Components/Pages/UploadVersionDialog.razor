@@ -3,7 +3,8 @@
 @inject IDocumentService DocumentService
 @inject DialogService DialogService
 @inject NotificationService NotificationService
-
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
 <RadzenStack Gap="1rem">
     <RadzenText TextStyle="TextStyle.Body1">
         Upload a new version for <strong>@DocumentName</strong>. The current file will be archived.
@@ -61,8 +62,11 @@
                 Extension = Path.GetExtension(file.Name)
             };
 
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
             using var stream = file.OpenReadStream(maxFileSize);
-            await DocumentService.UpdateWithFileAsync(docUpdate, stream);
+            await DocumentService.UpdateWithFileAsync(docUpdate, stream, userId);
 
             NotificationService.Notify(NotificationSeverity.Success, "Success", "New version uploaded successfully.");
             DialogService.Close(true);

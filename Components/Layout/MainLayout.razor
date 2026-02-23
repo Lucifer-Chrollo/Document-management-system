@@ -36,20 +36,37 @@
     <RadzenSidebar @bind-Expanded="@sidebarExpanded" Style="width: 280px">
         <RadzenPanelMenu>
             <RadzenPanelMenuItem Text="Dashboard" Icon="dashboard" Path="/" />
-            <RadzenPanelMenuItem Text="Documents" Icon="description" Path="/browse" />
-            <RadzenPanelMenuItem Text="Upload" Icon="cloud_upload" Path="/upload" />
-            <RadzenPanelMenuItem Text="Recent" Icon="history" Path="/recent" />
-            <RadzenPanelMenuItem Text="Favorites" Icon="star" Path="/favorites" />
-            <RadzenPanelMenuItem Text="Trash" Icon="delete" Path="/trash" />
-            <RadzenPanelMenuItem Text="Duplicates" Icon="content_copy" Path="/duplicates" />
-            <RadzenPanelMenuItem Text="User Groups" Icon="group" Path="/groups" />
-            <RadzenPanelMenuItem Text="Administration" Icon="admin_panel_settings" Expanded="false">
-                <RadzenPanelMenuItem Text="Users" Icon="people" Path="/admin/users" />
-                <RadzenPanelMenuItem Text="Categories" Icon="category" Path="/admin/categories" />
-                <RadzenPanelMenuItem Text="Roles" Icon="security" Path="/admin/roles" />
-                <RadzenPanelMenuItem Text="Audit Logs" Icon="receipt_long" Path="/admin/audit" />
-                <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="/admin/settings" />
-            </RadzenPanelMenuItem>
+            
+            <AuthorizeView>
+                <Authorized Context="authContext">
+                    @if (authContext.User.Identity?.Name?.ToLower() == "admin")
+                    {
+                        @* ── Admin-Only Menu ── *@
+                        <RadzenPanelMenuItem Text="Documents" Icon="description" Path="/browse" />
+                        <RadzenPanelMenuItem Text="Administration" Icon="admin_panel_settings" Expanded="true">
+                            <RadzenPanelMenuItem Text="Users" Icon="people" Path="/admin/users" />
+                            <RadzenPanelMenuItem Text="Categories" Icon="category" Path="/admin/categories" />
+                            <RadzenPanelMenuItem Text="Roles" Icon="security" Path="/admin/roles" />
+                            <RadzenPanelMenuItem Text="Audit Logs" Icon="receipt_long" Path="/admin/audit" />
+                            <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="/admin/settings" />
+                        </RadzenPanelMenuItem>
+                    }
+                    else
+                    {
+                        @* ── Normal User Menu ── *@
+                        <RadzenPanelMenuItem Text="Documents" Icon="description" Path="/browse" />
+                        <RadzenPanelMenuItem Text="Upload" Icon="cloud_upload" Path="/upload" />
+                        <RadzenPanelMenuItem Text="Recent" Icon="history" Path="/recent" />
+                        <RadzenPanelMenuItem Text="Favorites" Icon="star" Path="/favorites" />
+                        <RadzenPanelMenuItem Text="Trash" Icon="delete" Path="/trash" />
+                        <RadzenPanelMenuItem Text="Duplicates" Icon="content_copy" Path="/duplicates" />
+                    }
+                    
+                    @* ── Common Menu ── *@
+                    <RadzenPanelMenuItem Text="My Categories" Icon="category" Path="/categories" />
+                    <RadzenPanelMenuItem Text="User Groups" Icon="group" Path="/groups" />
+                </Authorized>
+            </AuthorizeView>
         </RadzenPanelMenu>
     </RadzenSidebar>
 

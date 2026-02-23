@@ -10,6 +10,7 @@ public interface ICategoryService
 {
     // Read Operations
     Task<IEnumerable<Category>> GetCategoriesAsync();
+    Task<IEnumerable<Category>> GetCategoriesByUserAsync(int userId);
     Task<Category?> GetCategoryByIdAsync(int categoryId);
 
     // Write Operations (iFishResponse)

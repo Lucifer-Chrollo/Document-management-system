@@ -18,10 +18,8 @@ public class UserGroup
     public int CreatedBy { get; set; }
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-    // Permissions (stored as int flags in the script)
-    public int CanRead { get; set; }
-    public int CanWrite { get; set; }
-    public int CanDelete { get; set; }
+    // Permissions as bitmask: Read=1, Write=2, Delete=4
+    public int DefaultRights { get; set; }
 
     // Display fields (not mapped to DB if using simple Dapper join, or filled via separate query)
     [NotMapped]

@@ -17,10 +17,10 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
 
     private const string SQL_INSERT_USER = @"
         INSERT INTO Users (UserName, NormalizedUserName, Email, NormalizedEmail, 
-            PasswordHash, SecurityStamp, ConcurrencyStamp, FirstName, LastName, Department)
+            PasswordHash, SecurityStamp, ConcurrencyStamp, FirstName, LastName, Department, EncryptedPassword)
         VALUES (@UserName, @NormalizedUserName, @Email, @NormalizedEmail, 
-            @PasswordHash, @SecurityStamp, @ConcurrencyStamp, @FirstName, @LastName, @Department);
-        SELECT CAST(SCOPE_IDENTITY() as int);";
+            @PasswordHash, @SecurityStamp, @ConcurrencyStamp, @FirstName, @LastName, @Department, @EncryptedPassword);
+        SELECT CAST(SCOPE_IDENTITY() as int)";
 
     private const string SQL_DELETE_USER = "DELETE FROM Users WHERE Id = @Id";
 
@@ -36,7 +36,8 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
             Email = @Email, NormalizedEmail = @NormalizedEmail, 
             PasswordHash = @PasswordHash, SecurityStamp = @SecurityStamp, 
             ConcurrencyStamp = @ConcurrencyStamp, FirstName = @FirstName, 
-            LastName = @LastName, Department = @Department
+            LastName = @LastName, Department = @Department,
+            EncryptedPassword = @EncryptedPassword
         WHERE Id = @Id";
 
     private const string SQL_INSERT_LOGIN = "INSERT INTO UserLogins (LoginProvider, ProviderKey, ProviderDisplayName, UserId) VALUES (@LoginProvider, @ProviderKey, @ProviderDisplayName, @UserId)";
@@ -89,6 +90,7 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
             command.Parameters.Add("@FirstName", SqlDbType.NVarChar).Value = user.FirstName;
             command.Parameters.Add("@LastName", SqlDbType.NVarChar).Value = user.LastName;
             command.Parameters.Add("@Department", SqlDbType.NVarChar).Value = (object?)user.Department ?? DBNull.Value;
+            command.Parameters.Add("@EncryptedPassword", SqlDbType.NVarChar).Value = (object?)user.EncryptedPassword ?? DBNull.Value;
 
             var newItemId = await command.ExecuteScalarAsync(cancellationToken);
             if (newItemId != null)
@@ -230,6 +232,7 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
             command.Parameters.Add("@FirstName", SqlDbType.NVarChar).Value = user.FirstName;
             command.Parameters.Add("@LastName", SqlDbType.NVarChar).Value = user.LastName;
             command.Parameters.Add("@Department", SqlDbType.NVarChar).Value = (object?)user.Department ?? DBNull.Value;
+            command.Parameters.Add("@EncryptedPassword", SqlDbType.NVarChar).Value = (object?)user.EncryptedPassword ?? DBNull.Value;
             command.Parameters.Add("@Id", SqlDbType.Int).Value = user.Id;
 
             await command.ExecuteNonQueryAsync(cancellationToken);
@@ -344,7 +347,8 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
             ConcurrencyStamp = reader["ConcurrencyStamp"] == DBNull.Value ? null : Convert.ToString(reader["ConcurrencyStamp"]),
             FirstName = reader["FirstName"] == DBNull.Value ? "" : Convert.ToString(reader["FirstName"]) ?? "",
             LastName = reader["LastName"] == DBNull.Value ? "" : Convert.ToString(reader["LastName"]) ?? "",
-            Department = reader["Department"] == DBNull.Value ? null : Convert.ToString(reader["Department"])
+            Department = reader["Department"] == DBNull.Value ? null : Convert.ToString(reader["Department"]),
+            EncryptedPassword = reader["EncryptedPassword"] == DBNull.Value ? null : Convert.ToString(reader["EncryptedPassword"])
         };
         return user;
     }

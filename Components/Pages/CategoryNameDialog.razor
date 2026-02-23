@@ -1,0 +1,27 @@
+@using DocumentManagementSystem.Models
+
+<RadzenStack Gap="1rem" Style="padding: 1rem;">
+    <RadzenLabel Text="Category Name" />
+    <RadzenTextBox @bind-Value="@categoryName" Style="width: 100%;" autofocus />
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="@(() => DialogService.Close(null))" />
+        <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" Click="@OnSave" Disabled="@string.IsNullOrWhiteSpace(categoryName)" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter] public string InitialName { get; set; } = "";
+    [Inject] public DialogService DialogService { get; set; } = default!;
+
+    private string categoryName = "";
+
+    protected override void OnInitialized()
+    {
+        categoryName = InitialName;
+    }
+
+    private void OnSave()
+    {
+        DialogService.Close(categoryName?.Trim());
+    }
+}

@@ -23,6 +23,8 @@ public class FilesController : ControllerBase
     [HttpGet("preview/{id}")]
     public async Task<IActionResult> GetPreview(int id)
     {
+        if (!await UserCanReadDocumentAsync(id)) return Forbid();
+
         try
         {
             _logger.LogInformation("Preview requested for document ID: {Id}", id);
@@ -83,6 +85,8 @@ public class FilesController : ControllerBase
     [HttpGet("download/{id}")]
     public async Task<IActionResult> GetDownload(int id)
     {
+        if (!await UserCanReadDocumentAsync(id)) return Forbid();
+
         try
         {
             var document = await _documentService.GetByIdAsync(id);
@@ -112,6 +116,11 @@ public class FilesController : ControllerBase
     {
         try
         {
+            var version = await _documentService.GetVersionAsync(versionId);
+            if (version == null) return NotFound();
+
+            if (!await UserCanReadDocumentAsync(version.DocumentId)) return Forbid();
+
             var stream = await _documentService.DownloadVersionAsync(versionId);
             if (stream == null) return NotFound();
 
@@ -141,6 +150,11 @@ public class FilesController : ControllerBase
     {
         try
         {
+            var version = await _documentService.GetVersionAsync(versionId);
+            if (version == null) return NotFound();
+
+            if (!await UserCanReadDocumentAsync(version.DocumentId)) return Forbid();
+
             var (stream, fileName, contentType) = await _documentService.DownloadVersionWithMetaAsync(versionId);
             if (stream == null) return NotFound();
 
@@ -164,5 +178,28 @@ public class FilesController : ControllerBase
             _logger.LogError(ex, "Error previewing version {Id}", versionId);
             return StatusCode(500, "Internal server error");
         }
+    }
+
+    private async Task<bool> UserCanReadDocumentAsync(int documentId)
+    {
+        var user = HttpContext.User;
+        if (user.IsInRole("Admin")) return true;
+
+        var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdClaim, out int uid))
+        {
+            var document = await _documentService.GetByIdAsync(documentId);
+            if (document == null) return false;
+
+            if (document.UploadedBy == uid) return true;
+
+            var rights = document.UserDocumentRightsList?.FirstOrDefault(r => r.UserId == uid);
+            // Any assigned right (Read=1, Write=2, Delete=4) allows viewing/downloading
+            if (rights != null && (rights.Rights & 7) != 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

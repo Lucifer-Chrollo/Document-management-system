@@ -22,6 +22,11 @@ public class Category
 
     public bool IsDeleted { get; set; } = false;
 
+    /// <summary>
+    /// User who created this category. NULL = system/global category.
+    /// </summary>
+    public int? CreatedBy { get; set; }
+
     // Navigation
     public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
 }

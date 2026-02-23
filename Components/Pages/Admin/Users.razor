@@ -1,0 +1,163 @@
+@page "/admin/users"
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@inject UserManager<ApplicationUser> UserManager
+@inject IUserGroupService UserGroupService
+@inject IEncryptionService EncryptionService
+@inject NotificationService NotificationService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
+<PageTitle>User Management - DMS</PageTitle>
+
+<RadzenStack Gap="1rem" Style="padding: 1rem;">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenText TextStyle="TextStyle.H5" class="m-0">User Management</RadzenText>
+        <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@($"{users.Count()} users")" />
+    </RadzenStack>
+
+    <RadzenDataGrid @ref="grid" Data="@users" TItem="ApplicationUser" IsLoading="@isLoading"
+                    AllowColumnResize="true" AllowSorting="true" AllowFiltering="true"
+                    FilterMode="FilterMode.Simple" PagerPosition="PagerPosition.Bottom"
+                    AllowPaging="true" PageSize="15"
+                    Style="border: 1px solid #ccc;">
+        <Columns>
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="Id" Title="ID" Width="70px" TextAlign="TextAlign.Center" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="UserName" Title="Username" Width="160px" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="Email" Title="Email" Width="220px" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="FirstName" Title="First Name" Width="130px" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="LastName" Title="Last Name" Width="130px" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="Department" Title="Department" Width="120px" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Title="Password" Width="200px" Sortable="false" Filterable="false">
+                <Template Context="user">
+                    @if (revealedPasswords.ContainsKey(user.Id))
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.3rem">
+                            <RadzenText TextStyle="TextStyle.Body2" class="m-0" Style="font-family: monospace; background: #f0f0f0; padding: 2px 8px; border-radius: 4px;">
+                                @revealedPasswords[user.Id]
+                            </RadzenText>
+                            <RadzenButton Icon="visibility_off" Size="ButtonSize.ExtraSmall" Variant="Variant.Text"
+                                          Click="@(() => revealedPasswords.Remove(user.Id))" Tooltip="Hide" />
+                        </RadzenStack>
+                    }
+                    else
+                    {
+                        <RadzenButton Icon="visibility" Text="Reveal" Size="ButtonSize.ExtraSmall"
+                                      ButtonStyle="ButtonStyle.Warning" Variant="Variant.Outlined"
+                                      Click="@(() => RevealPassword(user))" Tooltip="Decrypt & show password" />
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="ApplicationUser" Title="Status" Width="100px" TextAlign="TextAlign.Center" Sortable="false">
+                <Template Context="user">
+                    @if (user.IsActive)
+                    {
+                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Active" />
+                    }
+                    else
+                    {
+                        <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Inactive" />
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="ApplicationUser" Title="Actions" Width="120px" TextAlign="TextAlign.Center" Sortable="false" Filterable="false">
+                <Template Context="user">
+                    @if (user.UserName?.ToLower() != "admin")
+                    {
+                        <RadzenButton Icon="@(user.IsActive ? "block" : "check_circle")"
+                                      ButtonStyle="@(user.IsActive ? ButtonStyle.Danger : ButtonStyle.Success)"
+                                      Size="ButtonSize.Small" Variant="Variant.Flat"
+                                      Click="@(() => ToggleUserStatus(user))"
+                                      Tooltip="@(user.IsActive ? "Deactivate" : "Activate")" />
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenStack>
+
+@code {
+    private IEnumerable<ApplicationUser> users = Enumerable.Empty<ApplicationUser>();
+    private bool isLoading = true;
+    private Dictionary<int, string> revealedPasswords = new();
+    private RadzenDataGrid<ApplicationUser>? grid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Admin-only guard
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.Name?.ToLower() != "admin")
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        isLoading = true;
+        try
+        {
+            var rawUsers = await UserGroupService.GetAllUsersAsync();
+            // Decrypt emails for display
+            foreach (var u in rawUsers)
+            {
+                if (!string.IsNullOrEmpty(u.Email))
+                {
+                    try { u.Email = await EncryptionService.DecryptTextAsync(u.Email); }
+                    catch { /* keep as is if decryption fails */ }
+                }
+            }
+            users = rawUsers.ToList();
+        }
+        catch (Exception ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, "Error", $"Failed to load users: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RevealPassword(ApplicationUser user)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(user.EncryptedPassword))
+            {
+                revealedPasswords[user.Id] = "(not stored)";
+                return;
+            }
+
+            var decrypted = await EncryptionService.DecryptTextAsync(user.EncryptedPassword);
+            revealedPasswords[user.Id] = decrypted;
+        }
+        catch (Exception)
+        {
+            revealedPasswords[user.Id] = "(decrypt error)";
+        }
+        StateHasChanged();
+    }
+
+    private async Task ToggleUserStatus(ApplicationUser user)
+    {
+        user.IsActive = !user.IsActive;
+        var result = await UserManager.UpdateAsync(user);
+        if (result.Succeeded)
+        {
+            var status = user.IsActive ? "activated" : "deactivated";
+            NotificationService.Notify(NotificationSeverity.Success, "Updated", $"User {user.UserName} {status}.");
+        }
+        else
+        {
+            user.IsActive = !user.IsActive; // revert
+            NotificationService.Notify(NotificationSeverity.Error, "Error", "Failed to update user status.");
+        }
+    }
+}

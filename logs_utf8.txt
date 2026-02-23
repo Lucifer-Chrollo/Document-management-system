@@ -1,0 +1,57 @@
+﻿Using launch settings from D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Properties\launchSettings.json...
+Building...
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-2cmq-823j-5qj8
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-5x7m-6737-26cr
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-63p8-c4ww-9cg7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-g85r-6x2q-45w7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-qxrv-gp6x-rc23
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-rxmq-m78w-7wmc
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-2cmq-823j-5qj8
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-5x7m-6737-26cr
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-63p8-c4ww-9cg7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-g85r-6x2q-45w7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-qxrv-gp6x-rc23
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-rxmq-m78w-7wmc
+info: DocumentManagementSystem.Services.EncryptionService[0]
+      Encryption service initialized. Enabled: True
+crit: DocumentManagementSystem.Data.DatabaseInitializer[0]
+      Critical error during database schema initialization.
+      Microsoft.Data.SqlClient.SqlException (0x80131904): The ALTER TABLE statement conflicted with the FOREIGN KEY constraint "FK_Documents_Departments". The conflict occurred in database "DMS_Power", table "dbo.Departments", column 'DepartmentId'.
+         at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+         at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteNonQueryTds(String methodName, Boolean isAsync, Int32 timeout, Boolean asyncWrite)
+         at Microsoft.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, Boolean sendToPipe, Int32 timeout, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String methodName)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteNonQuery()
+         at DocumentManagementSystem.Data.DatabaseInitializer.EnsureSchemaAsync() in D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Data\DatabaseInitializer.cs:line 484
+      ClientConnectionId:abe87351-02cf-43f2-badb-8a36bba8a680
+      Error Number:547,State:0,Class:16
+crit: Program[0]
+      Database initialization failed at startup.
+      Microsoft.Data.SqlClient.SqlException (0x80131904): The ALTER TABLE statement conflicted with the FOREIGN KEY constraint "FK_Documents_Departments". The conflict occurred in database "DMS_Power", table "dbo.Departments", column 'DepartmentId'.
+         at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+         at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteNonQueryTds(String methodName, Boolean isAsync, Int32 timeout, Boolean asyncWrite)
+         at Microsoft.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, Boolean sendToPipe, Int32 timeout, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String methodName)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteNonQuery()
+         at DocumentManagementSystem.Data.DatabaseInitializer.EnsureSchemaAsync() in D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Data\DatabaseInitializer.cs:line 484
+         at Program.<Main>$(String[] args) in D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Program.cs:line 139
+      ClientConnectionId:abe87351-02cf-43f2-badb-8a36bba8a680
+      Error Number:547,State:0,Class:16
+info: DocumentManagementSystem.Services.StorageService[0]
+      StorageService initialized. Encryption enabled: True
+info: DocumentManagementSystem.Services.LuceneSearchService[0]
+      Rebuilt Lucene index with 52 documents
+info: Program[0]
+      Search index rebuilt successfully.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://0.0.0.0:5197
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem

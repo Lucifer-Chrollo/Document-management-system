@@ -51,7 +51,7 @@ public class Document
     [NotMapped]
     public string? UserName { get; set; }
     
-    public byte[]? FileData { get; set; } // For blob storage if needed
+    
     
     public int DepartmentID { get; set; }
     public int LocationID { get; set; }

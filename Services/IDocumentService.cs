@@ -37,6 +37,7 @@ public interface IDocumentService
     // File Operations
     Task<Stream?> DownloadAsync(int id);
     Task<Stream?> DownloadVersionAsync(int versionId);
+    Task<DocumentVersion?> GetVersionAsync(int versionId);
     Task<(Stream? Stream, string FileName, string ContentType)> DownloadVersionWithMetaAsync(int versionId);
     Task<string> GetContentTypeAsync(int id);
     

@@ -82,6 +82,8 @@ public partial class Upload
     /// </summary>
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
         try
         {
             // Load dropdown data from the database via Service layer
@@ -164,25 +166,39 @@ public partial class Upload
             return;
         }
 
-        if (useGroups)
+        // Fetch all groups matching the search string (case-insensitive) to allow auto-detection
+        Console.WriteLine($"[Upload.AddUserRight] User searched for: '{userSearch}'");
+        var allGroups = await UserGroupService.GetAllGroupsAsync();
+        Console.WriteLine($"[Upload.AddUserRight] Found {allGroups.Count()} total groups in system.");
+        
+        var targetGroup = allGroups.FirstOrDefault(g => g.GroupName.Equals(userSearch, StringComparison.OrdinalIgnoreCase));
+        if (targetGroup != null) 
+        {
+            Console.WriteLine($"[Upload.AddUserRight] Matched targetGroup: ID={targetGroup.GroupId}, Name='{targetGroup.GroupName}'");
+        } 
+        else 
+        {
+            Console.WriteLine($"[Upload.AddUserRight] No target group matched.");
+        }
+
+        if (useGroups || targetGroup != null)
         {
             try
             {
-                // Fetch all groups matching the search string (case-insensitive)
-                var allGroups = await UserGroupService.GetAllGroupsAsync();
-                var targetGroup = allGroups.FirstOrDefault(g => g.GroupName.Equals(userSearch, StringComparison.OrdinalIgnoreCase));
-
                 if (targetGroup == null)
                 {
+                    Console.WriteLine("[Upload.AddUserRight] Error: Group not found (but useGroups was checked).");
                     NotificationService.Notify(NotificationSeverity.Error, "Not Found", $"Could not find a group named '{userSearch}'.");
                     return;
                 }
 
                 // Expand the group into individual users
                 var members = await UserGroupService.GetGroupMembersDetailedAsync(targetGroup.GroupId);
+                Console.WriteLine($"[Upload.AddUserRight] Fetched {members.Count()} detailed members for group {targetGroup.GroupId}.");
                 
                 if (!members.Any())
                 {
+                    Console.WriteLine("[Upload.AddUserRight] Warning: Group is empty.");
                     NotificationService.Notify(NotificationSeverity.Warning, "Empty Group", $"The group '{targetGroup.GroupName}' has no members.");
                     return;
                 }
@@ -190,6 +206,7 @@ public partial class Upload
                 int addedCount = 0;
                 foreach (var member in members)
                 {
+                    Console.WriteLine($"[Upload.AddUserRight] Processing member: UserId={member.UserId}, UserName='{member.UserName}'");
                     // Prevent duplicate user entries
                     if (!documentMetadata.UserDocumentRightsList.Any(r => r.UserId == member.UserId))
                     {
@@ -202,13 +219,20 @@ public partial class Upload
                             GroupId = null 
                         });
                         addedCount++;
+                        Console.WriteLine($"[Upload.AddUserRight] Added member to list: UserId={member.UserId}");
+                    }
+                    else 
+                    {
+                        Console.WriteLine($"[Upload.AddUserRight] Skipped duplicate member: UserId={member.UserId}");
                     }
                 }
                 
+                Console.WriteLine($"[Upload.AddUserRight] Group expansion complete. Added {addedCount} members.");
                 NotificationService.Notify(NotificationSeverity.Success, "Group Expanded", $"Added {addedCount} members from group '{targetGroup.GroupName}'.");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[Upload.AddUserRight] EXCEPTION: {ex}");
                 NotificationService.Notify(NotificationSeverity.Error, "Error", $"Failed to expand group: {ex.Message}");
                 return;
             }

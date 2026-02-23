@@ -1,0 +1,292 @@
+﻿Using launch settings from D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Properties\launchSettings.json...
+Building...
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-2cmq-823j-5qj8
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-5x7m-6737-26cr
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-63p8-c4ww-9cg7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-g85r-6x2q-45w7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-qxrv-gp6x-rc23
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-rxmq-m78w-7wmc
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-2cmq-823j-5qj8
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-5x7m-6737-26cr
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1903: Package 'SixLabors.ImageSharp' 3.1.3 has a known high severity vulnerability, https://github.com/advisories/GHSA-63p8-c4ww-9cg7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-g85r-6x2q-45w7
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-qxrv-gp6x-rc23
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj : warning NU1902: Package 'SixLabors.ImageSharp' 3.1.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-rxmq-m78w-7wmc
+info: DocumentManagementSystem.Services.EncryptionService[0]
+      Encryption service initialized. Enabled: True
+crit: DocumentManagementSystem.Data.DatabaseInitializer[0]
+      Critical error during database schema initialization.
+      Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DefaultRights'.
+         at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+         at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteNonQueryTds(String methodName, Boolean isAsync, Int32 timeout, Boolean asyncWrite)
+         at Microsoft.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, Boolean sendToPipe, Int32 timeout, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String methodName)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteNonQuery()
+         at DocumentManagementSystem.Data.DatabaseInitializer.EnsureSchemaAsync() in D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Data\DatabaseInitializer.cs:line 473
+      ClientConnectionId:7c64e032-4444-4caf-80b0-56678b8ed3d4
+      Error Number:207,State:1,Class:16
+crit: Program[0]
+      Database initialization failed at startup.
+      Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DefaultRights'.
+         at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+         at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteNonQueryTds(String methodName, Boolean isAsync, Int32 timeout, Boolean asyncWrite)
+         at Microsoft.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, Boolean sendToPipe, Int32 timeout, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String methodName)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteNonQuery()
+         at DocumentManagementSystem.Data.DatabaseInitializer.EnsureSchemaAsync() in D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Data\DatabaseInitializer.cs:line 473
+         at Program.<Main>$(String[] args) in D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Program.cs:line 139
+      ClientConnectionId:7c64e032-4444-4caf-80b0-56678b8ed3d4
+      Error Number:207,State:1,Class:16
+info: DocumentManagementSystem.Services.StorageService[0]
+      StorageService initialized. Encryption enabled: True
+info: DocumentManagementSystem.Services.LuceneSearchService[0]
+      Rebuilt Lucene index with 52 documents
+info: Program[0]
+      Search index rebuilt successfully.
+fail: Microsoft.Extensions.Hosting.Internal.Host[11]
+      Hosting failed to start
+      System.IO.IOException: Failed to bind to address http://0.0.0.0:5197: address already in use.
+       ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+       ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
+         at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+         at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+         at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+         --- End of inner exception stack trace ---
+         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+         at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+         at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+dotnet : Unhandled 
+exception. System.IO.I
+OException: Failed to 
+bind to address 
+http://0.0.0.0:5197: 
+address already in 
+use.
+At line:1 char:1
++ dotnet run 2>&1 > 
+error_log.txt
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Unhandled    
+ excep...already i    
+n use.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+ ---> Microsoft.AspNet
+Core.Connections.Addre
+ssInUseException: 
+Only one usage of 
+each socket address 
+(protocol/network 
+address/port) is 
+normally permitted.
+ ---> System.Net.Socke
+ts.SocketException 
+(10048): Only one 
+usage of each socket 
+address 
+(protocol/network 
+address/port) is 
+normally permitted.
+   at System.Net.Socke
+ts.Socket.UpdateStatus
+AfterSocketErrorAndThr
+owException(SocketErro
+r error, Boolean 
+disconnectOnFailure, 
+String callerName)
+   at System.Net.Socke
+ts.Socket.DoBind(EndPo
+int endPointSnapshot, 
+SocketAddress 
+socketAddress)
+   at System.Net.Socke
+ts.Socket.Bind(EndPoin
+t localEP)
+   at Microsoft.AspNet
+Core.Server.Kestrel.Tr
+ansport.Sockets.Socket
+TransportOptions.Creat
+eDefaultBoundListenSoc
+ket(EndPoint endpoint)
+   at Microsoft.AspNet
+Core.Server.Kestrel.Tr
+ansport.Sockets.Socket
+ConnectionListener.Bin
+d()
+   --- End of inner 
+exception stack trace 
+---
+   at Microsoft.AspNet
+Core.Server.Kestrel.Tr
+ansport.Sockets.Socket
+ConnectionListener.Bin
+d()
+   at Microsoft.AspNet
+Core.Server.Kestrel.Tr
+ansport.Sockets.Socket
+TransportFactory.BindA
+sync(EndPoint 
+endpoint, 
+CancellationToken 
+cancellationToken)
+   at Microsoft.AspNet
+Core.Server.Kestrel.Co
+re.Internal.Infrastruc
+ture.TransportManager.
+BindAsync(EndPoint 
+endPoint, 
+ConnectionDelegate 
+connectionDelegate, 
+EndpointConfig 
+endpointConfig, 
+CancellationToken 
+cancellationToken)
+   at Microsoft.AspNet
+Core.Server.Kestrel.Co
+re.KestrelServerImpl.<
+>c__DisplayClass28_0`1
+.<<StartAsync>g__OnBin
+d|0>d.MoveNext()
+--- End of stack 
+trace from previous 
+location ---
+   at Microsoft.AspNet
+Core.Server.Kestrel.Co
+re.Internal.AddressBin
+der.BindEndpointAsync(
+ListenOptions 
+endpoint, 
+AddressBindContext 
+context, 
+CancellationToken 
+cancellationToken)
+   --- End of inner 
+exception stack trace 
+---
+   at Microsoft.AspNet
+Core.Server.Kestrel.Co
+re.Internal.AddressBin
+der.BindEndpointAsync(
+ListenOptions 
+endpoint, 
+AddressBindContext 
+context, 
+CancellationToken 
+cancellationToken)
+   at Microsoft.AspNet
+Core.Server.Kestrel.Co
+re.ListenOptions.BindA
+sync(AddressBindContex
+t context, 
+CancellationToken 
+cancellationToken)
+   at Microsoft.AspNet
+Core.Server.Kestrel.Co
+re.Internal.AddressBin
+der.AddressesStrategy.
+BindAsync(AddressBindC
+ontext context, 
+CancellationToken 
+cancellationToken)
+   at Microsoft.AspNet
+Core.Server.Kestrel.Co
+re.Internal.AddressBin
+der.BindAsync(ListenOp
+tions[] 
+listenOptions, 
+AddressBindContext 
+context, Func`2 
+useHttps, 
+CancellationToken 
+cancellationToken)
+   at Microsoft.AspNet
+Core.Server.Kestrel.Co
+re.KestrelServerImpl.B
+indAsync(CancellationT
+oken 
+cancellationToken)
+   at Microsoft.AspNet
+Core.Server.Kestrel.Co
+re.KestrelServerImpl.S
+tartAsync[TContext](IH
+ttpApplication`1 
+application, 
+CancellationToken 
+cancellationToken)
+   at Microsoft.AspNet
+Core.Hosting.GenericWe
+bHostService.StartAsyn
+c(CancellationToken 
+cancellationToken)
+   at Microsoft.Extens
+ions.Hosting.Internal.
+Host.<StartAsync>b__15
+_1(IHostedService 
+service, 
+CancellationToken 
+token)
+   at Microsoft.Extens
+ions.Hosting.Internal.
+Host.ForeachService[T]
+(IEnumerable`1 
+services, 
+CancellationToken 
+token, Boolean 
+concurrent, Boolean ab
+ortOnFirstException, 
+List`1 exceptions, 
+Func`3 operation)
+   at Microsoft.Extens
+ions.Hosting.Internal.
+Host.StartAsync(Cancel
+lationToken 
+cancellationToken)
+   at Microsoft.Extens
+ions.Hosting.HostingAb
+stractionsHostExtensio
+ns.RunAsync(IHost 
+host, 
+CancellationToken 
+token)
+   at Microsoft.Extens
+ions.Hosting.HostingAb
+stractionsHostExtensio
+ns.RunAsync(IHost 
+host, 
+CancellationToken 
+token)
+   at Microsoft.Extens
+ions.Hosting.HostingAb
+stractionsHostExtensio
+ns.Run(IHost host)
+   at Program.<Main>$(
+String[] args) in D:\G
+emini\.gemini\antigrav
+ity\scratch\DocumentMa
+nagementSystem\Program
+.cs:line 186

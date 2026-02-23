@@ -37,9 +37,7 @@
 
     private void OnSubmit(UserGroup model)
     {
-        model.CanRead = canRead ? 1 : 0;
-        model.CanWrite = canWrite ? 1 : 0;
-        model.CanDelete = canDelete ? 1 : 0;
+        model.DefaultRights = (canRead ? 1 : 0) | (canWrite ? 2 : 0) | (canDelete ? 4 : 0);
         DialogService.Close(model);
     }
 }
