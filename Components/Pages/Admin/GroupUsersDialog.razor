@@ -10,12 +10,22 @@
     <!-- Top Section: Group Context and Permissions -->
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" Wrap="FlexWrap.NoWrap" Style="background: white; padding: 0.5rem; border: 1px solid #ccc;">
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-            <RadzenText TextStyle="TextStyle.Body2" class="m-0" Style="min-width: 90px;">Selected Group</RadzenText>
-            <RadzenDropDown @bind-Value="GroupId" Data="@groups" TextProperty="GroupName" ValueProperty="GroupId" 
-                            Style="width: 150px; height: 30px; line-height: 30px;" Change="@OnGroupChanged" />
+            <RadzenText TextStyle="TextStyle.Body2" class="m-0" Style="min-width: 90px;">
+                @(GroupId == 0 ? "New Group Name" : "Selected Group")
+            </RadzenText>
+            
+            @if (GroupId == 0)
+            {
+                <RadzenTextBox @bind-Value="newGroupName" Style="width: 150px; height: 30px; line-height: 30px;" />
+            }
+            else
+            {
+                <RadzenDropDown @bind-Value="GroupId" Data="@groups" TextProperty="GroupName" ValueProperty="GroupId" 
+                                Style="width: 150px; height: 30px; line-height: 30px;" Change="@OnGroupChanged" />
+            }
         </RadzenStack>
 
-        @if (selectedGroup != null)
+        @if (selectedGroup != null || GroupId == 0)
         {
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Style="margin-left: 2rem;">
                 <RadzenText TextStyle="TextStyle.Body2" class="m-0" Style="color: #333;">Group Permissions</RadzenText>
@@ -30,6 +40,11 @@
                 <RadzenLabel Text="CanDelete" Component="canDelete" class="ms-1 rz-text-body2" />
             </RadzenStack>
         }
+
+        @if (GroupId == 0)
+        {
+            <RadzenButton Text="Create Group" Click="@CreateNewGroup" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Style="margin-left: auto;" Disabled="@string.IsNullOrWhiteSpace(newGroupName)" />
+        }
     </RadzenStack>
 
     <!-- Middle Section: User Assignment -->
@@ -39,9 +54,9 @@
         <RadzenDropDown @bind-Value="selectedUserIdToAdd" Data="@availableUsers" 
                         TextProperty="UserName" ValueProperty="Id" 
                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
-                        AllowClear="true" Style="width: 250px; height: 30px; line-height: 30px;" />
+                        AllowClear="true" Style="width: 250px; height: 30px; line-height: 30px;" Disabled="@(GroupId == 0)" />
 
-        <RadzenButton Text="Add User" Click="@OnAddUser" Disabled="@(selectedUserIdToAdd == 0)" 
+        <RadzenButton Text="Add User" Click="@OnAddUser" Disabled="@(selectedUserIdToAdd == 0 || GroupId == 0)" 
                       ButtonStyle="ButtonStyle.Light" Style="border: 1px solid #aaa; border-radius: 0; padding: 0 15px; height: 30px; color: #333; margin-left:1rem;" />
     </RadzenStack>
 
@@ -66,6 +81,7 @@
     [Parameter] public int GroupId { get; set; }
     [Parameter] public int currentUserId { get; set; }
 
+    private string newGroupName = string.Empty;
     private IEnumerable<UserGroup> groups = Enumerable.Empty<UserGroup>();
     private UserGroup? selectedGroup;
     private IEnumerable<UserGroupMember> members = Enumerable.Empty<UserGroupMember>();
@@ -82,7 +98,14 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadBaseData();
-        await LoadGroupDetails();
+        if (GroupId > 0)
+        {
+            await LoadGroupDetails();
+        }
+        else
+        {
+            isLoadingMembers = false;
+        }
     }
 
     private async Task LoadBaseData()
@@ -121,6 +144,12 @@
 
     private async Task OnPermissionChanged(int bit, bool isChecked)
     {
+        if (GroupId == 0)
+        {
+            // Being constructed, do not auto-save.
+            return;
+        }
+
         if (selectedGroup == null) return;
 
         // Toggle the specific bit in DefaultRights
@@ -135,7 +164,7 @@
         if (response.Result)
         {
             var permName = bit switch { 1 => "Read", 2 => "Write", 4 => "Delete", _ => "" };
-            NotificationService.Notify(NotificationSeverity.Success, "Saved", $"{permName} permission updated.");
+            // Unobtrusive save
         }
         else
         {
@@ -148,6 +177,39 @@
             canReadBool = (selectedGroup.DefaultRights & 1) == 1;
             canWriteBool = (selectedGroup.DefaultRights & 2) == 2;
             canDeleteBool = (selectedGroup.DefaultRights & 4) == 4;
+            NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
+        }
+    }
+
+    private async Task CreateNewGroup()
+    {
+        if (string.IsNullOrWhiteSpace(newGroupName)) return;
+
+        int defaultRights = 0;
+        if (canReadBool) defaultRights |= 1;
+        if (canWriteBool) defaultRights |= 2;
+        if (canDeleteBool) defaultRights |= 4;
+
+        var newGroup = new UserGroup 
+        { 
+            GroupName = newGroupName.Trim(),
+            DefaultRights = defaultRights
+        };
+
+        var response = await UserGroupService.CreateGroupAsync(newGroup, currentUserId);
+        if (response.Result)
+        {
+            NotificationService.Notify(NotificationSeverity.Success, "Success", "Group created successfully. You may now add users.");
+            
+            // Re-load groups to get the new group in the dropdown list
+            await LoadBaseData();
+            
+            // Switch out of "Create" mode into "Edit" mode for the newly created group
+            GroupId = (int)response.RecordID;
+            await LoadGroupDetails();
+        }
+        else
+        {
             NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
         }
     }

@@ -93,37 +93,12 @@
 
     private async Task OnAddGroup()
     {
-        var result = await DialogService.OpenAsync("Create New Group", ds =>
-        @<RadzenStack Gap="1.5rem">
-            <RadzenText TextStyle="TextStyle.Body1">Enter the name for the new User Group:</RadzenText>
-            <RadzenTextBox @bind-Value="newGroupName" style="width: 100%; border: 1px solid #ccc;" autofocus />
-            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.End">
-                <RadzenButton Text="Cancel" Click="() => ds.Close(null)" ButtonStyle="ButtonStyle.Light" />
-                <RadzenButton Text="Create" Click="() => ds.Close(newGroupName)" ButtonStyle="ButtonStyle.Primary" Disabled="@string.IsNullOrWhiteSpace(newGroupName)" />
-            </RadzenStack>
-        </RadzenStack>,
-        new DialogOptions() { Width = "400px", Resizable = false, Draggable = true });
-
-        if (result is string groupName && !string.IsNullOrWhiteSpace(groupName))
-        {
-            var newGroup = new UserGroup 
-            { 
-                GroupName = groupName.Trim(),
-                DefaultRights = 0 // No permissions by default
-            };
-
-            var response = await UserGroupService.CreateGroupAsync(newGroup, currentUserId);
-            if (response.Result)
-            {
-                NotificationService.Notify(NotificationSeverity.Success, "Success", "Group created successfully.");
-                newGroupName = string.Empty; // clear input
-                await LoadGroups();
-            }
-            else
-            {
-                NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
-            }
-        }
+        var result = await DialogService.OpenAsync<GroupUsersDialog>("Group Users", 
+            new Dictionary<string, object> { { "GroupId", 0 }, { "currentUserId", currentUserId } },
+            new DialogOptions() { Width = "700px", Height = "500px", Resizable = true, Draggable = true });
+        
+        // Reload groups after the dialog closes (if a new group was created/saved)
+        await LoadGroups();
     }
 
     private async Task OnEditGroup(UserGroup group)
