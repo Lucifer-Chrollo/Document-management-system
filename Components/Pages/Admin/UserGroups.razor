@@ -19,15 +19,10 @@
 
     <hr style="border-top: 2px solid #e0e0e0; margin: 0;" />
 
-    <!-- Inline Add New Group Form -->
+    <!-- Toolbar Area -->
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" class="mt-2 mb-3">
-        <RadzenIcon Icon="add" Style="font-size: 1.8rem; color: #0078d4; font-weight: bold;" />
-        <RadzenText TextStyle="TextStyle.H6" class="m-0" Style="color: #0078d4; font-weight: bold;">Add New Group</RadzenText>
-        
-        <RadzenTextBox @bind-Value="newGroupName" Placeholder="" Style="width: 250px; border: 1px solid #ccc; border-radius: 0;" />
-        
-        <RadzenButton Text="Add" Click="@OnAddGroup" Disabled="@string.IsNullOrWhiteSpace(newGroupName)" 
-                      ButtonStyle="ButtonStyle.Light" Style="border: 1px solid #aaa; border-radius: 0; padding: 0 20px; color: #333;" />
+        <RadzenButton class="rz-border-radius-1" Icon="add" Text="Add New Group" ButtonStyle="ButtonStyle.Light" 
+                      Click="@OnAddGroup" Style="font-weight: bold; color: #0078d4; border: 1px solid #0078d4; padding: 0 20px;" />
     </RadzenStack>
 
     <!-- Data Grid -->
@@ -98,24 +93,36 @@
 
     private async Task OnAddGroup()
     {
-        if (string.IsNullOrWhiteSpace(newGroupName)) return;
+        var result = await DialogService.OpenAsync("Create New Group", ds =>
+        @<RadzenStack Gap="1.5rem">
+            <RadzenText TextStyle="TextStyle.Body1">Enter the name for the new User Group:</RadzenText>
+            <RadzenTextBox @bind-Value="newGroupName" style="width: 100%; border: 1px solid #ccc;" autofocus />
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.End">
+                <RadzenButton Text="Cancel" Click="() => ds.Close(null)" ButtonStyle="ButtonStyle.Light" />
+                <RadzenButton Text="Create" Click="() => ds.Close(newGroupName)" ButtonStyle="ButtonStyle.Primary" Disabled="@string.IsNullOrWhiteSpace(newGroupName)" />
+            </RadzenStack>
+        </RadzenStack>,
+        new DialogOptions() { Width = "400px", Resizable = false, Draggable = true });
 
-        var newGroup = new UserGroup 
-        { 
-            GroupName = newGroupName.Trim(),
-            DefaultRights = 0 // No permissions by default
-        };
+        if (result is string groupName && !string.IsNullOrWhiteSpace(groupName))
+        {
+            var newGroup = new UserGroup 
+            { 
+                GroupName = groupName.Trim(),
+                DefaultRights = 0 // No permissions by default
+            };
 
-        var response = await UserGroupService.CreateGroupAsync(newGroup, currentUserId);
-        if (response.Result)
-        {
-            NotificationService.Notify(NotificationSeverity.Success, "Success", "Group created successfully.");
-            newGroupName = string.Empty; // clear input
-            await LoadGroups();
-        }
-        else
-        {
-            NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
+            var response = await UserGroupService.CreateGroupAsync(newGroup, currentUserId);
+            if (response.Result)
+            {
+                NotificationService.Notify(NotificationSeverity.Success, "Success", "Group created successfully.");
+                newGroupName = string.Empty; // clear input
+                await LoadGroups();
+            }
+            else
+            {
+                NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
+            }
         }
     }
 
