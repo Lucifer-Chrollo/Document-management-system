@@ -28,6 +28,8 @@ public class UserGroupMember
     [NotMapped]
     public string? Email { get; set; }
     [NotMapped]
+    public string? DepartmentName { get; set; }
+    [NotMapped]
     public string? Role { get; set; } = "Member";
     [NotMapped]
     public DateTime JoinedDate { get; set; } = DateTime.UtcNow;

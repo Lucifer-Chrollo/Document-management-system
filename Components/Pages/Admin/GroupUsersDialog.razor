@@ -6,58 +6,56 @@
 @inject NotificationService NotificationService
 @inject DialogService DialogService
 
-<RadzenStack Gap="1rem" Style="padding: 1rem;">
+<RadzenStack Gap="0.5rem" Style="padding: 0.5rem; background: #f9f9f9; border: 1px solid #7bc6e6;">
     <!-- Top Section: Group Context and Permissions -->
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1.5rem" Wrap="FlexWrap.Wrap">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" Wrap="FlexWrap.NoWrap" Style="background: white; padding: 0.5rem; border: 1px solid #ccc;">
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-            <RadzenText TextStyle="TextStyle.Body1" class="m-0" Style="font-weight: bold; min-width: 100px;">Selected Group</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body2" class="m-0" Style="min-width: 90px;">Selected Group</RadzenText>
             <RadzenDropDown @bind-Value="GroupId" Data="@groups" TextProperty="GroupName" ValueProperty="GroupId" 
-                            Style="width: 200px;" Change="@OnGroupChanged" />
+                            Style="width: 150px; height: 30px; line-height: 30px;" Change="@OnGroupChanged" />
         </RadzenStack>
 
         @if (selectedGroup != null)
         {
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
-                <RadzenText TextStyle="TextStyle.Body1" class="m-0" Style="color: #666;">Group Permissions</RadzenText>
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Style="margin-left: 2rem;">
+                <RadzenText TextStyle="TextStyle.Body2" class="m-0" Style="color: #333;">Group Permissions</RadzenText>
                 
                 <RadzenCheckBox @bind-Value="@canReadBool" Name="canRead" Change="@((bool args) => OnPermissionChanged(1, args))" TValue="bool" />
-                <RadzenLabel Text="Read" Component="canRead" class="ms-1 rz-text-body2" />
+                <RadzenLabel Text="CanRead" Component="canRead" class="ms-1 rz-text-body2" Style="margin-right: 0.5rem;" />
 
                 <RadzenCheckBox @bind-Value="@canWriteBool" Name="canWrite" Change="@((bool args) => OnPermissionChanged(2, args))" TValue="bool" />
-                <RadzenLabel Text="Write" Component="canWrite" class="ms-1 rz-text-body2" />
+                <RadzenLabel Text="CanWrite" Component="canWrite" class="ms-1 rz-text-body2" Style="margin-right: 0.5rem;" />
 
                 <RadzenCheckBox @bind-Value="@canDeleteBool" Name="canDelete" Change="@((bool args) => OnPermissionChanged(4, args))" TValue="bool" />
-                <RadzenLabel Text="Delete" Component="canDelete" class="ms-1 rz-text-body2" />
+                <RadzenLabel Text="CanDelete" Component="canDelete" class="ms-1 rz-text-body2" />
             </RadzenStack>
         }
     </RadzenStack>
 
-    <hr style="border-top: 1px solid #e0e0e0; margin: 0.5rem 0;" />
-
     <!-- Middle Section: User Assignment -->
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-        <RadzenText TextStyle="TextStyle.Body2" class="m-0" Style="min-width: 130px;">Add a User to this Group</RadzenText>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Style="background: white; padding: 0.5rem; border: 1px solid #ccc; border-top: none;">
+        <RadzenText TextStyle="TextStyle.Body2" class="m-0" Style="min-width: 140px;">Add a User to this Group</RadzenText>
         
         <RadzenDropDown @bind-Value="selectedUserIdToAdd" Data="@availableUsers" 
                         TextProperty="UserName" ValueProperty="Id" 
                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
-                        AllowClear="true" Placeholder="Select a User..." Style="flex: 1; max-width: 300px;" />
+                        AllowClear="true" Style="width: 250px; height: 30px; line-height: 30px;" />
 
         <RadzenButton Text="Add User" Click="@OnAddUser" Disabled="@(selectedUserIdToAdd == 0)" 
-                      ButtonStyle="ButtonStyle.Light" Style="border: 1px solid #aaa; border-radius: 0; padding: 0 15px; color: #333;" />
+                      ButtonStyle="ButtonStyle.Light" Style="border: 1px solid #aaa; border-radius: 0; padding: 0 15px; height: 30px; color: #333; margin-left:1rem;" />
     </RadzenStack>
 
     <!-- Bottom Section: Current Members Grid -->
     <RadzenDataGrid Data="@members" TItem="UserGroupMember" IsLoading="@isLoadingMembers"
-                    Style="border: 1px solid #ccc; border-radius: 0; min-height: 250px;"
+                    Style="border: 1px solid #ccc; border-radius: 0; min-height: 150px;"
                     AllowSorting="true">
         <Columns>
-            <RadzenDataGridColumn TItem="UserGroupMember" Property="FullName" Title="User Name" />
-            <RadzenDataGridColumn TItem="UserGroupMember" Property="Email" Title="Email" />
-            <RadzenDataGridColumn TItem="UserGroupMember" Title="Action" Width="100px" TextAlign="TextAlign.Center">
+            <RadzenDataGridColumn TItem="UserGroupMember" Property="UserName" Title="User Name" />
+            <RadzenDataGridColumn TItem="UserGroupMember" Property="DepartmentName" Title="Department" />
+            <RadzenDataGridColumn TItem="UserGroupMember" Title="Action" Width="80px" TextAlign="TextAlign.Center">
                 <Template Context="member">
-                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" 
-                                  Click="@(() => OnRemoveUser(member))" Style="color: #d32f2f; background: transparent; font-weight: bold;" Tooltip="Remove User" />
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" 
+                                  Click="@(() => OnRemoveUser(member))" Style="color: #d32f2f; background: transparent; font-weight: bold; font-size: 1.2rem;" />
                 </Template>
             </RadzenDataGridColumn>
         </Columns>

@@ -82,9 +82,10 @@ public class UserGroupService : IUserGroupService
     public async Task<IEnumerable<UserGroupMember>> GetGroupMembersDetailedAsync(int groupId)
     {
         var sql = @"
-            SELECT gm.*, u.UserName as UserName, u.Email as Email
+            SELECT gm.*, u.UserName as UserName, u.Email as Email, d.DepartmentName as DepartmentName
             FROM UserGroupMembers gm
             INNER JOIN Users u ON gm.UserId = u.Id
+            LEFT JOIN Departments d ON u.DepartmentId = d.DepartmentId
             WHERE gm.GroupId = @GroupId";
 
         DbCommand command = _db.GetSqlStringCommand(sql);
@@ -378,7 +379,8 @@ public class UserGroupService : IUserGroupService
             Role = GetString(reader, "Role"),
             JoinedDate = GetDateTime(reader, "JoinedDate"),
             UserName = GetString(reader, "UserName"),
-            Email = GetString(reader, "Email")
+            Email = GetString(reader, "Email"),
+            DepartmentName = GetString(reader, "DepartmentName")
         };
     }
 
