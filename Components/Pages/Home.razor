@@ -1,6 +1,8 @@
 ﻿@page "/"
 @inject IDocumentService DocumentService
 @inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
 
 <PageTitle>Dashboard - Document Management System</PageTitle>
 
@@ -136,54 +138,3 @@
         </RadzenColumn>
     </RadzenRow>
 </RadzenStack>
-
-@code {
-    private int totalDocuments;
-    private long totalSize;
-    private IEnumerable<Document> recentDocuments = Enumerable.Empty<Document>();
-
-    protected override async Task OnInitializedAsync()
-    {
-        totalDocuments = await DocumentService.GetCountAsync();
-        totalSize = await DocumentService.GetTotalSizeAsync();
-        recentDocuments = await DocumentService.GetAllAsync(); // Just get all for now, or filter top 10 if service supports
-        recentDocuments = recentDocuments.Take(10).ToList();
-    }
-
-    private void OnDocumentClick(DataGridRowMouseEventArgs<Document> args)
-    {
-        NavigationManager.NavigateTo($"/documents/{args.Data.DocumentId}");
-    }
-
-    private async Task DownloadDocument(Document doc)
-    {
-        // TODO: Implement download
-        await Task.CompletedTask;
-    }
-
-    private static string FormatFileSize(long bytes)
-    {
-        string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-        int order = 0;
-        double size = bytes;
-        while (size >= 1024 && order < sizes.Length - 1)
-        {
-            order++;
-            size /= 1024;
-        }
-        return $"{size:0.##} {sizes[order]}";
-    }
-
-     private static string GetFileIcon(string? ext) => ext?.ToLowerInvariant() switch
-    {
-        ".pdf" => "picture_as_pdf", ".doc" or ".docx" => "description",
-        ".xls" or ".xlsx" => "table_chart", ".jpg" or ".jpeg" or ".png" => "image",
-        _ => "insert_drive_file"
-    };
-
-    private static string GetIconClass(string? ext) => ext?.ToLowerInvariant() switch
-    {
-        ".pdf" => "pdf", ".doc" or ".docx" => "word", ".xls" or ".xlsx" => "excel",
-        ".jpg" or ".jpeg" or ".png" => "image", _ => "default"
-    };
-}

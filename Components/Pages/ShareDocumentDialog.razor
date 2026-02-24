@@ -1,4 +1,4 @@
-@using Radzen
+﻿@using Radzen
 @using Radzen.Blazor
 @using DocumentManagementSystem.Models
 @using DocumentManagementSystem.Services
@@ -28,21 +28,3 @@
         <RadzenButton Text="Share" Click="@OnShare" ButtonStyle="ButtonStyle.Primary" Disabled="@(selectedGroupId == 0)" />
     </RadzenStack>
 </RadzenStack>
-
-@code {
-    [Parameter] public string DocumentName { get; set; } = "";
-    
-    private IEnumerable<UserGroup> groups = Enumerable.Empty<UserGroup>();
-    private int selectedGroupId;
-    private int rights = 1;
-
-    protected override async Task OnInitializedAsync()
-    {
-        groups = await UserGroupService.GetAllGroupsAsync();
-    }
-
-    private void OnShare()
-    {
-        DialogService.Close(new { GroupId = selectedGroupId, Rights = rights });
-    }
-}

@@ -22,7 +22,7 @@ public class CompressionService : ICompressionService
         ".zip", ".rar", ".7z", ".gz", ".bz2", ".xz",
         ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".webm",
         ".mp3", ".aac", ".flac", ".ogg", ".wma",
-        // Images removed to allow attempted compression
+        ".jpg", ".jpeg", ".png", ".gif", ".webp",
         ".exe", ".dll"
     };
 

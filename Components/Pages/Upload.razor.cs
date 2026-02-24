@@ -112,7 +112,7 @@ public partial class Upload
     }
     private void OnFilesSelected(InputFileChangeEventArgs e)
     {
-        foreach (var file in e.GetMultipleFiles(100))
+        foreach (var file in e.GetMultipleFiles(10000))
         {
             if (!selectedFiles.Any(f => f.Name == file.Name && f.Size == file.Size))
             {

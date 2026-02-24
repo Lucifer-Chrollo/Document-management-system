@@ -1,0 +1,134 @@
+﻿@page "/admin/documents"
+@using DocumentManagementSystem.Models
+@using DocumentManagementSystem.Services
+@inject IDocumentService DocumentService
+@inject NotificationService NotificationService
+@inject DialogService DialogService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+@using Microsoft.JSInterop
+
+<PageTitle>Document Management - Admin - DMS</PageTitle>
+
+<RadzenStack Gap="1rem" Style="padding: 1rem;">
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+            <RadzenIcon Icon="admin_panel_settings" Style="font-size: 1.75rem; color: var(--rz-primary);" />
+            <RadzenStack Gap="0">
+                <RadzenText TextStyle="TextStyle.H5" class="m-0">Document Management</RadzenText>
+                <RadzenText TextStyle="TextStyle.Caption" class="text-muted">View and manage all documents including password-protected ones</RadzenText>
+            </RadzenStack>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+            <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@($"{allDocuments.Count()} total")" />
+            <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="@($"{protectedCount} protected")" />
+        </RadzenStack>
+    </RadzenStack>
+
+    @* Filters row *@
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" Wrap="FlexWrap.Wrap">
+            <RadzenTextBox Placeholder="Search documents..." @bind-Value="@searchQuery"
+                           Style="width: 250px;" @onkeyup="@((e) => { if(e.Key == "Enter") ApplyFilter(); })" />
+            <RadzenButton Icon="search" ButtonStyle="ButtonStyle.Primary" Click="@ApplyFilter" />
+            <RadzenDropDown TValue="string" Data="@filterOptions" @bind-Value="@selectedFilter"
+                            Placeholder="Filter..." Change="@ApplyFilter" Style="width: 200px;" />
+            <RadzenButton Icon="clear" Text="Clear" ButtonStyle="ButtonStyle.Light" Click="@ClearFilters" />
+        </RadzenStack>
+    </RadzenCard>
+
+    <RadzenDataGrid @ref="grid" Data="@filteredDocuments" TItem="Document" IsLoading="@isLoading"
+                    AllowColumnResize="true" AllowSorting="true" AllowFiltering="true"
+                    FilterMode="FilterMode.Simple" PagerPosition="PagerPosition.Bottom"
+                    AllowPaging="true" PageSize="15"
+                    Style="border: 1px solid #ccc;">
+        <Columns>
+            <RadzenDataGridColumn TItem="Document" Property="DocumentId" Title="ID" Width="70px" TextAlign="TextAlign.Center" />
+            
+            <RadzenDataGridColumn TItem="Document" Property="DocumentName" Title="Document Name" Width="280px">
+                <Template Context="doc">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                        <RadzenIcon Icon="@GetFileIcon(doc.Extension)" Style="font-size: 1.2rem;" />
+                        <RadzenLink Path="@($"/documents/{doc.DocumentId}")" Text="@doc.DocumentName" 
+                                    Style="font-weight: 500;" />
+                        @if (!string.IsNullOrEmpty(doc.Password))
+                        {
+                            <RadzenIcon Icon="lock" Style="font-size: 0.9rem; color: #fbc02d;" />
+                        }
+                    </RadzenStack>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="Document" Property="CategoryName" Title="Category" Width="130px" />
+            <RadzenDataGridColumn TItem="Document" Property="UserName" Title="Uploaded By" Width="130px" />
+            
+            <RadzenDataGridColumn TItem="Document" Property="FileSize" Title="Size" Width="100px">
+                <Template Context="doc">
+                    @FormatFileSize(doc.FileSize)
+                </Template>
+            </RadzenDataGridColumn>
+            
+            <RadzenDataGridColumn TItem="Document" Property="UploadedDate" Title="Uploaded" Width="130px">
+                <Template Context="doc">
+                    @doc.UploadedDate.ToString("MMM dd, yyyy")
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="Document" Title="Password" Width="200px" Sortable="false" Filterable="false">
+                <Template Context="doc">
+                    @if (!string.IsNullOrEmpty(doc.Password))
+                    {
+                        @if (revealedPasswords.ContainsKey(doc.DocumentId))
+                        {
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.3rem">
+                                <RadzenText TextStyle="TextStyle.Body2" class="m-0" 
+                                            Style="font-family: monospace; background: #f0f0f0; padding: 2px 8px; border-radius: 4px;">
+                                    @revealedPasswords[doc.DocumentId]
+                                </RadzenText>
+                                <RadzenButton Icon="content_copy" Size="ButtonSize.ExtraSmall" Variant="Variant.Text"
+                                              Click="@(() => CopyPassword(doc))" Tooltip="Copy to clipboard" />
+                                <RadzenButton Icon="visibility_off" Size="ButtonSize.ExtraSmall" Variant="Variant.Text"
+                                              Click="@(() => revealedPasswords.Remove(doc.DocumentId))" Tooltip="Hide" />
+                            </RadzenStack>
+                        }
+                        else
+                        {
+                            <RadzenButton Icon="visibility" Text="Reveal" Size="ButtonSize.ExtraSmall"
+                                          ButtonStyle="ButtonStyle.Warning" Variant="Variant.Outlined"
+                                          Click="@(() => RevealPassword(doc))" Tooltip="Show document password" />
+                        }
+                    }
+                    else
+                    {
+                        <RadzenText TextStyle="TextStyle.Caption" class="text-muted">No password</RadzenText>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="Document" Property="Status" Title="Status" Width="100px" TextAlign="TextAlign.Center">
+                <Template Context="doc">
+                    <RadzenBadge BadgeStyle="@(doc.Status == "Active" ? BadgeStyle.Success : BadgeStyle.Warning)"
+                                 Text="@doc.Status" />
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="Document" Title="Actions" Width="160px" TextAlign="TextAlign.Center" 
+                                  Sortable="false" Filterable="false">
+                <Template Context="doc">
+                    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.ExtraSmall"
+                                   Click="@(() => ViewDocument(doc))" Tooltip="View (bypasses password)" />
+                    <RadzenButton Icon="download" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.ExtraSmall"
+                                   Click="@(() => DownloadDocument(doc))" Tooltip="Download (bypasses password)" />
+                    @if (!string.IsNullOrEmpty(doc.Password))
+                    {
+                        <RadzenButton Icon="lock_open" ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.ExtraSmall"
+                                       Click="@(() => RemovePassword(doc))" Tooltip="Remove password protection" />
+                    }
+                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall"
+                                   Click="@(() => DeleteDocument(doc))" Tooltip="Delete" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</RadzenStack>

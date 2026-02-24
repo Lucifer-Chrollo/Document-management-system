@@ -103,9 +103,11 @@ public class UserGroupService : IUserGroupService
     public async Task<IEnumerable<UserGroup>> GetGroupsForUserAsync(int userId)
     {
         var sql = @"
-            SELECT g.*
+            SELECT g.*, COALESCE(u.FirstName, '') + ' ' + COALESCE(u.LastName, '') as CreatorName,
+                   (SELECT COUNT(1) FROM UserGroupMembers WHERE GroupId = g.GroupId) as MemberCount
             FROM UserGroups g
             INNER JOIN UserGroupMembers gm ON g.GroupId = gm.GroupId
+            LEFT JOIN Users u ON g.CreatedBy = u.Id
             WHERE gm.UserId = @UserId";
 
         DbCommand command = _db.GetSqlStringCommand(sql);

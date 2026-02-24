@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/">
+    <title>Document Management System</title>
+    
+    
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/material-base.css">
+    
+    
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css">
+    
+    
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="DocumentManagementSystem.styles.css">
+    
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!--Blazor:{"type":"server","prerenderId":"bc5a87fd60584431b64df9cc11923314","key":{"locationHash":"77D12F14A8105320B1AAED6AE7E689DA0EC4483270A645E84079EAA0FFDF550D:6","formattedComponentKey":""},"sequence":0,"descriptor":"CfDJ8BnOCDQLp2tCtzM9rjNpVoNepJNAc5y5t6xD4Vvx494Y\u002Brvjx9EmzDk3SXEdTu\u002BWRDWB0FLm0wLNJmKc5IruDvpujS37CGfV5rtZo\u002Bu/zQ07azV8KLwGrCg8FehaYCiYkNXAxkRjV3ojenXVmNj2jqftGmGTvwl2snS60Bff7H8c6CLHqsgFg7L90PcmwkQs99sakPbuQyUqScz\u002BHu7bHAVW1Skw3Lx9JNJ\u002B/A/Z12V3IpwyyLJyfGLpZ\u002BiWCUMkqwTL9\u002BEZOCWIHZ6SCjNxic0SZ\u002BpgHC3BjbO\u002B52jEksnrOmzkx3rdmP2SXxGH\u002BubQJnviNPQX1LcphFIUfJN35\u002BOf73/\u002B5va/Q99t5PUKf3\u002BWVMNUN3/A2mSh\u002BkS/m6RvlhbvmkoPrHm4qtJemJc/4R8TKEkDw/0nW4OhNyBePDub6l/vD3uGVhNTCW/gxOFoE1sMGxq/3Yq2id3wy7owTZ5kOiZWIu1aw/sI2iF8KxXwRJ\u002BWfu24wqAI1FuIq0WX96YPUWoG6NS3PbMnFLVJctRODJV36kI8Yr/4qD8ChNTOJgaMmtGt\u002B93ANAerGPPhmnXQtyUeTHWpCbaVoMldKFQ="}--><title>Login - DMS</title><!--Blazor:{"prerenderId":"bc5a87fd60584431b64df9cc11923314"}--></head>
+
+<body><!--Blazor:{"type":"server","prerenderId":"122254850967449199f4d87b4880325a","key":{"locationHash":"8D7C83E7122B603D902BF056F22D22C65F431F13B01CFA29779EE65730AC61DA:9","formattedComponentKey":""},"sequence":1,"descriptor":"CfDJ8BnOCDQLp2tCtzM9rjNpVoNEO//xe\u002ByXYgrK6sSLawknP2UrousDcps5whM0C4bCHdms4eoX\u002Bcl5IwvlMq5UjZZWAu8Jc\u002BRDFVPjWJNlTdeTLIWex\u002BLcaJ/qLA5GDWYGoZPvkJB23aIZE3S\u002BH2VSzLUs/WuMn/IcQBcWXeppKPrWR5PzWXwvlzLaLCoe8yODEFt4emaUJsZUuXXc7gSiRnSwR/HPkVRSVDyNvbSIS15hcJmam4XmLwd3GY/hyuOQFYoJvQiU86mE/MD9xxCmr/QHIpJV8mLcacUEWG/BUvrgOMe38rtQkT3JOq0PphgfVrm17tpAKHBwWYmxkzwaAiWnDFanj5PN/fpBYM4cdtgSkz79wAQpZ2d9FRRkSNGrPoa82mHPmn2AWpTJvug9Nu//J6igbhFwnIkgNxEaJcAMLKXRclxCjpsl4XzHXSSxshFVSXjTj7TsO0AcfMmNfqx0kA9aQX90goYct9\u002B7nQsA17wF8ZnhupS13yu6qqtXanmyD\u002BdYMH4ezMT0QaytxRnO7yotvTUv2Tb/kYxqp9MRqz5QYn/iMpnTJC3nhlAMAA=="}--><div class="page" style="display: block;"><main>
+
+    <div class="rz-stack rz-display-flex rz-flex-column rz-align-items-center rz-justify-content-center" style="height: 100vh; background-color: #f4f6f9;;flex-wrap:nowrap;" id="O00yPcsYuU">    <div class="rz-card rz-variant-filled rz-shadow-7" style="width: 100%; max-width: 400px; padding: 2rem;" id="MPKxuokNGU">    <div class="rz-stack rz-display-flex rz-flex-column rz-align-items-normal rz-justify-content-normal" style="--rz-gap:1.5rem;flex-wrap:nowrap;" id="Mxlj0KeQcE">    <div class="rz-stack rz-display-flex rz-flex-column rz-align-items-center rz-justify-content-normal" style="--rz-gap:0.5rem;flex-wrap:nowrap;" id="SP-675ahwU">    <i style="font-size: 3rem; color: #4340d2;" class="rzi" id="yJgFtlp3Xk">lock</i>
+
+                <h5 class="rz-text-h5" id="LyNST2RVnE">Sign In</h5></div>
+<form method="post" action="/account/login">    <div class="rz-stack rz-display-flex rz-flex-column rz-align-items-normal rz-justify-content-normal" style="--rz-gap:1rem;flex-wrap:nowrap;" id="4PB6BDTVn0">    <div class="rz-col-12" style="" id="KrIyfFzRXE"><label class="rz-label" id="U0EaZBb2kU">Username</label>
+
+                        <input class="rz-textbox" style="width: 100%;" name="username" required placeholder="admin"></div>
+
+                    
+                        <div class="rz-col-12" style="" id="-HtIWNdUMk"><label class="rz-label" id="es-DJDlWaU">Password</label>
+
+                        <input class="rz-textbox" style="width: 100%;" type="password" name="password" required placeholder="Admin@123"></div>
+
+                    
+                    <input type="hidden" name="returnUrl" value="/api/files/download/12041" />
+
+                        <button style="width: 100%;" type="submit" class="rz-button rz-button-md rz-variant-filled rz-primary rz-shade-default" id="nIvMvqMGO0">
+        <span class="rz-button-box">
+                        <span class="rz-button-text">Sign In</span>
+        </span>
+    </button>
+</div>
+</form>
+
+            <span style="margin: 0.5rem 0;" class="rz-text-caption rz-text-align-center" id="rFD4irBjKk">OR</span>
+
+            <form method="post" action="/account/loginexternal"><input type="hidden" name="provider" value="Google">
+                <input type="hidden" name="returnUrl" value="/api/files/download/12041" />
+                    <button style="width: 100%;" type="submit" class="rz-button rz-button-md rz-variant-outlined rz-secondary rz-shade-default" id="sv6UbsNYL0">
+        <span class="rz-button-box">
+                        <i class="rz-button-icon-left rzi">google</i>
+                        <span class="rz-button-text">Sign in with Google</span>
+        </span>
+    </button>
+</form>
+            
+                <div class="rz-stack rz-display-flex rz-flex-row rz-align-items-normal rz-justify-content-center" style=";flex-wrap:nowrap;" id="t4skv6vvqk"><p class="rz-text-body2" id="0VSZ-gYW3E">Don&#x27;t have an account?</p>
+                    <a href="/register" TextStyle="TextStyle.Body2" id="2UCCnukEKE" class="rz-link">
+        <span class="rz-link-text">Sign Up</span>
+    </a>
+</div>
+</div>
+</div>
+</div>
+</main></div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href class="reload">Reload</a>
+    <a class="dismiss">🗙</a></div>
+            <!--Blazor:{"prerenderId":"122254850967449199f4d87b4880325a"}-->
+    <script type="module" src="Components/Layout/ReconnectModal.razor.js" b-yewlzkoo1z></script>
+
+<dialog id="components-reconnect-modal" data-nosnippet b-yewlzkoo1z><div class="components-reconnect-container" b-yewlzkoo1z><div class="components-rejoining-animation" aria-hidden="true" b-yewlzkoo1z><div b-yewlzkoo1z></div>
+            <div b-yewlzkoo1z></div></div>
+        <p class="components-reconnect-first-attempt-visible" b-yewlzkoo1z>
+            Rejoining the server...
+        </p>
+        <p class="components-reconnect-repeated-attempt-visible" b-yewlzkoo1z>
+            Rejoin failed... trying again in <span id="components-seconds-to-next-attempt" b-yewlzkoo1z></span> seconds.
+        </p>
+        <p class="components-reconnect-failed-visible" b-yewlzkoo1z>
+            Failed to rejoin.<br b-yewlzkoo1z>Please retry or reload the page.
+        </p>
+        <button id="components-reconnect-button" class="components-reconnect-failed-visible" b-yewlzkoo1z>
+            Retry
+        </button>
+        <p class="components-pause-visible" b-yewlzkoo1z>
+            The session has been paused by the server.
+        </p>
+        <p class="components-resume-failed-visible" b-yewlzkoo1z>
+            Failed to resume the session.<br b-yewlzkoo1z>Please retry or reload the page.
+        </p>
+        <button id="components-resume-button" class="components-pause-visible components-resume-failed-visible" b-yewlzkoo1z>
+            Resume
+        </button></div></dialog>
+    
+    
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <script src="js/download.js"></script>
+    <script src="_framework/blazor.web.js"></script>
+    <script>
+        window.clickElement = (id) => {
+            const el = document.getElementById(id);
+            if (el) el.click();
+        };
+    </script></body></html><!--Blazor-Server-Component-State:CfDJ8BnOCDQLp2tCtzM9rjNpVoON8+k8Fcyo6B1FjfhvxvgN19TtdAv7t+l8zTFCfeEP0pPVfW0UovkLoKaVJDmKuSNNXRHQmdDbfRhhh0yZ30YTUUMxUSFc/whiSuJ241145J0TRGmj4jwY83T3pC0merHetkbnU6mxaevmepSXJaeRNig78DmumTaGsJsGubDipEMWkCK72nA61fn0AEueInarHi9vAltKa/of3nhYrDvHAgnUPsyjxHpRxl/+3yN9V2d5rKnTGl2PB7ubFJrE2rSGfSHNO3rCxKa0z+OOXiGNj1bsUDQS4NTUCbbrYOgYw8GqGn7RyPlGUMxUuMFeLz5bXfAfc+K+c0+rzY+5eoNvYp4TuJNcNuYpb3tc6f1Ccce0L6dmtLGDJQ1sqG9zHs8xxyOcdynSwGpBbrMH+0L+4PBcdpgQJaXUlxndRZ7CXiMVBmQ23ZyzuomHna7vBIgrqLRmAoWzBTfkGD6Q2+TS1W9zRN0p81eVf8QBH4v+zNxamDVsWv+8puuCBj6BjY0JT18rWatPvqsa7nzcwQh9-->

@@ -1,4 +1,4 @@
-@page "/login/mfa"
+﻿@page "/login/mfa"
 @layout DocumentManagementSystem.Components.Layout.EmptyLayout
 
 <PageTitle>Verify 2FA - DMS</PageTitle>
@@ -35,13 +35,8 @@
             </form>
             
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
-                <RadzenLink Path="/login" Text="← Back to Login" TextStyle="TextStyle.Body2" />
+                <RadzenLink Path="/login" Text="â† Back to Login" TextStyle="TextStyle.Body2" />
             </RadzenStack>
         </RadzenStack>
     </RadzenCard>
 </RadzenStack>
-
-@code {
-    [SupplyParameterFromQuery(Name = "error")]
-    public string? ErrorMessage { get; set; }
-}

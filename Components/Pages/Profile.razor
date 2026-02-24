@@ -1,4 +1,4 @@
-@page "/profile"
+﻿@page "/profile"
 @using DocumentManagementSystem.Models
 @using DocumentManagementSystem.Services
 @using Microsoft.AspNetCore.Identity
@@ -83,7 +83,7 @@
                         <RadzenStack Gap="0.25rem">
                             <RadzenText Style="font-weight: 600;">Two-Factor Authentication</RadzenText>
                             <RadzenText class="text-muted" Style="font-size: 0.85rem;">
-                                @(currentUser.TwoFactorEnabled ? "✓ Enabled" : "Not enabled")
+                                @(currentUser.TwoFactorEnabled ? "âœ“ Enabled" : "Not enabled")
                             </RadzenText>
                         </RadzenStack>
                     </RadzenStack>
@@ -128,37 +128,3 @@
         </RadzenCard>
     }
 </RadzenStack>
-
-@code {
-    private ApplicationUser? currentUser;
-    private double storagePercentage;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        if (authState.User.Identity?.IsAuthenticated == true)
-        {
-            currentUser = await UserManager.GetUserAsync(authState.User);
-            if (currentUser != null && currentUser.StorageQuotaBytes > 0)
-            {
-                storagePercentage = (double)currentUser.StorageUsedBytes / currentUser.StorageQuotaBytes * 100;
-            }
-        }
-    }
-
-    private static string FormatSize(long bytes)
-    {
-        if (bytes < 1024) return $"{bytes} B";
-        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
-        if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024.0):F1} MB";
-        return $"{bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
-    }
-
-    private string GetInitials()
-    {
-        var first = !string.IsNullOrEmpty(currentUser?.FirstName) ? currentUser.FirstName[0].ToString().ToUpper() : "";
-        var last = !string.IsNullOrEmpty(currentUser?.LastName) ? currentUser.LastName[0].ToString().ToUpper() : "";
-        var initials = first + last;
-        return string.IsNullOrEmpty(initials) ? (currentUser?.UserName?[0].ToString().ToUpper() ?? "U") : initials;
-    }
-}

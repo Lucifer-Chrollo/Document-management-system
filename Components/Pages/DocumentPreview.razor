@@ -1,4 +1,4 @@
-@using DocumentManagementSystem.Models
+﻿@using DocumentManagementSystem.Models
 @inject DialogService DialogService
 
 <div style="height: 100%; width: 100%; min-height: 500px;">
@@ -10,8 +10,3 @@
 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="mt-3">
     <RadzenButton Text="Close" Click="() => DialogService.Close()" ButtonStyle="ButtonStyle.Light" />
 </RadzenStack>
-
-@code {
-    [Parameter]
-    public int DocumentId { get; set; }
-}

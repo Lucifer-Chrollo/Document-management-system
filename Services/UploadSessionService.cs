@@ -15,12 +15,12 @@ public interface IUploadSessionService
     /// <summary>
     /// Create a new upload session with generated token and PIN (Synchronous)
     /// </summary>
-    (UploadSession session, string pin) CreateSession(int userId, int expiryMinutes = 15, int maxFiles = 10, int? categoryId = null, string? label = null, string? ipAddress = null);
+    (UploadSession session, string pin) CreateSession(int userId, int expiryMinutes = 15, int maxFiles = 10000, int? categoryId = null, string? label = null, string? ipAddress = null);
 
     /// <summary>
     /// Create a new upload session with generated token and PIN
     /// </summary>
-    Task<(UploadSession session, string pin)> CreateSessionAsync(int userId, int expiryMinutes = 15, int maxFiles = 10, int? categoryId = null, string? label = null, string? ipAddress = null);
+    Task<(UploadSession session, string pin)> CreateSessionAsync(int userId, int expiryMinutes = 15, int maxFiles = 10000, int? categoryId = null, string? label = null, string? ipAddress = null);
     
     /// <summary>
     /// Get session by token (Synchronous)
@@ -139,7 +139,7 @@ public class UploadSessionService : IUploadSessionService
         _logger = logger;
     }
 
-    public (UploadSession session, string pin) CreateSession(int userId, int expiryMinutes = 15, int maxFiles = 10, int? categoryId = null, string? label = null, string? ipAddress = null)
+    public (UploadSession session, string pin) CreateSession(int userId, int expiryMinutes = 15, int maxFiles = 10000, int? categoryId = null, string? label = null, string? ipAddress = null)
     {
         var token = Guid.NewGuid().ToString("N");
         var pin = new Random().Next(100000, 999999).ToString(); // 6-digit PIN
@@ -191,7 +191,7 @@ public class UploadSessionService : IUploadSessionService
         }
     }
 
-    public Task<(UploadSession session, string pin)> CreateSessionAsync(int userId, int expiryMinutes = 15, int maxFiles = 10, int? categoryId = null, string? label = null, string? ipAddress = null)
+    public Task<(UploadSession session, string pin)> CreateSessionAsync(int userId, int expiryMinutes = 15, int maxFiles = 10000, int? categoryId = null, string? label = null, string? ipAddress = null)
     {
         return Task.Run(() => CreateSession(userId, expiryMinutes, maxFiles, categoryId, label, ipAddress));
     }

@@ -21,7 +21,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpGet("preview/{id}")]
-    public async Task<IActionResult> GetPreview(int id)
+    public async Task<IActionResult> GetPreview(int id, [FromQuery] string? pwd = null)
     {
         if (!await UserCanReadDocumentAsync(id)) return Forbid();
 
@@ -34,6 +34,16 @@ public class FilesController : ControllerBase
             {
                 _logger.LogWarning("Preview: Document {Id} not found by GetByIdAsync", id);
                 return NotFound($"Document {id} not found");
+            }
+
+            // Check Password Protection — Admins bypass
+            if (!string.IsNullOrEmpty(document.Password) && !HttpContext.User.IsInRole("Admin"))
+            {
+                if (pwd != document.Password)
+                {
+                    _logger.LogWarning("Preview denied for document {Id}: Invalid or missing password", id);
+                    return Unauthorized("This document is password protected.");
+                }
             }
 
             _logger.LogInformation("Preview: Document found - Name: {Name}, Extension: {Ext}, Path: {Path}", 
@@ -83,7 +93,7 @@ public class FilesController : ControllerBase
     }
 
     [HttpGet("download/{id}")]
-    public async Task<IActionResult> GetDownload(int id)
+    public async Task<IActionResult> GetDownload(int id, [FromQuery] string? pwd = null)
     {
         if (!await UserCanReadDocumentAsync(id)) return Forbid();
 
@@ -91,6 +101,16 @@ public class FilesController : ControllerBase
         {
             var document = await _documentService.GetByIdAsync(id);
             if (document == null) return NotFound();
+
+            // Check Password Protection — Admins bypass
+            if (!string.IsNullOrEmpty(document.Password) && !HttpContext.User.IsInRole("Admin"))
+            {
+                if (pwd != document.Password)
+                {
+                    _logger.LogWarning("Download denied for document {Id}: Invalid or missing password", id);
+                    return Unauthorized("This document is password protected.");
+                }
+            }
 
             var stream = await _documentService.DownloadAsync(id);
             if (stream == null) return NotFound();

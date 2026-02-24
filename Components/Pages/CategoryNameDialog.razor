@@ -1,4 +1,4 @@
-@using DocumentManagementSystem.Models
+﻿@using DocumentManagementSystem.Models
 
 <RadzenStack Gap="1rem" Style="padding: 1rem;">
     <RadzenLabel Text="Category Name" />
@@ -8,20 +8,3 @@
         <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" Click="@OnSave" Disabled="@string.IsNullOrWhiteSpace(categoryName)" />
     </RadzenStack>
 </RadzenStack>
-
-@code {
-    [Parameter] public string InitialName { get; set; } = "";
-    [Inject] public DialogService DialogService { get; set; } = default!;
-
-    private string categoryName = "";
-
-    protected override void OnInitialized()
-    {
-        categoryName = InitialName;
-    }
-
-    private void OnSave()
-    {
-        DialogService.Close(categoryName?.Trim());
-    }
-}

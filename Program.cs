@@ -10,6 +10,7 @@ using Microsoft.Practices.EnterpriseLibrary.Data.Sql;
 using Radzen;
 using Fluxor;
 using Fluxor.Blazor.Web.ReduxDevTools;
+using DocumentManagementSystem.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -127,6 +128,12 @@ builder.Services.AddFluxor(options =>
 // Add HTTP context accessor
 builder.Services.AddHttpContextAccessor();
 
+// Add SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.MaximumReceiveMessageSize = 100 * 1024 * 1024; // 100MB
+});
+
 var app = builder.Build();
 
 // Initialize Database Schema (ADO.NET)
@@ -179,6 +186,7 @@ app.UseSession();
 app.UseAntiforgery();
 
 app.MapControllers();
+app.MapHub<DocumentHub>("/documentHub");
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

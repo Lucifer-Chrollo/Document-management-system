@@ -62,7 +62,7 @@ public class DatabaseInitializer
                     );
                     
                     INSERT INTO Departments (DepartmentId, DepartmentName) VALUES 
-                    (1, 'Sales'), (2, 'HR'), (3, 'IT'), (4, 'Finance');
+                    (0, 'Unassigned'), (1, 'Sales'), (2, 'HR'), (3, 'IT'), (4, 'Finance');
                 END
 
                 -- Create Categories Table
@@ -90,7 +90,7 @@ public class DatabaseInitializer
                     );
 
                     INSERT INTO Locations (LocationId, LocationName) VALUES 
-                    (1, 'Main Office'), (2, 'Branch A');
+                    (0, 'Unassigned'), (1, 'Main Office'), (2, 'Branch A');
                 END
 
                 -- Create Documents Table

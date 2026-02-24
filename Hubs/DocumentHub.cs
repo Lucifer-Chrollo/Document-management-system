@@ -14,4 +14,14 @@ public class DocumentHub : Hub
     {
         await Clients.Others.SendAsync("DocumentChanged", action, documentId);
     }
+
+    /// <summary>
+    /// Broadcasts a message that a document was shared.
+    /// </summary>
+    public async Task NotifyFileShared(string sharedByUser, string documentName, int documentId, int? groupId = null)
+    {
+        // Broadcast to all clients for now. In a production app, we could map Context.ConnectionId to UserIds
+        // and only send to members of that specific group, but this suffices for the notification UI.
+        await Clients.Others.SendAsync("FileShared", sharedByUser, documentName, documentId, groupId);
+    }
 }

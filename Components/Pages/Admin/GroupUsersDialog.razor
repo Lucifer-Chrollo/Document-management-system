@@ -1,4 +1,4 @@
-@using Radzen
+﻿@using Radzen
 @using Radzen.Blazor
 @using DocumentManagementSystem.Models
 @using DocumentManagementSystem.Services
@@ -54,14 +54,14 @@
         <RadzenDropDown @bind-Value="selectedUserIdToAdd" Data="@availableUsers" 
                         TextProperty="UserName" ValueProperty="Id" 
                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true"
-                        AllowClear="true" Style="width: 250px; height: 30px; line-height: 30px;" Disabled="@(GroupId == 0)" />
+                        AllowClear="true" Style="width: 250px;" />
 
-        <RadzenButton Text="Add User" Click="@OnAddUser" Disabled="@(selectedUserIdToAdd == 0 || GroupId == 0)" 
-                      ButtonStyle="ButtonStyle.Light" Style="border: 1px solid #aaa; border-radius: 0; padding: 0 15px; height: 30px; color: #333; margin-left:1rem;" />
+        <RadzenButton Text="Add User" Click="@OnAddUser" Disabled="@(selectedUserIdToAdd == 0)" 
+                      ButtonStyle="ButtonStyle.Light" Style="border: 1px solid #aaa; border-radius: 0; padding: 0 15px; color: #333; margin-left:1rem;" />
     </RadzenStack>
 
     <!-- Bottom Section: Current Members Grid -->
-    <RadzenDataGrid Data="@members" TItem="UserGroupMember" IsLoading="@isLoadingMembers"
+    <RadzenDataGrid Data="@(GroupId == 0 ? pendingMembers : members)" TItem="UserGroupMember" IsLoading="@isLoadingMembers"
                     Style="border: 1px solid #ccc; border-radius: 0; min-height: 150px;"
                     AllowSorting="true">
         <Columns>
@@ -70,186 +70,9 @@
             <RadzenDataGridColumn TItem="UserGroupMember" Title="Action" Width="80px" TextAlign="TextAlign.Center">
                 <Template Context="member">
                     <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" 
-                                  Click="@(() => OnRemoveUser(member))" Style="color: #d32f2f; background: transparent; font-weight: bold; font-size: 1.2rem;" />
+                                    Click="@(() => OnRemoveUser(member))" Style="color: #d32f2f; background: transparent; font-weight: bold; font-size: 1.2rem;" />
                 </Template>
             </RadzenDataGridColumn>
         </Columns>
     </RadzenDataGrid>
 </RadzenStack>
-
-@code {
-    [Parameter] public int GroupId { get; set; }
-    [Parameter] public int currentUserId { get; set; }
-
-    private string newGroupName = string.Empty;
-    private IEnumerable<UserGroup> groups = Enumerable.Empty<UserGroup>();
-    private UserGroup? selectedGroup;
-    private IEnumerable<UserGroupMember> members = Enumerable.Empty<UserGroupMember>();
-    private IEnumerable<ApplicationUser> availableUsers = Enumerable.Empty<ApplicationUser>();
-    
-    private int selectedUserIdToAdd;
-    private bool isLoadingMembers = true;
-
-    // UI Bindings for permissions (integers mapped to booleans)
-    private bool canReadBool;
-    private bool canWriteBool;
-    private bool canDeleteBool;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadBaseData();
-        if (GroupId > 0)
-        {
-            await LoadGroupDetails();
-        }
-        else
-        {
-            isLoadingMembers = false;
-        }
-    }
-
-    private async Task LoadBaseData()
-    {
-        groups = await UserGroupService.GetAllGroupsAsync();
-        availableUsers = await UserGroupService.SearchUsersAsync(""); // load all users initially
-    }
-
-    private async Task LoadGroupDetails()
-    {
-        isLoadingMembers = true;
-        
-        selectedGroup = groups.FirstOrDefault(g => g.GroupId == GroupId);
-        if (selectedGroup != null)
-        {
-            canReadBool = (selectedGroup.DefaultRights & 1) == 1;
-            canWriteBool = (selectedGroup.DefaultRights & 2) == 2;
-            canDeleteBool = (selectedGroup.DefaultRights & 4) == 4;
-        }
-
-        members = await UserGroupService.GetGroupMembersDetailedAsync(GroupId);
-        selectedUserIdToAdd = 0; // reset dropdown
-        
-        isLoadingMembers = false;
-        StateHasChanged();
-    }
-
-    private async Task OnGroupChanged(object value)
-    {
-        if (value is int newGroupId)
-        {
-            GroupId = newGroupId;
-            await LoadGroupDetails();
-        }
-    }
-
-    private async Task OnPermissionChanged(int bit, bool isChecked)
-    {
-        if (GroupId == 0)
-        {
-            // Being constructed, do not auto-save.
-            return;
-        }
-
-        if (selectedGroup == null) return;
-
-        // Toggle the specific bit in DefaultRights
-        if (isChecked)
-            selectedGroup.DefaultRights |= bit;
-        else
-            selectedGroup.DefaultRights &= ~bit;
-
-        // Auto-save changes
-        var response = await UserGroupService.UpdateGroupAsync(selectedGroup, currentUserId);
-        
-        if (response.Result)
-        {
-            var permName = bit switch { 1 => "Read", 2 => "Write", 4 => "Delete", _ => "" };
-            // Unobtrusive save
-        }
-        else
-        {
-            // Revert on failure
-            if (isChecked)
-                selectedGroup.DefaultRights &= ~bit;
-            else
-                selectedGroup.DefaultRights |= bit;
-
-            canReadBool = (selectedGroup.DefaultRights & 1) == 1;
-            canWriteBool = (selectedGroup.DefaultRights & 2) == 2;
-            canDeleteBool = (selectedGroup.DefaultRights & 4) == 4;
-            NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
-        }
-    }
-
-    private async Task CreateNewGroup()
-    {
-        if (string.IsNullOrWhiteSpace(newGroupName)) return;
-
-        int defaultRights = 0;
-        if (canReadBool) defaultRights |= 1;
-        if (canWriteBool) defaultRights |= 2;
-        if (canDeleteBool) defaultRights |= 4;
-
-        var newGroup = new UserGroup 
-        { 
-            GroupName = newGroupName.Trim(),
-            DefaultRights = defaultRights
-        };
-
-        var response = await UserGroupService.CreateGroupAsync(newGroup, currentUserId);
-        if (response.Result)
-        {
-            NotificationService.Notify(NotificationSeverity.Success, "Success", "Group created successfully. You may now add users.");
-            
-            // Re-load groups to get the new group in the dropdown list
-            await LoadBaseData();
-            
-            // Switch out of "Create" mode into "Edit" mode for the newly created group
-            GroupId = (int)response.RecordID;
-            await LoadGroupDetails();
-        }
-        else
-        {
-            NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
-        }
-    }
-
-    private async Task OnAddUser()
-    {
-        if (selectedUserIdToAdd <= 0 || selectedGroup == null) return;
-
-        // Don't add if already a member
-        if (members.Any(m => m.UserId == selectedUserIdToAdd))
-        {
-            NotificationService.Notify(NotificationSeverity.Warning, "Info", "User is already in this group.");
-            return;
-        }
-
-        var response = await UserGroupService.AddUserToGroupAsync(selectedUserIdToAdd, GroupId);
-        
-        if (response.Result)
-        {
-            NotificationService.Notify(NotificationSeverity.Success, "Added", "User successfully added to group.");
-            await LoadGroupDetails(); // refresh member list
-        }
-        else
-        {
-            NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
-        }
-    }
-
-    private async Task OnRemoveUser(UserGroupMember member)
-    {
-        var response = await UserGroupService.RemoveUserFromGroupAsync(member.UserId, GroupId);
-        
-        if (response.Result)
-        {
-            NotificationService.Notify(NotificationSeverity.Success, "Removed", "User removed from group.");
-            await LoadGroupDetails(); // refresh member list
-        }
-        else
-        {
-            NotificationService.Notify(NotificationSeverity.Error, "Error", response.Message);
-        }
-    }
-}

@@ -1,4 +1,4 @@
-@using Radzen
+﻿@using Radzen
 @using Radzen.Blazor
 @using DocumentManagementSystem.Models
 @inject DialogService DialogService
@@ -28,16 +28,3 @@
         </RadzenStack>
     </RadzenStack>
 </RadzenTemplateForm>
-
-@code {
-    private UserGroup group = new();
-    private bool canRead = true;
-    private bool canWrite = false;
-    private bool canDelete = false;
-
-    private void OnSubmit(UserGroup model)
-    {
-        model.DefaultRights = (canRead ? 1 : 0) | (canWrite ? 2 : 0) | (canDelete ? 4 : 0);
-        DialogService.Close(model);
-    }
-}

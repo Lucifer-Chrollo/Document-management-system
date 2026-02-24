@@ -1,4 +1,4 @@
-@inject DialogService DialogService
+﻿@inject DialogService DialogService
 @using Radzen
 
 <RadzenStack Gap="1.5rem" Style="padding: 1rem;">
@@ -12,15 +12,3 @@
         <RadzenButton Text="Create" Click="@OnSave" ButtonStyle="ButtonStyle.Primary" Disabled="@string.IsNullOrWhiteSpace(categoryName)" />
     </RadzenStack>
 </RadzenStack>
-
-@code {
-    [Parameter] public string categoryName { get; set; } = string.Empty;
-
-    private void OnSave()
-    {
-        if (!string.IsNullOrWhiteSpace(categoryName))
-        {
-            DialogService.Close(categoryName);
-        }
-    }
-}

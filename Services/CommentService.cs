@@ -18,7 +18,7 @@ public class CommentService : ICommentService
 
     private const string SQL_SELECT_BY_DOC = @"
         SELECT c.ID, c.Comment, c.CommentBy, c.CommentDate, c.DocumentID,
-               u.FirstName + ' ' + ISNULL(u.LastName, '') AS CommentByName
+               COALESCE(NULLIF(TRIM(ISNULL(u.FirstName, '') + ' ' + ISNULL(u.LastName, '')), ''), u.UserName, 'User ' + CAST(c.CommentBy AS VARCHAR)) AS CommentByName
         FROM tblComment c
         LEFT JOIN Users u ON c.CommentBy = u.Id
         WHERE c.DocumentID = @DocumentID

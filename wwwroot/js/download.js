@@ -1,5 +1,12 @@
 window.downloadWithProgress = async (url, fileName, dotNetHelper) => {
-    const response = await fetch(url);
+    // Include credentials so the [Authorize] API controller doesn't block the request
+    const response = await fetch(url, { credentials: 'include' });
+
+    if (!response.ok) {
+        console.error("Download failed:", response.status, response.statusText);
+        throw new Error("Download failed: " + response.statusText);
+    }
+
     const reader = response.body.getReader();
     const contentLength = +response.headers.get('Content-Length');
 
@@ -18,7 +25,7 @@ window.downloadWithProgress = async (url, fileName, dotNetHelper) => {
 
         // Report progress back to .NET
         if (dotNetHelper) {
-            await dotNetHelper.invokeMethodAsync('OnDownloadProgress', receivedLength, contentLength);
+            await dotNetHelper.invokeMethodAsync('OnDownloadProgress', receivedLength, contentLength || 0);
         }
     }
 
@@ -30,7 +37,12 @@ window.downloadWithProgress = async (url, fileName, dotNetHelper) => {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    window.URL.revokeObjectURL(downloadUrl);
+
+    // Generous delay before revoking to ensure the browser has time to initiate the download 
+    // with the custom filename before the blob URL is garbage collected.
+    setTimeout(() => {
+        window.URL.revokeObjectURL(downloadUrl);
+    }, 2000);
 };
 
 window.triggerFileDownload = (url, fileName) => {
