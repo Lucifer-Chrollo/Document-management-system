@@ -9,14 +9,14 @@
 
 <PageTitle>Duplicate Files - DMS</PageTitle>
 
-<RadzenStack Gap="1.5rem" class="p-4">
-    <!-- Header -->
+<RadzenStack Gap="0.5rem" class="p-2 fade-in-up">
+    <!-- Header Area -->
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
         <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
-            <RadzenIcon Icon="content_copy" Style="font-size: 2rem; color: var(--rz-warning);" />
-            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Duplicate Files</RadzenText>
+            <RadzenIcon Icon="content_copy" Style="font-size: 1.5rem; color: #0071c1;" />
+            <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize" Style="margin: 0; font-weight: bold;">Duplicate Files</RadzenText>
         </RadzenStack>
-        <RadzenButton Text="Refresh" Icon="refresh" Click="@LoadDuplicates" ButtonStyle="ButtonStyle.Light" />
+        <RadzenButton Text="Refresh" Icon="refresh" Click="@LoadDuplicates" ButtonStyle="ButtonStyle.Light" class="search-button" />
     </RadzenStack>
 
     <!-- Stats Cards -->
@@ -81,8 +81,8 @@
             <RadzenCard class="mb-3">
                 <RadzenStack Gap="1rem">
                     <!-- Group Header -->
-                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
-                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center" Gap="0" class="zero-gap-stack">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0" AlignItems="AlignItems.Center" class="zero-gap-stack">
                             <RadzenIcon Icon="@GetFileIcon(firstDoc.Extension)" Style="font-size: 1.5rem;" />
                             <RadzenStack Gap="0">
                                 <RadzenText TextStyle="TextStyle.Subtitle1" Style="margin: 0;">
@@ -112,7 +112,7 @@
                                 <Template Context="doc">
                                     <RadzenButton Icon="visibility" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Info" 
                                                   Click="@(() => Navigation.NavigateTo($"/document/{doc.DocumentId}"))" Tooltip="View" />
-                                    <RadzenButton Icon="delete" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Danger" 
+                                    <RadzenButton Image="delete-x.png" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Danger" 
                                                   Click="@(() => DeleteDocument(doc))" Tooltip="Delete" />
                                 </Template>
                             </RadzenDataGridColumn>

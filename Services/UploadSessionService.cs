@@ -100,13 +100,13 @@ public class UploadSessionService : IUploadSessionService
     private const string SQL_SELECT_SESSION_BY_TOKEN = @"
         SELECT s.*, u.UserName 
         FROM UploadSessions s
-        JOIN Users u ON s.UserId = u.Id
+        JOIN Users u ON s.UserId = u.UserID
         WHERE s.Token = @Token AND s.IsActive = 1 AND s.ExpiresAt > @Now";
 
     private const string SQL_SELECT_USER_SESSIONS = @"
         SELECT s.*, u.UserName 
         FROM UploadSessions s
-        JOIN Users u ON s.UserId = u.Id
+        JOIN Users u ON s.UserId = u.UserID
         WHERE s.UserId = @UserId
         ORDER BY s.CreatedAt DESC";
 

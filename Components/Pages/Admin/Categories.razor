@@ -8,15 +8,19 @@
 @inject NotificationService NotificationService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
 
-<RadzenStack Gap="1rem">
-    <RadzenRow AlignItems="AlignItems.Center">
-        <RadzenColumn Size="12" SizeMD="6">
-            <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H1" class="m-0">Manage Categories</RadzenText>
-        </RadzenColumn>
-        <RadzenColumn Size="12" SizeMD="6" class="rz-text-align-start rz-text-align-md-end">
-            <RadzenButton Text="Add New Category" Icon="add_circle_outline" Click="@OnCreateCategory" ButtonStyle="ButtonStyle.Primary" />
-        </RadzenColumn>
-    </RadzenRow>
+<RadzenStack Gap="0.5rem" class="p-2 fade-in-up">
+    <!-- Header Area -->
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+        <RadzenIcon Icon="category" Style="font-size: 1.5rem; color: #0071c1;" />
+        <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize m-0" Style="font-weight: bold;">Manage Categories</RadzenText>
+    </RadzenStack>
+
+    <!-- Toolbar Area (Legacy Based) -->
+    <div class="card-body-D px-1 py-1">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" class="zero-gap-stack">
+            <RadzenButton Text="Add New Category" Icon="add_circle_outline" Click="@OnCreateCategory" class="search-button" />
+        </RadzenStack>
+    </div>
 
     <RadzenDataGrid @ref="grid" AllowFiltering="true" AllowPaging="true" PageSize="10"
                     AllowSorting="true" Data="@categories" TItem="Category" SelectionMode="DataGridSelectionMode.Single">
@@ -35,10 +39,10 @@
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="Category" Context="category" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="100px">
                 <Template Context="category">
-                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" 
+                    <RadzenButton Image="edit-icon.png" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" 
                                   Click="@(args => OnEditCategory(category))" @onclick:stopPropagation="true">
                     </RadzenButton>
-                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" 
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Image="delete-x.png" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Medium" 
                                   class="my-1 ms-1" Click="@(args => OnDeleteCategory(category))" @onclick:stopPropagation="true">
                     </RadzenButton>
                 </Template>

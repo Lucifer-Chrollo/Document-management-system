@@ -7,6 +7,9 @@ namespace DocumentManagementSystem.Models;
 /// Maps directly to the legacy 'Users' table in iBusinessFlex.
 /// Used by services that need to query the original user schema (UserGroupService, etc.)
 /// This is separate from ApplicationUser which is used by ASP.NET Core Identity.
+/// 
+/// Column names in DB are FName/LName (legacy iBusinessFlex convention).
+/// to prevent runtime SqlException due to column name mismatches.
 /// </summary>
 public class DmsUser
 {
@@ -15,14 +18,14 @@ public class DmsUser
 
     [Required]
     [MaxLength(150)]
-    public string FName { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
 
     [MaxLength(150)]
-    public string? LName { get; set; }
+    public string? LastName { get; set; }
 
     [Required]
     [MaxLength(100)]
-    public string LoginName { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
 
     [MaxLength(150)]
     public string? Email { get; set; }
@@ -52,5 +55,5 @@ public class DmsUser
     public int? BranchID { get; set; }
 
     [NotMapped]
-    public string FullName => $"{FName} {LName}".Trim();
+    public string FullName => $"{FirstName} {LastName}".Trim();
 }

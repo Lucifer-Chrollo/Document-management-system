@@ -45,36 +45,38 @@ else
 {
     @if (isUnlocked)
     {
-        <RadzenStack Gap="1.5rem" class="fade-in-up">
-            <!-- Header -->
-            <RadzenCard>
-                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
-                    <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Click="@GoBack" />
-                    <div class="document-icon @GetIconClass(document.Extension)" 
-                         style="width: 56px; height: 56px; font-size: 1.75rem;">
-                        <RadzenIcon Icon="@GetFileIcon(document.Extension)" />
-                    </div>
-                    <RadzenStack Gap="0" Style="flex: 1;">
-                        <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">@document.DocumentName</RadzenText>
-                        <RadzenText TextStyle="TextStyle.Body2" class="text-muted">@document.Path</RadzenText>
-                    </RadzenStack>
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
-                        <RadzenButton Text="Download" Icon="download" ButtonStyle="ButtonStyle.Primary" Click="@DownloadDocument" />
-                        <RadzenButton Text="Share" Icon="share" ButtonStyle="ButtonStyle.Info" Click="@OnShareDocument" />
-                        
-                        @if (canWrite)
-                        {
-                            <RadzenButton Text="New Version" Icon="upload_file" ButtonStyle="ButtonStyle.Info" Click="@UploadNewVersion" />
-                            <RadzenButton Text="Edit" Icon="edit" ButtonStyle="ButtonStyle.Secondary" Click="@ShowEditDialog" />
-                        }
-                        
-                        @if (canDelete)
-                        {
-                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Click="@DeleteDocument" />
-                        }
-                    </RadzenStack>
-                </RadzenStack>
-            </RadzenCard>
+<RadzenStack Gap="0.5rem" class="p-2 fade-in-up">
+    <!-- Header Area -->
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+        <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Click="@GoBack" class="search-button" />
+        <div class="document-icon @GetIconClass(document.Extension)" 
+             style="width: 36px; height: 36px; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; color: #0071c1;">
+            <RadzenIcon Icon="@GetFileIcon(document.Extension)" />
+        </div>
+        <RadzenStack Gap="0" Style="flex: 1;">
+            <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize" Style="margin: 0; font-weight: bold;">@document.DocumentName</RadzenText>
+            <RadzenText TextStyle="TextStyle.Caption" class="text-muted">@document.Path</RadzenText>
+        </RadzenStack>
+    </RadzenStack>
+
+    <!-- Action Area (Legacy Based) -->
+    <div class="card-body-D px-1 py-1">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0" class="zero-gap-stack">
+            <RadzenButton Text="Download" Icon="download" Click="@DownloadDocument" class="search-button" />
+            <RadzenButton Text="Share" Icon="share" Click="@OnShareDocument" class="search-button" />
+            
+            @if (canWrite)
+            {
+                <RadzenButton Text="New Version" Icon="upload_file" Click="@UploadNewVersion" class="search-button" />
+                <RadzenButton Text="Edit" Image="edit-icon.png" Click="@ShowEditDialog" class="search-button" />
+            }
+            
+            @if (canDelete)
+            {
+                <RadzenButton Image="delete-x.png" Click="@DeleteDocument" ButtonStyle="ButtonStyle.Danger" class="search-button" />
+            }
+        </RadzenStack>
+    </div>
 
             <RadzenRow Gap="1.5rem">
                 <!-- Document Details -->

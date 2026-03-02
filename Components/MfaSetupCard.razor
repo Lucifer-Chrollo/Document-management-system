@@ -6,12 +6,12 @@
 @inject NotificationService NotificationService
 @inject AuthenticationStateProvider AuthStateProvider
 
-<RadzenCard Style="margin-bottom: 1.5rem;">
-    <RadzenStack Gap="1rem">
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+<RadzenCard Style="margin-bottom: 1rem; padding: 0.5rem;">
+    <RadzenStack Gap="0.5rem">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" JustifyContent="JustifyContent.SpaceBetween">
              <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
-                <RadzenIcon Icon="security" Style="color: var(--rz-primary);" />
-                <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0;">2FA Security</RadzenText>
+                <RadzenIcon Icon="security" Style="color: #0071c1; font-size: 1.25rem;" />
+                <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0; color: #0071c1; font-weight: bold;">2FA Security</RadzenText>
             </RadzenStack>
              @if (isMfaEnabled)
              {

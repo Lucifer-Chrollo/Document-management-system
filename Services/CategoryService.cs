@@ -17,7 +17,7 @@ public class CategoryService : ICategoryService
     private readonly ILogger<CategoryService> _logger;
 
     private const string SQL_SELECT_ALL = "SELECT * FROM Categories";
-    private const string SQL_SELECT_BY_USER = "SELECT * FROM Categories WHERE CreatedBy = @UserId AND (IsDeleted = 0 OR IsDeleted IS NULL) ORDER BY CategoryName";
+    private const string SQL_SELECT_BY_USER = "SELECT * FROM Categories WHERE (CreatedBy = @UserId OR CategoryId IN (1, 2, 3)) AND (IsDeleted = 0 OR IsDeleted IS NULL) ORDER BY CategoryName";
     private const string SQL_SELECT_BY_ID = "SELECT * FROM Categories WHERE CategoryId = @CategoryId";
     private const string SQL_GET_MAX_ID = "SELECT MAX(CategoryId) FROM Categories";
     private const string SQL_INSERT = @"

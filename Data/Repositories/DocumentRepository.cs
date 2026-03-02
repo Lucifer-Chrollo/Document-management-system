@@ -45,13 +45,13 @@ public class DocumentRepository : IDocumentRepository
     {
         var sql = @"
             SELECT d.DocumentId, d.DocumentName, d.FileType, d.CategoryID, d.UploadedBy, d.Path, d.SourcePath, d.Extension, d.Password, d.Status, d.ParentID, d.UploadedDate, d.UpdatedDate, d.DepartmentID, d.LocationID, d.UpdatedBy, d.FileSize, d.FileHash, d.CompressionAlgorithm, d.CompressedSize, d.BatchLabel, d.CurrentVersion,
-                   c.CategoryName, dep.DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
+                   c.CategoryName, dep.Name as DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
             FROM Documents d
             LEFT JOIN Categories c ON d.CategoryID = c.CategoryId
-            LEFT JOIN Departments dep ON d.DepartmentID = dep.DepartmentId
+            LEFT JOIN HRM_Departments dep ON d.DepartmentID = dep.DepartmentID
             LEFT JOIN Locations loc ON d.LocationID = loc.LocationId
-            LEFT JOIN Users u1 ON d.UploadedBy = u1.Id
-            LEFT JOIN Users u2 ON d.UpdatedBy = u2.Id
+            LEFT JOIN Users u1 ON d.UploadedBy = u1.UserID
+            LEFT JOIN Users u2 ON d.UpdatedBy = u2.UserID
             WHERE d.DocumentId = @Id";
 
         DbCommand command = _db.GetSqlStringCommand(sql);
@@ -79,13 +79,13 @@ public class DocumentRepository : IDocumentRepository
     {
         var sql = @"
             SELECT d.DocumentId, d.DocumentName, d.FileType, d.CategoryID, d.UploadedBy, d.Path, d.SourcePath, d.Extension, d.Password, d.Status, d.ParentID, d.UploadedDate, d.UpdatedDate, d.DepartmentID, d.LocationID, d.UpdatedBy, d.FileSize, d.FileHash, d.CompressionAlgorithm, d.CompressedSize, d.BatchLabel, d.CurrentVersion,
-                   c.CategoryName, dep.DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
+                   c.CategoryName, dep.Name as DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
             FROM Documents d
             LEFT JOIN Categories c ON d.CategoryID = c.CategoryId
-            LEFT JOIN Departments dep ON d.DepartmentID = dep.DepartmentId
+            LEFT JOIN HRM_Departments dep ON d.DepartmentID = dep.DepartmentID
             LEFT JOIN Locations loc ON d.LocationID = loc.LocationId
-            LEFT JOIN Users u1 ON d.UploadedBy = u1.Id
-            LEFT JOIN Users u2 ON d.UpdatedBy = u2.Id
+            LEFT JOIN Users u1 ON d.UploadedBy = u1.UserID
+            LEFT JOIN Users u2 ON d.UpdatedBy = u2.UserID
             WHERE d.ParentID = @ParentId";
 
         // Logic: Dynamically append filters to minimize data transfer.
@@ -189,13 +189,13 @@ public class DocumentRepository : IDocumentRepository
     public async Task<IEnumerable<Document>> GetByParentAsync(int parentId)
     {
         var sql = @"
-            SELECT d.*, c.CategoryName, dep.DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
+            SELECT d.*, c.CategoryName, dep.Name as DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
             FROM Documents d
             LEFT JOIN Categories c ON d.CategoryID = c.CategoryId
-            LEFT JOIN Departments dep ON d.DepartmentID = dep.DepartmentId
+            LEFT JOIN HRM_Departments dep ON d.DepartmentID = dep.DepartmentID
             LEFT JOIN Locations loc ON d.LocationID = loc.LocationId
-            LEFT JOIN Users u1 ON d.UploadedBy = u1.Id
-            LEFT JOIN Users u2 ON d.UpdatedBy = u2.Id
+            LEFT JOIN Users u1 ON d.UploadedBy = u1.UserID
+            LEFT JOIN Users u2 ON d.UpdatedBy = u2.UserID
             WHERE d.IsDeleted = 0 AND d.ParentID = @Id
             ORDER BY d.UploadedDate DESC";
 
@@ -246,13 +246,13 @@ public class DocumentRepository : IDocumentRepository
     public async Task<IEnumerable<Document>> FindByHashAsync(string fileHash)
     {
         var sql = @"
-            SELECT d.*, c.CategoryName, dep.DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
+            SELECT d.*, c.CategoryName, dep.Name as DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
             FROM Documents d
             LEFT JOIN Categories c ON d.CategoryID = c.CategoryId
-            LEFT JOIN Departments dep ON d.DepartmentID = dep.DepartmentId
+            LEFT JOIN HRM_Departments dep ON d.DepartmentID = dep.DepartmentID
             LEFT JOIN Locations loc ON d.LocationID = loc.LocationId
-            LEFT JOIN Users u1 ON d.UploadedBy = u1.Id
-            LEFT JOIN Users u2 ON d.UpdatedBy = u2.Id
+            LEFT JOIN Users u1 ON d.UploadedBy = u1.UserID
+            LEFT JOIN Users u2 ON d.UpdatedBy = u2.UserID
             WHERE d.IsDeleted = 0 AND d.FileHash = @Hash
             ORDER BY d.UploadedDate";
 
@@ -279,13 +279,13 @@ public class DocumentRepository : IDocumentRepository
 
         // Logic: Using IN clause with sanitization via string join (Ids are integers).
         var sql = @"
-            SELECT d.*, c.CategoryName, dep.DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
+            SELECT d.*, c.CategoryName, dep.Name as DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
             FROM Documents d
             LEFT JOIN Categories c ON d.CategoryID = c.CategoryId
-            LEFT JOIN Departments dep ON d.DepartmentID = dep.DepartmentId
+            LEFT JOIN HRM_Departments dep ON d.DepartmentID = dep.DepartmentID
             LEFT JOIN Locations loc ON d.LocationID = loc.LocationId
-            LEFT JOIN Users u1 ON d.UploadedBy = u1.Id
-            LEFT JOIN Users u2 ON d.UpdatedBy = u2.Id
+            LEFT JOIN Users u1 ON d.UploadedBy = u1.UserID
+            LEFT JOIN Users u2 ON d.UpdatedBy = u2.UserID
             WHERE d.DocumentId IN (" + string.Join(",", ids) + ")";
 
         if (userId.HasValue)
@@ -511,13 +511,13 @@ public class DocumentRepository : IDocumentRepository
     public async Task<IEnumerable<IGrouping<string, Document>>> GetDuplicatesAsync()
     {
         var sql = @"
-            SELECT d.*, c.CategoryName, dep.DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
+            SELECT d.*, c.CategoryName, dep.Name as DepartmentName, loc.LocationName, u1.UserName as UserName, u2.UserName as UpdatedByName
             FROM Documents d
             LEFT JOIN Categories c ON d.CategoryID = c.CategoryId
-            LEFT JOIN Departments dep ON d.DepartmentID = dep.DepartmentId
+            LEFT JOIN HRM_Departments dep ON d.DepartmentID = dep.DepartmentID
             LEFT JOIN Locations loc ON d.LocationID = loc.LocationId
-            LEFT JOIN Users u1 ON d.UploadedBy = u1.Id
-            LEFT JOIN Users u2 ON d.UpdatedBy = u2.Id
+            LEFT JOIN Users u1 ON d.UploadedBy = u1.UserID
+            LEFT JOIN Users u2 ON d.UpdatedBy = u2.UserID
             WHERE d.IsDeleted = 0 
             AND d.FileHash IS NOT NULL 
             AND d.FileHash IN (
@@ -674,7 +674,7 @@ public class DocumentRepository : IDocumentRepository
 
     public async Task<int?> GetUserIdByNameAsync(string username)
     {
-        var sql = "SELECT TOP 1 Id FROM Users WHERE UserName = @Name OR FirstName = @Name";
+        var sql = "SELECT TOP 1 UserID FROM Users WHERE UserName = @Name OR FName = @Name";
         DbCommand command = _db.GetSqlStringCommand(sql);
         _db.AddInParameter(command, "@Name", DbType.String, username);
         var result = _db.ExecuteScalar(command);
@@ -697,12 +697,16 @@ public class DocumentRepository : IDocumentRepository
                    COALESCE(u.UserName, g.GroupName) as UserName,
                    CASE r.Rights 
                         WHEN 1 THEN 'Read' 
-                        WHEN 2 THEN 'Read/Write' 
-                        WHEN 3 THEN 'Full Access' 
+                        WHEN 2 THEN 'Write' 
+                        WHEN 3 THEN 'Read/Write' 
+                        WHEN 4 THEN 'Delete' 
+                        WHEN 5 THEN 'Read/Delete' 
+                        WHEN 6 THEN 'Write/Delete' 
+                        WHEN 7 THEN 'Full Access' 
                         ELSE 'Unknown' 
                    END as RightsName
             FROM UserDocumentRights r
-            LEFT JOIN Users u ON r.UserId = u.Id
+            LEFT JOIN Users u ON r.UserId = u.UserID
             LEFT JOIN UserGroups g ON r.GroupId = g.GroupId
             WHERE r.DocumentId = @DocId";
 
@@ -716,12 +720,16 @@ public class DocumentRepository : IDocumentRepository
                            COALESCE(u.UserName, g.GroupName) as UserName,
                            CASE r.Rights 
                                 WHEN 1 THEN 'Read' 
-                                WHEN 2 THEN 'Read/Write' 
-                                WHEN 3 THEN 'Full Access' 
+                                WHEN 2 THEN 'Write' 
+                                WHEN 3 THEN 'Read/Write' 
+                                WHEN 4 THEN 'Delete' 
+                                WHEN 5 THEN 'Read/Delete' 
+                                WHEN 6 THEN 'Write/Delete' 
+                                WHEN 7 THEN 'Full Access' 
                                 ELSE 'Unknown' 
                            END as RightsName
                     FROM UserDocumentRights r
-                    LEFT JOIN Users u ON r.UserId = u.Id
+                    LEFT JOIN Users u ON r.UserId = u.UserID
                     LEFT JOIN UserGroups g ON r.GroupId = g.GroupId
                     WHERE r.DocumentId = @DocId";
 

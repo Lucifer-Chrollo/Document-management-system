@@ -7,6 +7,7 @@
 @inject IDocumentService DocumentService
 @inject NavigationManager Navigation
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JS
 
 <PageTitle>Mobile Upload - DMS</PageTitle>
 
@@ -49,6 +50,55 @@
     .error-icon {
         font-size: 4rem;
         color: #ef4444;
+    }
+    .file-queue-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0.6rem;
+        background: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 0.3rem;
+    }
+    .file-queue-item .file-name {
+        font-size: 0.85rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+        margin-right: 0.5rem;
+    }
+    .file-queue-item .file-size {
+        font-size: 0.75rem;
+        color: #888;
+        white-space: nowrap;
+        margin-right: 0.5rem;
+    }
+    .file-queue-item .remove-btn {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 0;
+        line-height: 1;
+    }
+    .add-more-btn {
+        cursor: pointer;
+        text-align: center;
+        padding: 0.6rem;
+        border: 1px dashed #667eea;
+        border-radius: 8px;
+        color: #667eea;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+    .upload-progress {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        text-align: center;
+        color: #667eea;
     }
 </style>
 
@@ -133,7 +183,7 @@
                 </RadzenText>
                 
                 <RadzenButton Text="Upload More" Icon="add" ButtonStyle="ButtonStyle.Primary" 
-                                Style="width: 100%;" Click="@(() => uploadSuccess = false)" />
+                                Style="width: 100%;" Click="@(() => { uploadSuccess = false; StateHasChanged(); })" />
             </RadzenStack>
         }
         else
@@ -167,38 +217,50 @@
                     </RadzenAlert>
                 }
 
-                <!-- File Input -->
-                <div class="file-input-wrapper">
-                    <InputFile OnChange="@HandleFileSelected" multiple accept="*/*" style="display: none;" id="fileInput" />
-                    <label for="fileInput" style="cursor: pointer; width: 100%; display: block;">
-                        <RadzenIcon Icon="add_photo_alternate" Style="font-size: 3rem; color: #667eea;" />
-                        <RadzenText>Tap to select files</RadzenText>
-                        <RadzenText class="text-muted" Style="font-size: 0.8rem;">or use camera</RadzenText>
-                    </label>
+                <!-- Native HTML file input (bypasses Blazor SignalR circuit) -->
+                <input type="file" id="mobileFileInput" multiple 
+                       style="display: none;" onchange="window.mobileUpload.onFilesSelected()" />
+                
+                <div class="file-input-wrapper" onclick="document.getElementById('mobileFileInput').click()">
+                    <RadzenIcon Icon="add_photo_alternate" Style="font-size: 3rem; color: #667eea;" />
+                    <p style="margin: 0.5rem 0 0 0;">Tap to select files</p>
+                    <p style="margin: 0; font-size: 0.8rem; color: #888;">Select multiple files at once, or tap again to add more</p>
                 </div>
 
-                @if (selectedFiles.Any())
-                {
-                    <RadzenStack Gap="0.5rem">
-                        @foreach (var file in selectedFiles)
+                <!-- File queue (rendered by JS, managed by Blazor) -->
+                <div id="fileQueueContainer">
+                    @if (fileCount > 0)
+                    {
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <strong style="font-size: 0.9rem;">@fileCount file(s) queued</strong>
+                            <button onclick="window.mobileUpload.clearAll()" 
+                                    style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 0.85rem;">
+                                ✕ Clear All
+                            </button>
+                        </div>
+                        
+                        <div id="fileListDisplay" style="max-height: 200px; overflow-y: auto;"></div>
+                        
+                        <label class="add-more-btn" onclick="document.getElementById('mobileFileInput').click()">
+                            + Add More Files
+                        </label>
+                        
+                        @if (isUploading)
                         {
-                            <RadzenCard Style="padding: 0.5rem;">
-                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
-                                    <RadzenText Style="font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis;">
-                                        @file.Name
-                                    </RadzenText>
-                                    <RadzenText class="text-muted" Style="font-size: 0.8rem;">
-                                        @FormatSize(file.Size)
-                                    </RadzenText>
-                                </RadzenStack>
-                            </RadzenCard>
+                            <div class="upload-progress">
+                                <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Small" />
+                                <p>Uploading... @uploadedCount / @fileCount</p>
+                            </div>
                         }
-
-                        <RadzenButton Text="@($"Upload {selectedFiles.Count} File(s)")" Icon="cloud_upload" 
-                                      ButtonStyle="ButtonStyle.Success" Style="width: 100%;" 
-                                      Click="@UploadFiles" IsBusy="@isUploading" />
-                    </RadzenStack>
-                }
+                        else
+                        {
+                            <button onclick="window.mobileUpload.uploadAll()"
+                                    style="width: 100%; padding: 0.75rem; background: #22c55e; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; margin-top: 0.5rem;">
+                                ☁ Upload @fileCount File(s)
+                            </button>
+                        }
+                    }
+                </div>
 
                 @if (!string.IsNullOrEmpty(session.Label))
                 {
@@ -210,3 +272,90 @@
         }
     </div>
 </div>
+
+<script suppress-error="BL9992">
+    window.mobileUpload = {
+        files: [],
+        
+        onFilesSelected: function() {
+            var input = document.getElementById('mobileFileInput');
+            for (var i = 0; i < input.files.length; i++) {
+                this.files.push(input.files[i]);
+            }
+            // Reset input so the same files can be re-selected
+            input.value = '';
+            this.renderFileList();
+            // Notify Blazor of the new file count
+            DotNet.invokeMethodAsync('DocumentManagementSystem', 'UpdateFileCount', this.files.length);
+        },
+        
+        removeFile: function(index) {
+            this.files.splice(index, 1);
+            this.renderFileList();
+            DotNet.invokeMethodAsync('DocumentManagementSystem', 'UpdateFileCount', this.files.length);
+        },
+        
+        clearAll: function() {
+            this.files = [];
+            this.renderFileList();
+            DotNet.invokeMethodAsync('DocumentManagementSystem', 'UpdateFileCount', 0);
+        },
+        
+        renderFileList: function() {
+            var container = document.getElementById('fileListDisplay');
+            if (!container) return;
+            
+            var html = '';
+            for (var i = 0; i < this.files.length; i++) {
+                var file = this.files[i];
+                var size = file.size < 1024 ? file.size + ' B' : 
+                           file.size < 1024 * 1024 ? (file.size / 1024).toFixed(1) + ' KB' : 
+                           (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                html += '<div class="file-queue-item">' +
+                    '<span class="file-name">' + this.escapeHtml(file.name) + '</span>' +
+                    '<span class="file-size">' + size + '</span>' +
+                    '<button class="remove-btn" onclick="window.mobileUpload.removeFile(' + i + ')">✕</button>' +
+                    '</div>';
+            }
+            container.innerHTML = html;
+        },
+        
+        escapeHtml: function(text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        },
+        
+        uploadAll: async function() {
+            if (this.files.length === 0) return;
+            
+            var token = '@Token';
+            var formData = new FormData();
+            for (var i = 0; i < this.files.length; i++) {
+                formData.append('files', this.files[i]);
+            }
+            
+            DotNet.invokeMethodAsync('DocumentManagementSystem', 'SetUploadingState', true);
+            
+            try {
+                var response = await fetch('/api/MobileUpload/upload/' + token, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                var result = await response.json();
+                
+                if (result.success) {
+                    this.files = [];
+                    this.renderFileList();
+                    DotNet.invokeMethodAsync('DocumentManagementSystem', 'OnUploadComplete', result.uploaded, '');
+                } else {
+                    var errors = result.results ? result.results.filter(r => !r.success).map(r => r.name + ': ' + r.error).join('\n') : 'Upload failed';
+                    DotNet.invokeMethodAsync('DocumentManagementSystem', 'OnUploadComplete', result.uploaded || 0, errors);
+                }
+            } catch (err) {
+                DotNet.invokeMethodAsync('DocumentManagementSystem', 'OnUploadComplete', 0, 'Network error: ' + err.message);
+            }
+        }
+    };
+</script>

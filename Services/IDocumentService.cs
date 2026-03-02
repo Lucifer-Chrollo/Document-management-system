@@ -64,6 +64,13 @@ public interface IDocumentService
     Task<(int DuplicateGroups, int TotalDuplicateFiles, long WastedBytes)> GetDuplicateStatsAsync();
     Task<IEnumerable<Document>> FindByHashAsync(string fileHash);
     
+    // Permissions
+    Task<iFishResponse> GrantGroupAccessAsync(int documentId, int groupId, int rights);
+    Task<iFishResponse> RevokeGroupAccessAsync(int documentId, int groupId);
+    Task<iFishResponse> GrantUserAccessAsync(int documentId, int userId, int rights);
+    Task<iFishResponse> RevokeUserAccessAsync(int documentId, int userId);
+    Task<IEnumerable<UserDocumentRights>> GetRightsAsync(int documentId);
+    
     // Lookups
     Task<IEnumerable<Category>> GetCategoriesAsync();
     Task<IEnumerable<Location>> GetLocationsAsync();

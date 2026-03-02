@@ -20,6 +20,7 @@ builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<TooltipService>();
 builder.Services.AddScoped<ContextMenuService>();
+builder.Services.AddBlazorBootstrap();
 
 // Add database context
 // builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -56,17 +57,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/login";
     options.LogoutPath = "/logout";
     options.AccessDeniedPath = "/access-denied";
-    options.AccessDeniedPath = "/access-denied";
 });
 
-// Add External Authentication (Google)
-builder.Services.AddAuthentication()
-    .AddGoogle(options =>
-    {
-        options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "MISSING_CLIENT_ID";
-        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "MISSING_CLIENT_SECRET";
-        options.CallbackPath = "/signin-google";
-    });
+// Add External Authentication (removed)
+builder.Services.AddAuthentication();
 
 // Add repositories
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
@@ -76,7 +70,7 @@ builder.Services.AddScoped<IStorageService, StorageService>();
 builder.Services.AddScoped<ICompressionService, CompressionService>();
 builder.Services.AddScoped<IDocumentService, DocumentService>();
 builder.Services.AddScoped<ISearchService, LuceneSearchService>();
-builder.Services.AddSingleton<IEncryptionService, EncryptionService>();
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IUserGroupService, UserGroupService>();
 builder.Services.AddSingleton<IMfaService, MfaService>();
@@ -87,6 +81,7 @@ builder.Services.AddScoped<IBatchService, BatchService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IDocumentConversionService, DocumentConversionService>();
+builder.Services.AddScoped<IUserContextService, IdentityUserContextService>();
 builder.Services.AddHttpContextAccessor();
 
 // Add session support for MFA
@@ -124,9 +119,6 @@ builder.Services.AddFluxor(options =>
     options.ScanAssemblies(typeof(Program).Assembly);
     options.UseReduxDevTools();
 });
-
-// Add HTTP context accessor
-builder.Services.AddHttpContextAccessor();
 
 // Add SignalR
 builder.Services.AddSignalR(options =>

@@ -1,21 +1,20 @@
 using DocumentManagementSystem.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Practices.EnterpriseLibrary.Data;
 using System.Data;
-using System.Security.Claims;
+using System.Data.Common;
 
 namespace DocumentManagementSystem.Services;
 
 /// <summary>
-/// Audit trail service for logging document actions
+/// Audit trail service for logging document actions.
+/// Uses Enterprise Library Database for consistent data access with DocumentRepository and UserGroupService.
 /// </summary>
 public class AuditService : IAuditService
 {
-    private readonly string _connectionString;
+    private readonly Database _db;
     private readonly ILogger<AuditService> _logger;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IUserContextService _userContext;
 
     #region SQL Queries
 
@@ -25,12 +24,11 @@ public class AuditService : IAuditService
 
     #endregion
 
-    public AuditService(IConfiguration configuration, ILogger<AuditService> logger, IHttpContextAccessor httpContextAccessor)
+    public AuditService(Database db, ILogger<AuditService> logger, IUserContextService userContext)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection") 
-            ?? throw new InvalidOperationException("Connection string not configured");
+        _db = db;
         _logger = logger;
-        _httpContextAccessor = httpContextAccessor;
+        _userContext = userContext;
     }
 
     public void Log(string action, int? documentId, string? documentName, int userId, string userName,
@@ -39,23 +37,20 @@ public class AuditService : IAuditService
     {
         try
         {
-            using var connection = new SqlConnection(_connectionString);
-            connection.Open();
+            DbCommand command = _db.GetSqlStringCommand(SQL_INSERT_AUDIT_LOG);
+            _db.AddInParameter(command, "@Action", DbType.String, action);
+            _db.AddInParameter(command, "@DocumentId", DbType.Int32, (object?)documentId ?? DBNull.Value);
+            _db.AddInParameter(command, "@DocumentName", DbType.String, (object?)documentName ?? DBNull.Value);
+            _db.AddInParameter(command, "@UserId", DbType.Int32, userId);
+            _db.AddInParameter(command, "@UserName", DbType.String, userName);
+            _db.AddInParameter(command, "@IpAddress", DbType.String, (object?)ipAddress ?? DBNull.Value);
+            _db.AddInParameter(command, "@UserAgent", DbType.String, (object?)userAgent ?? DBNull.Value);
+            _db.AddInParameter(command, "@Timestamp", DbType.DateTime, DateTime.UtcNow);
+            _db.AddInParameter(command, "@Details", DbType.String, (object?)details ?? DBNull.Value);
+            _db.AddInParameter(command, "@Success", DbType.Boolean, success);
+            _db.AddInParameter(command, "@ErrorMessage", DbType.String, (object?)errorMessage ?? DBNull.Value);
 
-            using var command = new SqlCommand(SQL_INSERT_AUDIT_LOG, connection);
-            command.Parameters.Add("@Action", SqlDbType.NVarChar).Value = action;
-            command.Parameters.Add("@DocumentId", SqlDbType.Int).Value = (object?)documentId ?? DBNull.Value;
-            command.Parameters.Add("@DocumentName", SqlDbType.NVarChar).Value = (object?)documentName ?? DBNull.Value;
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
-            command.Parameters.Add("@UserName", SqlDbType.NVarChar).Value = userName;
-            command.Parameters.Add("@IpAddress", SqlDbType.NVarChar).Value = (object?)ipAddress ?? DBNull.Value;
-            command.Parameters.Add("@UserAgent", SqlDbType.NVarChar).Value = (object?)userAgent ?? DBNull.Value;
-            command.Parameters.Add("@Timestamp", SqlDbType.DateTime).Value = DateTime.UtcNow;
-            command.Parameters.Add("@Details", SqlDbType.NVarChar).Value = (object?)details ?? DBNull.Value;
-            command.Parameters.Add("@Success", SqlDbType.Bit).Value = success;
-            command.Parameters.Add("@ErrorMessage", SqlDbType.NVarChar).Value = (object?)errorMessage ?? DBNull.Value;
-
-            command.ExecuteNonQuery();
+            _db.ExecuteNonQuery(command);
             _logger.LogDebug("Audit: {Action} on {Document} by {User}", action, documentName ?? documentId?.ToString() ?? "N/A", userName);
         }
         catch (Exception ex)
@@ -74,20 +69,10 @@ public class AuditService : IAuditService
 
     public void Log(string action, int? documentId, string? documentName)
     {
-        var httpContext = _httpContextAccessor.HttpContext;
-        var userId = 0;
-        var userName = "System";
-        string? ipAddress = null;
-        string? userAgent = null;
-
-        if (httpContext?.User?.Identity?.IsAuthenticated == true)
-        {
-            var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (int.TryParse(userIdClaim, out var uid)) userId = uid;
-            userName = httpContext.User.Identity?.Name ?? "Unknown";
-            ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
-            userAgent = httpContext.Request.Headers["User-Agent"].FirstOrDefault();
-        }
+        var userId = _userContext.GetCurrentUserId();
+        var userName = _userContext.GetCurrentUserName();
+        var ipAddress = _userContext.GetIpAddress();
+        var userAgent = _userContext.GetUserAgent();
 
         Log(action, documentId, documentName, userId, userName, ipAddress, userAgent);
     }
@@ -105,9 +90,6 @@ public class AuditService : IAuditService
 
         try
         {
-            using var connection = new SqlConnection(_connectionString);
-            connection.Open();
-
             var query = "SELECT TOP (@Limit) * FROM AuditLogs WHERE 1=1";
             
             if (documentId.HasValue) query += " AND DocumentId = @DocumentId";
@@ -118,15 +100,15 @@ public class AuditService : IAuditService
             
             query += " ORDER BY Timestamp DESC";
 
-            using var command = new SqlCommand(query, connection);
-            command.Parameters.Add("@Limit", SqlDbType.Int).Value = limit;
-            if (documentId.HasValue) command.Parameters.Add("@DocumentId", SqlDbType.Int).Value = documentId.Value;
-            if (userId.HasValue) command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId.Value;
-            if (!string.IsNullOrEmpty(action)) command.Parameters.Add("@Action", SqlDbType.NVarChar).Value = action;
-            if (fromDate.HasValue) command.Parameters.Add("@FromDate", SqlDbType.DateTime).Value = fromDate.Value;
-            if (toDate.HasValue) command.Parameters.Add("@ToDate", SqlDbType.DateTime).Value = toDate.Value;
+            DbCommand command = _db.GetSqlStringCommand(query);
+            _db.AddInParameter(command, "@Limit", DbType.Int32, limit);
+            if (documentId.HasValue) _db.AddInParameter(command, "@DocumentId", DbType.Int32, documentId.Value);
+            if (userId.HasValue) _db.AddInParameter(command, "@UserId", DbType.Int32, userId.Value);
+            if (!string.IsNullOrEmpty(action)) _db.AddInParameter(command, "@Action", DbType.String, action);
+            if (fromDate.HasValue) _db.AddInParameter(command, "@FromDate", DbType.DateTime, fromDate.Value);
+            if (toDate.HasValue) _db.AddInParameter(command, "@ToDate", DbType.DateTime, toDate.Value);
 
-            using var reader = command.ExecuteReader();
+            using var reader = _db.ExecuteReader(command);
             while (reader.Read())
             {
                 logs.Add(MapAuditLog(reader));
@@ -183,9 +165,6 @@ public class AuditService : IAuditService
 
         try
         {
-            using var connection = new SqlConnection(_connectionString);
-            connection.Open();
-
             var dateFilter = "";
             if (fromDate.HasValue) dateFilter += " AND Timestamp >= @FromDate";
             if (toDate.HasValue) dateFilter += " AND Timestamp <= @ToDate";
@@ -203,11 +182,11 @@ public class AuditService : IAuditService
                     COUNT(DISTINCT DocumentId) as UniqueDocuments
                 FROM AuditLogs WHERE 1=1 {dateFilter}";
 
-            using var command = new SqlCommand(query, connection);
-            if (fromDate.HasValue) command.Parameters.Add("@FromDate", SqlDbType.DateTime).Value = fromDate.Value;
-            if (toDate.HasValue) command.Parameters.Add("@ToDate", SqlDbType.DateTime).Value = toDate.Value;
+            DbCommand command = _db.GetSqlStringCommand(query);
+            if (fromDate.HasValue) _db.AddInParameter(command, "@FromDate", DbType.DateTime, fromDate.Value);
+            if (toDate.HasValue) _db.AddInParameter(command, "@ToDate", DbType.DateTime, toDate.Value);
 
-            using var reader = command.ExecuteReader();
+            using var reader = _db.ExecuteReader(command);
             if (reader.Read())
             {
                 stats.TotalActions = reader["TotalActions"] == DBNull.Value ? 0 : Convert.ToInt32(reader["TotalActions"]);
@@ -234,7 +213,7 @@ public class AuditService : IAuditService
         return Task.Run(() => GetStats(fromDate, toDate));
     }
 
-    private static AuditLog MapAuditLog(SqlDataReader reader)
+    private static AuditLog MapAuditLog(IDataReader reader)
     {
         return new AuditLog
         {

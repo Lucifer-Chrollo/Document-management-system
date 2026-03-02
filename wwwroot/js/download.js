@@ -1,48 +1,48 @@
 window.downloadWithProgress = async (url, fileName, dotNetHelper) => {
-    // Include credentials so the [Authorize] API controller doesn't block the request
-    const response = await fetch(url, { credentials: 'include' });
+    console.log('[DMS Download] Starting download:', { url, fileName });
 
-    if (!response.ok) {
-        console.error("Download failed:", response.status, response.statusText);
-        throw new Error("Download failed: " + response.statusText);
-    }
+    // First, track progress using fetch
+    try {
+        const response = await fetch(url, { credentials: 'include' });
 
-    const reader = response.body.getReader();
-    const contentLength = +response.headers.get('Content-Length');
-
-    let receivedLength = 0;
-    let chunks = [];
-
-    while (true) {
-        const { done, value } = await reader.read();
-
-        if (done) {
-            break;
+        if (!response.ok) {
+            console.error("[DMS Download] Failed:", response.status, response.statusText);
+            throw new Error("Download failed: " + response.statusText);
         }
 
-        chunks.push(value);
-        receivedLength += value.length;
+        const reader = response.body.getReader();
+        const contentLength = +response.headers.get('Content-Length');
 
-        // Report progress back to .NET
-        if (dotNetHelper) {
-            await dotNetHelper.invokeMethodAsync('OnDownloadProgress', receivedLength, contentLength || 0);
+        let receivedLength = 0;
+
+        // Read through the stream just for progress tracking
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            receivedLength += value.length;
+
+            if (dotNetHelper) {
+                await dotNetHelper.invokeMethodAsync('OnDownloadProgress', receivedLength, contentLength || 0);
+            }
         }
+    } catch (e) {
+        console.warn('[DMS Download] Progress tracking failed, continuing with direct download:', e);
     }
 
-    const blob = new Blob(chunks);
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = downloadUrl;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    // Use a hidden iframe to trigger the actual download — this lets the browser
+    // use the server's Content-Disposition header for the filename instead of
+    // generating a GUID from a blob URL.
+    console.log('[DMS Download] Triggering download via iframe for:', fileName);
+    let iframe = document.getElementById('dms-download-iframe');
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'dms-download-iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+    }
+    iframe.src = url;
 
-    // Generous delay before revoking to ensure the browser has time to initiate the download 
-    // with the custom filename before the blob URL is garbage collected.
-    setTimeout(() => {
-        window.URL.revokeObjectURL(downloadUrl);
-    }, 2000);
+    console.log('[DMS Download] Download triggered for:', fileName);
 };
 
 window.triggerFileDownload = (url, fileName) => {

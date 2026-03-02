@@ -13,7 +13,7 @@ namespace DocumentManagementSystem.Components.Pages
 {
     public partial class MobileUpload
     {
-[Parameter]
+    [Parameter]
     public string Token { get; set; } = "";
 
     private UploadSession? session;
@@ -26,7 +26,7 @@ namespace DocumentManagementSystem.Components.Pages
     private string pinError = "";
     private string uploadError = "";
     private int uploadedCount;
-    private List<IBrowserFile> selectedFiles = new();
+    private int fileCount;
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,11 +70,11 @@ namespace DocumentManagementSystem.Components.Pages
             if (result)
             {
                 isPinVerified = true;
-                await LoadSession(); // Refresh session data
+                await LoadSession();
             }
             else
             {
-                await LoadSession(); // Refresh to get updated failed attempts
+                await LoadSession();
                 if (session != null && session.FailedAttempts >= session.MaxAttempts)
                 {
                     pinError = "Session locked due to too many failed attempts.";
@@ -93,105 +93,76 @@ namespace DocumentManagementSystem.Components.Pages
         }
     }
 
-    private void HandleFileSelected(InputFileChangeEventArgs e)
+    /// <summary>
+    /// Called from JavaScript when files are selected via the native file picker.
+    /// </summary>
+    [JSInvokable]
+    public static Task UpdateFileCount(int count)
     {
-        try
+        _currentInstance?.SetFileCount(count);
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public static Task SetUploadingState(bool uploading)
+    {
+        _currentInstance?.SetUploading(uploading);
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
+    public static async Task OnUploadComplete(int successCount, string errors)
+    {
+        if (_currentInstance != null)
         {
-            var incomingFiles = e.GetMultipleFiles(10000).ToList();
-            
-            // Prevent adding duplicates by name
-            foreach (var file in incomingFiles)
-            {
-                if (!selectedFiles.Any(f => f.Name == file.Name))
-                {
-                    selectedFiles.Add(file);
-                }
-            }
-            uploadError = "";
-        }
-        catch (Exception ex)
-        {
-            uploadError = $"Selection Error: {ex.Message} (Try selecting fewer files)";
-        }
-        finally
-        {
-            StateHasChanged();
+            await _currentInstance.HandleUploadComplete(successCount, errors);
         }
     }
 
-    private async Task UploadFiles()
+    private static MobileUpload? _currentInstance;
+
+    protected override void OnInitialized()
     {
-        if (!selectedFiles.Any() || session == null) return;
-
-        uploadError = "";
-        isUploading = true;
-        uploadedCount = 0;
-        StateHasChanged();
-
-        try
-        {
-            foreach (var file in selectedFiles)
-            {
-                try
-                {
-                    using var stream = file.OpenReadStream(maxAllowedSize: 100 * 1024 * 1024); // 100MB max
-                    using var ms = new MemoryStream();
-                    await stream.CopyToAsync(ms);
-                    ms.Position = 0;
-
-                    var document = new Document
-                    {
-                        DocumentName = file.Name,
-                        FileType = file.ContentType,
-                        CategoryID = session.DefaultCategoryId ?? 1,
-                        UploadedBy = session.UserId,
-                        Extension = Path.GetExtension(file.Name),
-                        FileSize = file.Size,
-                        Status = "Active"
-                    };
-
-                    var response = await DocumentService.CreateAsync(document, ms);
-                    if (!response.Result)
-                    {
-                        uploadError += $"Error uploading {file.Name}: {response.Message}\n";
-                        continue; // Skip incrementing file count for failed document
-                    }
-
-                    await UploadSessionService.IncrementFileCountAsync(Token);
-                    uploadedCount++;
-                }
-                catch (Exception ex)
-                {
-                    // Accumulate errors instead of an outright crash for all files
-                    uploadError += $"Error uploading {file.Name}: {ex.Message}\n";
-                }
-            }
-
-            if (uploadedCount > 0)
-            {
-                if (string.IsNullOrEmpty(uploadError)) {
-                    uploadSuccess = true;
-                    selectedFiles.Clear();
-                } else {
-                    // Remove successfully uploaded files from the list so they aren't retried
-                    selectedFiles.RemoveAll(f => !uploadError.Contains(f.Name));
-                }
-                
-                await LoadSession(); // Refresh counts
-            }
-        }
-        finally
-        {
-            isUploading = false;
-            StateHasChanged();
-        }
+        _currentInstance = this;
     }
 
-    private static string FormatSize(long bytes)
+    private void SetFileCount(int count)
     {
-        if (bytes < 1024) return $"{bytes} B";
-        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
-        return $"{bytes / (1024.0 * 1024.0):F1} MB";
+        fileCount = count;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void SetUploading(bool uploading)
+    {
+        isUploading = uploading;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleUploadComplete(int successCount, string errors)
+    {
+        uploadedCount = successCount;
+        isUploading = false;
+        fileCount = 0;
+
+        if (successCount > 0 && string.IsNullOrEmpty(errors))
+        {
+            uploadSuccess = true;
+        }
+        else if (!string.IsNullOrEmpty(errors))
+        {
+            uploadError = errors;
+        }
+
+        await LoadSession();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (_currentInstance == this)
+        {
+            _currentInstance = null;
+        }
     }
     }
 }

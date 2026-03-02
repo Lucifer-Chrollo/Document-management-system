@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.AI.Vision.ImageAnalysis" Version="1.0.0-beta.3" />
+    <PackageReference Include="Blazor.Bootstrap" Version="2.2.1" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.4.1" />
     <PackageReference Include="EnterpriseLibrary.Data.NetCore" Version="6.3.2" />
     <PackageReference Include="Fluxor.Blazor.Web" Version="6.9.0" />

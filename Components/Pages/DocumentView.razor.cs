@@ -88,14 +88,27 @@ namespace DocumentManagementSystem.Components.Pages
 
             if (user.Identity?.IsAuthenticated == true)
             {
+                // Check admin status first — before any claim parsing
+                isAdmin = user.IsInRole("Admin") || user.Identity.Name?.Equals("admin", StringComparison.OrdinalIgnoreCase) == true;
+
+                if (isAdmin)
+                {
+                    canRead = true;
+                    canWrite = true;
+                    canDelete = true;
+                    // Try to parse userId but don't block on it
+                    var adminIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    if (int.TryParse(adminIdClaim, out int adminUid))
+                        currentUserId = adminUid;
+                    return;
+                }
+
                 var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (int.TryParse(userIdClaim, out int uid))
                 {
                     currentUserId = uid;
 
-                    // Admins or the original uploader get full rights implicitly
-                    isAdmin = user.IsInRole("Admin");
-                    if (isAdmin || document?.UploadedBy == currentUserId)
+                    if (document?.UploadedBy == currentUserId)
                     {
                         canRead = true;
                         canWrite = true;
@@ -124,7 +137,7 @@ namespace DocumentManagementSystem.Components.Pages
             if (!canRead)
             {
                 NotificationService.Notify(NotificationSeverity.Error, "Access Denied", "You do not have permission to view this document.");
-                NavigationManager.NavigateTo("/browse");
+                NavigationManager.NavigateTo("/ManageDocuments");
             }
         }
 
@@ -173,7 +186,7 @@ namespace DocumentManagementSystem.Components.Pages
             if (document?.CategoryID > 0)
                 NavigationManager.NavigateTo($"/browse/{document.CategoryID}");
             else
-                NavigationManager.NavigateTo("/browse");
+                NavigationManager.NavigateTo("/ManageDocuments");
         }
 
         private async Task DownloadDocument()

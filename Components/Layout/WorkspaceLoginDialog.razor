@@ -1,0 +1,33 @@
+@using Radzen
+@using Radzen.Blazor
+@inject DialogService DialogService
+
+<RadzenStack Gap="1.5rem">
+    <RadzenText>Please enter your credentials to switch to the <b>@WorkspaceName</b> workspace.</RadzenText>
+    
+    <form method="post" action="/account/login">
+        <RadzenStack Gap="1rem">
+            <RadzenColumn Size="12">
+                <RadzenLabel Text="Username" />
+                <input class="rz-textbox" style="width: 100%;" name="username" required autofocus />
+            </RadzenColumn>
+            
+            <RadzenColumn Size="12">
+                <RadzenLabel Text="Password" />
+                <input class="rz-textbox" style="width: 100%;" type="password" name="password" required />
+            </RadzenColumn>
+            
+            <input type="hidden" name="returnUrl" value="@ReturnUrl" />
+            
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+                <RadzenButton ButtonType="ButtonType.Button" Text="Cancel" Click="() => DialogService.Close(false)" ButtonStyle="ButtonStyle.Light" />
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Switch Workspace" ButtonStyle="ButtonStyle.Primary" />
+            </RadzenStack>
+        </RadzenStack>
+    </form>
+</RadzenStack>
+
+@code {
+    [Parameter] public string WorkspaceName { get; set; } = "Requested";
+    [Parameter] public string ReturnUrl { get; set; } = "/";
+}

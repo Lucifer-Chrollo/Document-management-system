@@ -1,6 +1,210 @@
+.company-circle {
+    margin: 15px auto 0 auto;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: transparent;
+    /* base border */
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    animation: pulseBorder 6s linear 1;
+    /* run once over 6s */
+}
+
+.company-circle img.company-logo {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+@keyframes pulseBorder {
+    0% {
+        box-shadow: 0 0 0 0 rgba(230, 61, 59, 0.8);
+    }
+
+    /* red */
+    16% {
+        box-shadow: 0 0 0 15px rgba(244, 116, 58, 0.8);
+    }
+
+    /* orange */
+    33% {
+        box-shadow: 0 0 0 15px rgba(231, 40, 137, 0.8);
+    }
+
+    /* pink */
+    50% {
+        box-shadow: 0 0 0 15px rgba(107, 63, 148, 0.8);
+    }
+
+    /* purple */
+    66% {
+        box-shadow: 0 0 0 15px rgba(47, 84, 163, 0.8);
+    }
+
+    /* blue */
+    83% {
+        box-shadow: 0 0 0 15px rgba(81, 160, 172, 0.8);
+    }
+
+    /* teal */
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+
+    /* fade out */
+}
+
+.numeric-padding input {
+    padding-right: 5px !important;
+}
+
+.purchase-grid .rz-data-row {
+    height: 28px !important;
+}
+
+.purchase-grid td {
+    padding: 2px 6px !important;
+}
+
 html,
 body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+:root {
+    --rz-border-radius: 0 !important;
+}
+
+.rz-button,
+.rz-textbox,
+.rz-dropdown,
+.rz-calendar,
+.rz-card,
+.rz-badge,
+.rz-pager,
+.rz-paginator .rz-button {
+    border-radius: 0 !important;
+}
+
+/* Zero gap utility - Use this class on RadzenStack to join elements perfectly */
+.zero-gap-stack,
+.zero-gap-stack.rz-stack {
+    gap: 0 !important;
+}
+
+.zero-gap-stack>* {
+    margin: 0 !important;
+}
+
+/* Specific Radzen components within a zero-gap-stack */
+.zero-gap-stack .rz-textbox,
+.zero-gap-stack .rz-dropdown,
+.zero-gap-stack .rz-datepicker,
+.zero-gap-stack .rz-button,
+.zero-gap-stack .rz-selectbar {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    vertical-align: middle !important;
+    margin: 0 !important;
+}
+
+/* Target internal inputs specifically for height and border to avoid breaking popups */
+.zero-gap-stack .rz-textbox,
+.zero-gap-stack .rz-dropdown-label,
+.zero-gap-stack .rz-datepicker>input,
+.zero-gap-stack .rz-button {
+    height: 36px !important;
+    line-height: normal !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    border-radius: 0 !important;
+}
+
+.zero-gap-stack .rz-datepicker {
+    display: inline-flex !important;
+    height: 36px !important;
+    border: none !important;
+    padding: 0 !important;
+    position: relative !important;
+    overflow: visible !important;
+}
+
+/* NUCLEAR FIX: Hide all internal children that cause inline bleeding */
+/* This is safe because Radzen Popups (Popup="true") are rendered at the body level */
+.zero-gap-stack .rz-datepicker>*:not(input):not(.rz-inputtext):not(.rz-datepicker-trigger) {
+    display: none !important;
+}
+
+/* Ensure the datepicker input itself is styled correctly */
+.zero-gap-stack .rz-datepicker>input {
+    height: 36px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 0 !important;
+    padding: 0 8px !important;
+    width: 100% !important;
+}
+
+/* Remove intermediate borders to make them look joined */
+.zero-gap-stack>*:not(:last-child) .rz-textbox,
+.zero-gap-stack>*:not(:last-child) .rz-dropdown,
+.zero-gap-stack>*:not(:last-child) .rz-datepicker>input,
+.zero-gap-stack>*:not(:last-child) .rz-button {
+    border-right: 0 !important;
+}
+
+/* Remove intermediate borders to make them look joined */
+.zero-gap-stack>*:not(:last-child) .rz-textbox,
+.zero-gap-stack>*:not(:last-child) .rz-dropdown,
+.zero-gap-stack>*:not(:last-child) .rz-datepicker>input,
+.zero-gap-stack>*:not(:last-child) .rz-button {
+    border-right: 0 !important;
+}
+
+/* Force no gap if Bootstrap classes are present */
+.zero-gap-stack.gap-1,
+.zero-gap-stack.gap-2,
+.zero-gap-stack.gap-3 {
+    gap: 0 !important;
+}
+
+/* Legacy UI Classes */
+.card-body-D {
+    border: 1px solid #ccc;
+    width: 100%;
+    height: auto;
+    background-color: #fff;
+}
+
+.input-control {
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    height: 36px !important;
+    font-size: 14px;
+}
+
+.search-button {
+    background-color: #0071c1;
+    border: 1px solid black;
+    color: white;
+    height: 36px !important;
+    border-radius: 0;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
 }
 
 a,
@@ -23,7 +227,7 @@ a,
 }
 
 .content {
-    padding-top: 1.1rem;
+    padding-top: 0.5rem;
 }
 
 h1:focus {
@@ -43,7 +247,7 @@ h1:focus {
 }
 
 .blazor-error-boundary {
-    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3LjgyNSA2OS43NDc1Wk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
     padding: 1rem 1rem 1rem 3.7rem;
     color: white;
 }
@@ -56,82 +260,533 @@ h1:focus {
     border-color: #929292;
 }
 
-.form-floating>.form-control-plaintext::placeholder,
-.form-floating>.form-control::placeholder {
-    color: var(--bs-secondary-color);
-    text-align: end;
+/* form scroll CSS*/
+.form-scroll-container {
+    max-height: calc(100vh - 100px);
+    /* subtract header/footer height */
+    overflow-y: auto;
+    /* vertical scroll inside form */
+    overflow-x: hidden;
+    /* prevent horizontal scroll */
+    background-color: whitesmoke;
+    /* keep your style */
 }
 
-.form-floating>.form-control-plaintext:focus::placeholder,
-.form-floating>.form-control:focus::placeholder {
-    text-align: start;
-}
 
-/* Drag and Drop Zone */
-.drop-zone {
-    border: 2px dashed #667eea;
-    border-radius: 12px;
-    padding: 2.5rem;
-    text-align: center;
-    background: #f8fbff;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
 
-.drop-zone:hover,
-.drop-zone.drag-over {
-    background: #edf2ff;
-    border-color: #5a67d8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-}
 
-.drop-zone-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-}
+/*Working part section for Spare CSS code of Datagrid*/
 
-.drop-zone-icon {
-    font-size: 3rem;
-    color: #667eea;
-}
-
-.drop-zone-text {
-    font-size: 1.1rem;
-    color: #4a5568;
-}
-
-.drop-zone-hint {
-    font-size: 0.85rem;
-    color: #718096;
-}
-
-.drop-zone-input {
-    position: absolute;
+.card-body-D {
+    border: 1px solid #ccc;
     width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    opacity: 0;
+    height: auto;
+
+}
+
+.table {
+    border: 2px solid #ccc;
+}
+
+.gridtop-icons {
+    height: 35px;
+}
+
+
+
+.top-row {
+    display: flex;
+    padding: 7px;
+    border-bottom: 1px solid #ccc;
+}
+
+
+
+.top-icons {
+    height: 20px;
+    color: #6590B9;
+}
+
+
+.search-button {
+    background-color: #0071c1 !important;
+    border: 1px solid black !important;
+    color: white !important;
+    height: 36px !important;
+    border-radius: 0 !important;
+    padding: 0 15px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+}
+
+
+.search-button:hover {
+    background-color: #b7e7fe;
+    border-color: #567FB0;
+}
+
+
+.datagrid-container {
+    overflow-x: auto;
+}
+
+.datagrid {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+}
+
+.datagrid th,
+.datagrid td {
+    padding: 2px;
+    gap: 20px;
+}
+
+.datagrid th {
+    background-color: #F7F8FA;
+    border: 1px solid #ddd;
+    font-weight: normal;
+}
+
+.datagrid tbody tr {
+    background-color: #FFFFFF;
+}
+
+.datagrid tbody tr:nth-child(even) {
+    background-color: #F2F2F2;
+}
+
+.edit-button,
+.delete-button {
+    padding: 6px 10px;
+    border: none;
     cursor: pointer;
+    background-color: transparent;
 }
 
-.fade-in-up {
-    animation: fadeInUp 0.5s ease-out;
+
+/* Compact Radzen DataGrid row height */
+.compact-grid .rz-data-row {
+    height: 22px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 
-@keyframes fadeInUp {
-    from {
+/* Compact header height */
+.compact-grid .rz-header-row {
+    height: 24px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Reduce padding inside cells */
+.compact-grid td {
+    padding: 2px 6px !important;
+}
+
+.compact-grid .rz-datatable-thead th {
+    padding: 2px 4px !important;
+    font-size: 11px;
+    height: 15px !important;
+}
+
+/*Modal Popup form CSS*/
+
+.form-label {
+    width: 100px;
+
+}
+
+.modal-icon {
+    height: 20px;
+}
+
+
+
+.modal-body {
+    border: 1px solid #E2E3E3;
+    border-radius: 2px;
+    background-color: #F2F4F5;
+}
+
+.modal-header {
+    padding: 4px;
+    background-color: rgb(74, 78, 66);
+
+}
+
+
+.modal-content {
+    border: 2px solid gray;
+}
+
+.modal-title b {
+    margin-left: 10px;
+    color: white;
+    font-size: 14px;
+}
+
+.btn-close {
+    height: 10px;
+    margin-right: 5px;
+    background-color: red;
+}
+
+
+.inputtext {
+    height: 28px;
+    background-color: gray;
+}
+
+/*For Screen height in grid */
+/* Make sure the grid container fills available height */
+.responsive-grid {
+    height: calc(100vh - 180px);
+    /* Adjust based on your layout */
+    position: relative;
+}
+
+/* Center the Radzen spinner */
+.responsive-grid .rz-loader {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 9999;
+}
+
+
+/* For screens between 1200px and 1400px */
+@media (min-width: 1200px) and (max-width: 1399px) {
+    body {
+        font-size: 14px;
+    }
+
+    .custom-button {
+        font-size: 14px;
+    }
+}
+
+/* For screens between 1400px and 1600px */
+@media (min-width: 1400px) and (max-width: 1599px) {
+    body {
+        font-size: 14px;
+    }
+
+    .custom-button {
+        font-size: 14px;
+    }
+}
+
+/* For screens 1600px and larger */
+@media (min-width: 1600px) {
+    body {
+        font-size: 14px;
+    }
+
+    .custom-button {
+        font-size: 14px;
+    }
+}
+
+
+/*Gradient border div*/
+.gradient-div {
+    background: linear-gradient(#add8e6, #87cefa);
+    /* Light blue gradient */
+    height: 9px;
+    color: #333;
+    border-style: none;
+    margin-bottom: 1px;
+
+}
+
+
+/*All Controls fontsize style */
+/*Common CSS for Controls in application*/
+
+/*for All Pagetitle font style*/
+.rz-text-h5,
+.pagetitle-fontsize {
+    font-size: 22px;
+    color: #0071c1;
+    font-family: 'Times New Roman', Times, serif !important;
+    position: relative;
+    right: 9px;
+}
+
+.Accountpagetitle-fontsize {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    position: relative;
+    font-weight: bold;
+    right: 9px;
+}
+
+/*for Popup form label fontsize*/
+.label-fontsize {
+    font-size: 14px;
+    color: #3D7EC2;
+}
+
+.label-fontsizechild {
+    font-size: 13px;
+    color: #3D7EC2;
+}
+
+/*for placeholder font*/
+.labelplaceholder-fontsize {
+    font-size: 14px;
+}
+
+
+/*for all buttons font*/
+.btn-fontsize {
+    font-size: 14px;
+}
+
+
+
+/*for all link buttons style*/
+.linkbtn-fontstyle {
+    text-decoration: underline;
+    color: #0071c1;
+    border: 0px;
+    border: unset;
+    background-color: white;
+    font-size: 14px;
+}
+
+
+
+.input-control {
+    border: 1px solid #ccc;
+    border-radius: 0;
+    height: 36px;
+    font-size: 14px;
+}
+
+.input-select {
+    border: 1px solid #ccc;
+    border-radius: 0;
+    height: 36px;
+    font-size: 14px;
+}
+
+/* Focus style for Editbox */
+.input-control:focus {
+    border-color: #3BAEE5;
+    /* Inner border color */
+    outline: none;
+    /* Remove default outline */
+
+}
+
+.input-control:focus::after {
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 3px solid #0d6efd;
+    /* Outer outline */
+    border-radius: 6px;
+    /* Outer border radius */
+    pointer-events: none;
+    /* Prevent interference */
+    z-index: -1;
+    /* Behind the input border */
+}
+
+
+/*Common CSS for Buttons Save, Cancel and other Buttons in application*/
+
+.Savebtn-style {
+    width: 130px;
+    height: 40px;
+    background-color: #1B6EC2;
+}
+
+.Cancelbtn-style {
+    width: 130px;
+    height: 40px;
+    background-color: #DC3545;
+}
+
+
+
+.Approvebtn-style {
+    width: 150px;
+    height: 40px;
+
+}
+
+.Verifybtn-style {
+    width: 150px;
+    height: 40px;
+
+
+}
+
+.Printbtn-style {
+    width: 130px;
+    height: 40px;
+}
+
+AutoComplete {
+    font-size: 14px;
+}
+
+/*CSS for All Datagrid Column Headers*/
+
+/* Custom Dialog Styles */
+/* Force Radzen dialog to open in the middle of the screen */
+.rz-dialog-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.rz-dialog {
+    margin: auto !important;
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+}
+
+.rz-dialog-content {
+    overflow-y: hidden !important;
+    overflow-x: hidden !important;
+}
+
+.rz-dialog-titlebar {
+    background-color: #4A4E42 !important;
+    /* dark brown */
+    padding: 6px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between !important;
+    cursor: move !important;
+}
+
+.rz-dialog-title {
+    font-size: 14px !important;
+    color: white !important;
+    font-weight: bold !important;
+}
+
+/* Close button wrapper */
+.rz-dialog-titlebar-close {
+    background-color: red !important;
+    border-radius: 4px;
+    height: 30px;
+    width: 30px;
+    margin-right: 8px;
+    margin-left: auto !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+/* Close icon inside button */
+.rz-dialog-titlebar-close .rzi {
+    color: white !important;
+    font-size: 14px !important;
+}
+
+.rz-pager {
+    background-color: #3BAEE5 !important;
+    color: white !important;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+}
+
+.rz-paginator .rz-button {
+    background-color: white;
+    color: #3BAEE5;
+    font-weight: bold;
+    margin: 0 2px;
+    border-radius: 3px;
+}
+
+.rz-paginator .rz-button:hover {
+    background-color: #e3f2fd;
+}
+
+/* site.css */
+.blink-badge {
+    -webkit-animation: blinker 1s linear infinite;
+    -moz-animation: blinker 1s linear infinite;
+    animation: blinker 1s linear infinite;
+}
+
+@-webkit-keyframes blinker {
+    50% {
         opacity: 0;
-        transform: translateY(20px);
     }
+}
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+@-moz-keyframes blinker {
+    50% {
+        opacity: 0;
     }
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+@media (min-width: 992px) {
+
+    /* lg breakpoint */
+    .custom-col-lg-2-5 {
+        flex: 0 0 10%;
+        /* take up 20% width */
+        max-width: 10%;
+    }
+}
+
+/* Remove default padding from Radzen Numeric inputs */
+.rz-numeric-input,
+.rz-numeric input,
+.rz-numeric input[type="text"],
+.rz-numeric input[type="number"] {
+    padding: 0 !important;
+    padding-inline: 2px !important;
+    padding-block: 0 !important;
+    line-height: normal !important;
+}
+
+/* NUCLEAR FIX: High-contrast Grid Selection and Hover Visibility */
+.rz-datatable-data .rz-data-row.rz-state-highlight>td,
+.rz-datatable-data .rz-data-row:hover>td {
+    background-color: #0071c1 !important;
+}
+
+/* Force ALL text, links, and icons inside selected/hovered rows to white */
+.rz-datatable-data .rz-data-row.rz-state-highlight td,
+.rz-datatable-data .rz-data-row.rz-state-highlight td *,
+.rz-datatable-data .rz-data-row:hover td,
+.rz-datatable-data .rz-data-row:hover td * {
+    color: #ffffff !important;
+}
+
+/* Ensure secondary colors don't override the forced white visibility */
+.rz-datatable-data .rz-data-row.rz-state-highlight td .text-success,
+.rz-datatable-data .rz-data-row.rz-state-highlight td .text-muted,
+.rz-datatable-data .rz-data-row:hover td .text-success,
+.rz-datatable-data .rz-data-row:hover td .text-muted {
+    color: #ffffff !important;
 }

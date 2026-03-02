@@ -1,6 +1,6 @@
-@page "/browse"
-@page "/browse/{CategoryId:int}"
-@page "/browse/{CategoryId:int}/{ParentId:int}"
+@page "/ManageDocuments"
+@page "/ManageDocuments/{CategoryId:int}"
+@page "/ManageDocuments/{CategoryId:int}/{ParentId:int}"
 @using Radzen.Blazor
 @attribute [Authorize]
 @inherits Fluxor.Blazor.Web.Components.FluxorComponent
@@ -26,95 +26,72 @@
     </RadzenStack>
 }
 
-<RadzenStack Gap="1.5rem" class="fade-in-up">
-    <!-- Header -->
-    <RadzenCard>
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
-                <RadzenIcon Icon="folder_open" Style="font-size: 2rem; color: var(--rz-primary);" />
-                <RadzenStack Gap="0">
-                    <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Documents</RadzenText>
-                    <RadzenBreadcrumb>
-                        <RadzenBreadcrumbItem Text="Dashboard" Path="/" />
-                        <RadzenBreadcrumbItem Text="Browse" Path="/browse" />
-                        @if (CategoryId > 0)
-                        {
-                            <RadzenBreadcrumbItem Text="@(categories.FirstOrDefault(c => c.CategoryId == CategoryId)?.CategoryName ?? "Category")" 
-                                                   Path="@($"/browse/{CategoryId}")" />
-                        }
-                        @if (parentFolder != null)
-                        {
-                            <RadzenBreadcrumbItem Text="@parentFolder.DocumentName" />
-                        }
-                    </RadzenBreadcrumb>
-                </RadzenStack>
-            </RadzenStack>
-            
-            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
-                <RadzenDropDown TValue="string" Data="@batchLabels" Placeholder="Filter by Batch..." 
-                                @bind-Value="@selectedBatchLabel" Change="@LoadData" Clearable="true"
-                                Style="width: 200px;" />
-                <RadzenTextBox Placeholder="Search documents..." @bind-Value="@searchQuery" 
-                               Style="width: 250px;" @onkeyup="@((e) => { if(e.Key == "Enter") Search(); })" />
-                <RadzenButton Icon="search" Click="@(args => Search())" ButtonStyle="ButtonStyle.Primary" />
-                <AuthorizeView>
-                    <Authorized>
-                        <RadzenButton Icon="add" Text="New Document" Click="@(() => NavigationManager.NavigateTo("/upload"))" 
-                                       ButtonStyle="ButtonStyle.Success" />
-                    </Authorized>
-                </AuthorizeView>
+<RadzenStack Gap="0.5rem" class="fade-in-up">
+    <!-- Header Area -->
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="px-2 pt-2">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+            <RadzenIcon Icon="folder_open" Style="font-size: 1.5rem; color: #0071c1;" />
+            <RadzenStack Gap="0">
+                <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize" Style="margin: 0; font-weight: bold;">Manage Documents</RadzenText>
             </RadzenStack>
         </RadzenStack>
-    </RadzenCard>
+        
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0" class="zero-gap-stack">
+            <AuthorizeView>
+                <Authorized>
+                    <div style="position: relative;" class="me-2">
+                        <RadzenButton Icon="tune" Text="Mobile Upload" Click="@ToggleToolsMenu" ButtonStyle="ButtonStyle.Secondary" class="search-button" />
+                        @if (isToolsMenuOpen)
+                        {
+                            <div style="position: absolute; top: 110%; right: 0; width: 320px; z-index: 1000; background: white; border: 1px solid var(--rz-divider); border-radius: 4px; padding: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                <RadzenStack Gap="1rem">
+                                    <DocumentManagementSystem.Components.MfaSetupCard />
+                                    <RadzenCard class="rz-shadow-2" Style="cursor: pointer; padding: 1rem; border: 1px solid var(--rz-primary-light);" @onclick="@(() => NavigationManager.NavigateTo("/profile/uploadqr"))">
+                                        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                                            <RadzenIcon Icon="qr_code_scanner" Style="font-size: 2rem; color: var(--rz-primary);" />
+                                            <RadzenStack Gap="0">
+                                                <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0; font-weight: bold;">Mobile Upload</RadzenText>
+                                                <RadzenText TextStyle="TextStyle.Caption" class="text-muted" Style="margin: 0; line-height: 1.2;">Generate a secure QR code to upload files from your phone.</RadzenText>
+                                            </RadzenStack>
+                                        </RadzenStack>
+                                    </RadzenCard>
+                                </RadzenStack>
+                            </div>
+                        }
+                    </div>
+                    <RadzenButton Icon="add" Text="New Document" 
+                                  Click="@(() => NavigationManager.NavigateTo("/upload"))"
+                                  ButtonStyle="ButtonStyle.Success" class="search-button" />
+                </Authorized>
+            </AuthorizeView>
+        </RadzenStack>
+    </RadzenStack>
+
+    <!-- Filter Area (Legacy Based) -->
+    <div class="card-body-D px-1 py-1">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0" Style="flex-wrap: nowrap; overflow-x: auto;" class="zero-gap-stack">
+            <RadzenDropDown TValue="int?" Data="@categories" TextProperty="CategoryName" ValueProperty="CategoryId"
+                            Placeholder="Category..." @bind-Value="@selectedTopCategoryId" Change="@(args => OnTopCategoryChange(args))" Clearable="true"
+                            Style="width: 180px;" />
+            
+            <RadzenDatePicker TValue="DateTime?[]" SelectionMode="DatePickerSelectionMode.Range" 
+                              Placeholder="Date Range..." @bind-Value="@dates" Change="@(args => OnDateRangeChange(args))" Clearable="true"
+                              Style="width: 220px;" DateFormat="MMM dd, yyyy" Popup="true" Inline="false" />
+            
+            <RadzenDropDown TValue="string" Data="@batchLabels" Placeholder="Batch..." 
+                            @bind-Value="@selectedBatchLabel" Change="@(args => LoadData())" Clearable="true"
+                            Style="width: 150px;" />
+            
+            <RadzenTextBox Placeholder="Search..." @bind-Value="@searchQuery" 
+                           Style="flex: 1; min-width: 150px;" @onkeyup="@((e) => { if(e.Key == "Enter") Search(); })" />
+            
+            <RadzenButton Icon="search" Click="@(args => Search())" ButtonStyle="ButtonStyle.Primary" class="search-button" Tooltip="Search" />
+        </RadzenStack>
+    </div>
 
     <RadzenRow>
-        <!-- Categories Sidebar -->
-        <RadzenColumn Size="12" SizeMD="3">
-            <!-- MFA Card -->
-            <DocumentManagementSystem.Components.MfaSetupCard />
-            
-            <!-- Mobile Upload Card -->
-            <DocumentManagementSystem.Components.MobileUploadCard />
-
-            <RadzenCard Style="padding: 0;">
-                <RadzenStack Gap="0">
-                    <RadzenStack Style="padding: 1rem; border-bottom: 1px solid var(--rz-divider);">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0;">Categories</RadzenText>
-                    </RadzenStack>
-                    <RadzenListBox Data="@categories" TValue="int?" @bind-Value="@selectedCategoryId"
-                                   TextProperty="CategoryName" ValueProperty="CategoryId"
-                                   Style="width: 100%; border: none;" Change="@OnCategoryChange">
-                        <Template Context="cat">
-                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-                                <RadzenIcon Icon="folder" Style="font-size: 1.25rem; color: #ffca28;" />
-                                <RadzenText TextStyle="TextStyle.Body2">@((cat as Category)?.CategoryName)</RadzenText>
-                            </RadzenStack>
-                        </Template>
-                    </RadzenListBox>
-                </RadzenStack>
-            </RadzenCard>
-
-            <!-- Archive Sidebar -->
-            <RadzenCard Style="padding: 0; margin-top: 1.5rem;">
-                <RadzenStack Gap="0">
-                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Style="padding: 1rem; border-bottom: 1px solid var(--rz-divider);">
-                        <RadzenText TextStyle="TextStyle.Subtitle2" Style="margin: 0;">Archives</RadzenText>
-                        @if (selectedYear.HasValue)
-                        {
-                            <RadzenButton Icon="clear" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Light" Click="@(args => ClearDateFilter())" />
-                        }
-                    </RadzenStack>
-                    <RadzenStack Style="max-height: 400px; overflow-y: auto; padding: 0.5rem;">
-                        <RadzenTree Data="@archiveNodes" Change="@OnTreeChange">
-                            <RadzenTreeLevel TextProperty="Text" ChildrenProperty="Children" />
-                        </RadzenTree>
-                    </RadzenStack>
-                </RadzenStack>
-            </RadzenCard>
-        </RadzenColumn>
-
         <!-- Document Grid -->
-        <RadzenColumn Size="12" SizeMD="9">
+        <RadzenColumn Size="12" SizeMD="12">
             <RadzenCard>
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="mb-3">
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
@@ -123,13 +100,11 @@
                             <RadzenButton Icon="arrow_back" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" 
                                            Click="@(args => GoBack())" class="me-2" />
                         }
-                        <RadzenText TextStyle="TextStyle.Subtitle1">
-                            @(parentFolder != null ? parentFolder.DocumentName : "Documents in this Category")
-                        </RadzenText>
+
                     </RadzenStack>
                     @if (selectedDocuments.Any())
                     {
-                        <RadzenButton Icon="delete" Text="Delete Selected" ButtonStyle="ButtonStyle.Danger" 
+                        <RadzenButton Image="delete-x.png" Text="Delete Selected" ButtonStyle="ButtonStyle.Danger" 
                                        Size="ButtonSize.Small" Click="@(args => DeleteSelected())" />
                     }
                 </RadzenStack>
@@ -154,13 +129,13 @@
                         
                         <RadzenDataGridColumn TItem="Document" Property="DocumentName" Title="Name" Width="250px">
                             <Template Context="doc">
-                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" class="zero-gap-stack">
                                     <RadzenIcon Icon="@(doc.Status == "Folder" ? "folder" : GetFileIcon(doc.Extension))" 
                                                 Style="@(doc.Status == "Folder" ? "font-size: 1.25rem; color: #ffca28;" : "font-size: 1.25rem;")" />
                                     <RadzenStack Gap="0">
                                         @if (doc.Status == "Folder")
                                         {
-                                            <RadzenLink Path="@($"/browse/{doc.CategoryID}/{doc.DocumentId}")" Text="@doc.DocumentName" 
+                                            <RadzenLink Path="@($"/ManageDocuments/{doc.CategoryID}/{doc.DocumentId}")" Text="@doc.DocumentName" 
                                                         Style="font-weight: bold; color: var(--rz-primary);" />
                                         }
                                         else
@@ -223,8 +198,8 @@
                                               @onclick:stopPropagation="true" 
                                               Title="Share with Group" 
                                               Disabled="@(doc.Status == "Folder")" />
-                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall" />
-                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" 
+                                <RadzenButton Image="edit-icon.png" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall" />
+                                <RadzenButton Image="delete-x.png" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall" 
                                                Click="@(() => DeleteDocument(doc))" Tooltip="Delete" />
                             </Template>
                         </RadzenDataGridColumn>

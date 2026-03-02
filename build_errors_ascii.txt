@@ -1,0 +1,7 @@
+D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\Components\Pages\Browse.razor(58,130): error CS1503: Argument 1: cannot convert from 'System.DateTime?' to 'System.DateTime?[]' [D:\Gemini\.gemini\antigravity\scratch\DocumentManagementSystem\DocumentManagementSystem.csproj]
+
+Build FAILED.
+    56 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:15.50

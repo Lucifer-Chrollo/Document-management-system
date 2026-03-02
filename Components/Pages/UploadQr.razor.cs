@@ -54,7 +54,18 @@ private bool showQrCode;
 
     private async Task LoadCategories()
     {
-        categories = await DocumentService.GetCategoriesAsync();
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var isAdmin = user.Identity?.Name?.ToLower() == "admin" || user.IsInRole("Admin");
+
+        if (isAdmin)
+        {
+            categories = await CategoryService.GetCategoriesAsync();
+        }
+        else
+        {
+            categories = await CategoryService.GetCategoriesByUserAsync(currentUserId);
+        }
     }
 
     private async Task LoadSessions()

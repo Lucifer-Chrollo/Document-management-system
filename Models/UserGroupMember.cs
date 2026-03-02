@@ -17,7 +17,7 @@ public class UserGroupMember
     public int GroupId { get; set; }
 
     [ForeignKey("UserId")]
-    public virtual DmsUser? User { get; set; }
+    public virtual ApplicationUser? User { get; set; }
 
     [ForeignKey("GroupId")]
     public virtual UserGroup? Group { get; set; }

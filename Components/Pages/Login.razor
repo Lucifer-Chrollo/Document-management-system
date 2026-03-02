@@ -5,7 +5,7 @@
 <PageTitle>Login - DMS</PageTitle>
 
 <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="height: 100vh; background-color: #f4f6f9;">
-    <RadzenCard class="rz-shadow-7" Style="width: 100%; max-width: 400px; padding: 2rem;">
+    <RadzenCard class="rz-shadow-7" Style="width: 100%; max-width: 400px; padding: 2rem; font-family: Arial, sans-serif;">
         <RadzenStack Gap="1.5rem">
             <RadzenStack AlignItems="AlignItems.Center" Gap="0.5rem">
                 <RadzenIcon Icon="lock" Style="font-size: 3rem; color: #4340d2;" />
@@ -44,13 +44,7 @@
                 </RadzenStack>
             </form>
 
-            <RadzenText TextStyle="TextStyle.Caption" TextAlign="TextAlign.Center" Style="margin: 0.5rem 0;">OR</RadzenText>
 
-            <form method="post" action="/account/loginexternal">
-                <input type="hidden" name="provider" value="Google" />
-                <input type="hidden" name="returnUrl" value="@ReturnUrl" />
-                <RadzenButton ButtonType="ButtonType.Submit" Text="Sign in with Google" Icon="google" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Outlined" Style="width: 100%;" />
-            </form>
             
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
                 <RadzenText TextStyle="TextStyle.Body2">Don't have an account?</RadzenText>

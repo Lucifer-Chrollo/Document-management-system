@@ -10,37 +10,39 @@
 
 <PageTitle>Trash / Recycle Bin - DMS</PageTitle>
 
-<RadzenStack Gap="1.5rem" class="fade-in-up">
-    <!-- Header -->
-    <RadzenCard>
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
-                <RadzenIcon Icon="delete_outline" Style="font-size: 2rem; color: var(--rz-danger);" />
-                <RadzenStack Gap="0">
-                    <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Trash</RadzenText>
-                    <RadzenText TextStyle="TextStyle.Body2" class="text-muted">
-                        Restore documents or delete them permanently.
-                    </RadzenText>
-                </RadzenStack>
-            </RadzenStack>
-
-            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
-                @if (selectedDocuments.Any())
-                {
-                    <RadzenButton Icon="restore" Text="Restore Selected" ButtonStyle="ButtonStyle.Success" 
-                                  Click="@RestoreSelected" />
-                    <RadzenButton Icon="delete_forever" Text="Delete Forever" ButtonStyle="ButtonStyle.Danger" 
-                                  Click="@DeleteSelectedForever" />
-                }
-            </RadzenStack>
+<RadzenStack Gap="0.5rem" class="p-2 fade-in-up">
+    <!-- Header Area -->
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+            <RadzenIcon Icon="delete" Style="font-size: 1.5rem; color: #0071c1;" />
+            <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize" Style="margin: 0; font-weight: bold;">Trash</RadzenText>
         </RadzenStack>
-    </RadzenCard>
+    </RadzenStack>
+
+    <!-- Action Area -->
+    <div class="card-body-D px-1 py-1">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0" class="zero-gap-stack">
+            @if (selectedDocuments.Any())
+            {
+                <RadzenButton Icon="restore" Text="Restore Selected" ButtonStyle="ButtonStyle.Success" 
+                              Click="@RestoreSelected" class="search-button me-2" />
+                <RadzenButton Image="delete-x.png" Text="Delete Forever" ButtonStyle="ButtonStyle.Danger" 
+                              Click="@DeleteSelectedForever" class="search-button" />
+            }
+            else
+            {
+                <RadzenText TextStyle="TextStyle.Body2" Style="margin: 0 10px; line-height: 36px;" class="text-muted">
+                    Restore documents or delete them permanently.
+                </RadzenText>
+            }
+        </RadzenStack>
+    </div>
 
     <RadzenCard>
         @if (!isLoading && !documents.Any())
         {
              <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Style="padding: 3rem;">
-                <RadzenIcon Icon="delete_sweep" Style="font-size: 4rem; color: var(--rz-text-disabled);" />
+                <img src="delete-x.png" style="width: 4rem; height: 4rem; opacity: 0.5;" />
                 <RadzenText TextStyle="TextStyle.H6" Style="color: var(--rz-text-disabled);">Trash is empty</RadzenText>
             </RadzenStack>
         }
@@ -85,7 +87,7 @@
                         <Template Context="doc">
                             <RadzenButton Icon="restore" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small" 
                                           Click="@(() => RestoreDocument(doc))" Tooltip="Restore" />
-                            <RadzenButton Icon="delete_forever" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
+                            <RadzenButton Image="delete-x.png" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" 
                                           Click="@(() => DeleteDocumentForever(doc))" Tooltip="Delete Forever" />
                         </Template>
                     </RadzenDataGridColumn>

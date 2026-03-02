@@ -1,4 +1,4 @@
-﻿@page "/groups"
+﻿@page "/ManageUserGroups"
 @using Radzen
 @using Radzen.Blazor
 @using DocumentManagementSystem.Models
@@ -10,20 +10,19 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @* @attribute [Authorize(Roles = "Admin")] - Removed so any user can access groups *@
 
-<RadzenStack Gap="1rem" Style="padding: 2rem;">
+<RadzenStack Gap="0.5rem" class="p-2 fade-in-up">
     <!-- Header Area -->
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
-        <RadzenIcon Icon="group" Style="font-size: 1.5rem;" />
-        <RadzenText TextStyle="TextStyle.H5" class="m-0" Style="color: #2b5797;">Manage User Groups</RadzenText>
+        <RadzenIcon Icon="group" Style="font-size: 1.5rem; color: #0071c1;" />
+        <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize m-0" Style="font-weight: bold;">Manage User Groups</RadzenText>
     </RadzenStack>
 
-    <hr style="border-top: 2px solid #e0e0e0; margin: 0;" />
-
-    <!-- Toolbar Area -->
-    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem" class="mt-2 mb-3">
-        <RadzenButton class="rz-border-radius-1" Icon="add" Text="Add New Group" ButtonStyle="ButtonStyle.Light" 
-                      Click="@OnAddGroup" Style="font-weight: bold; color: #0078d4; border: 1px solid #0078d4; padding: 0 20px;" />
-    </RadzenStack>
+    <!-- Toolbar Area (Legacy Based) -->
+    <div class="card-body-D px-1 py-1">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" class="zero-gap-stack">
+            <RadzenButton Icon="add" Text="Add New Group" Click="@OnAddGroup" class="search-button" />
+        </RadzenStack>
+    </div>
 
     <!-- Data Grid -->
     <RadzenDataGrid Data="@groups" TItem="UserGroup" IsLoading="@isLoading"
@@ -48,8 +47,8 @@
             <RadzenDataGridColumn TItem="UserGroup" Property="MemberCount" Title="Total Users" Width="120px" TextAlign="TextAlign.Center" />
             <RadzenDataGridColumn TItem="UserGroup" Title="Action" Width="120px" TextAlign="TextAlign.Center" Sortable="false">
                 <Template Context="group">
-                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" 
-                                  Click="@(() => OnEditGroup(group))" Style="color: #0078d4; background: transparent;" Tooltip="Edit Group Users & Permissions" />
+                    <RadzenButton Image="edit-icon.png" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" 
+                                  Click="@(() => OnEditGroup(group))" Tooltip="Edit Group" />
                     <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" 
                                   Click="@(() => OnDeleteGroup(group))" Style="color: #d32f2f; background: transparent; font-weight: bold;" Tooltip="Delete Group" />
                 </Template>

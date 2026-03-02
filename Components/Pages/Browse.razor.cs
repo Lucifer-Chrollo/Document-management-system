@@ -29,19 +29,17 @@ public partial class Browse : Fluxor.Blazor.Web.Components.FluxorComponent, IDis
     private IList<Document> selectedDocuments = new List<Document>();
     private IEnumerable<Category> categories = Enumerable.Empty<Category>();
     private IEnumerable<string> batchLabels = Enumerable.Empty<string>();
-    private List<ArchiveDateNode> archiveNodes = new();
-    private Document? parentFolder;
-
     private int? selectedCategoryId;
+    private int? selectedTopCategoryId;
     private string? selectedBatchLabel;
     private string searchQuery = string.Empty;
-    private int? selectedYear;
-    private int? selectedMonth;
-    private int? selectedDay;
+    private DateTime?[]? dates;
+    private Document? parentFolder;
 
     private bool isLoading = false;
     private bool isDownloading = false;
     private bool initialLoadComplete = false;
+    private bool isToolsMenuOpen = false;
     private double downloadProgress = 0;
     private long bytesDownloaded = 0;
     private long totalBytesToDownload = 0;
@@ -69,11 +67,10 @@ public partial class Browse : Fluxor.Blazor.Web.Components.FluxorComponent, IDis
                 : Task.FromResult(Enumerable.Empty<Category>());
 
         var batchTask = DocumentService.GetBatchLabelsAsync();
-        var archiveTask = LoadArchiveNodes();
         var dataTask = LoadDataCore();
 
         // Wait for all to finish — runs ~3-4x faster than sequential
-        await Task.WhenAll(categoryTask, batchTask, archiveTask, dataTask);
+        await Task.WhenAll(categoryTask, batchTask, dataTask);
 
         categories = await categoryTask;
         batchLabels = await batchTask;
@@ -145,18 +142,34 @@ public partial class Browse : Fluxor.Blazor.Web.Components.FluxorComponent, IDis
         if (ParentId.HasValue && ParentId > 0)
         {
             parentFolder = await DocumentService.GetByIdAsync(ParentId.Value);
-            documents = await DocumentService.GetAllAsync(parentId: ParentId.Value);
+            documents = await DocumentService.GetAllAsync(
+                categoryId: selectedCategoryId,
+                parentId: ParentId.Value,
+                batchLabel: selectedBatchLabel
+            );
         }
         else
         {
             parentFolder = null;
             documents = await DocumentService.GetAllAsync(
                 categoryId: selectedCategoryId,
-                batchLabel: selectedBatchLabel,
-                year: selectedYear,
-                month: selectedMonth,
-                day: selectedDay
+                batchLabel: selectedBatchLabel
             );
+        }
+
+        // Apply Date Range filter in memory
+        if (dates != null && dates.Length >= 1 && dates[0].HasValue)
+        {
+            var startDate = dates[0].Value.Date;
+            if (dates.Length > 1 && dates[1].HasValue)
+            {
+                var endDate = dates[1].Value.Date.AddDays(1).AddTicks(-1);
+                documents = documents.Where(d => d.UploadedDate >= startDate && d.UploadedDate <= endDate).ToList();
+            }
+            else
+            {
+                documents = documents.Where(d => d.UploadedDate.Date == startDate).ToList();
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(searchQuery))
@@ -168,68 +181,32 @@ public partial class Browse : Fluxor.Blazor.Web.Components.FluxorComponent, IDis
         }
     }
 
-    private async Task LoadArchiveNodes()
-    {
-        var dates = await DocumentService.GetArchiveDatesAsync();
-        var nodes = new List<ArchiveDateNode>();
-
-        foreach (var yearGroup in dates.GroupBy(d => d.Year))
-        {
-            var yearNode = new ArchiveDateNode { Text = yearGroup.Key.ToString(), Year = yearGroup.Key };
-            foreach (var monthGroup in yearGroup.GroupBy(d => d.Month))
-            {
-                var monthNode = new ArchiveDateNode 
-                { 
-                    Text = monthGroup.Key.HasValue ? System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(monthGroup.Key.Value) : "Unknown",
-                    Year = yearGroup.Key,
-                    Month = monthGroup.Key
-                };
-                foreach (var day in monthGroup)
-                {
-                    monthNode.Children.Add(new ArchiveDateNode 
-                    { 
-                        Text = day.Day.ToString(),
-                        Year = yearGroup.Key,
-                        Month = monthGroup.Key,
-                        Day = day.Day
-                    });
-                }
-                yearNode.Children.Add(monthNode);
-            }
-            nodes.Add(yearNode);
-        }
-        archiveNodes = nodes;
-    }
-
-    private async Task OnCategoryChange(object value)
+    private async Task OnTopCategoryChange(object value)
     {
         if (value is int id)
         {
-            NavigationManager.NavigateTo($"/browse/{id}");
+            selectedCategoryId = id;
+            await LoadData();
         }
         else
         {
-            NavigationManager.NavigateTo("/browse");
-        }
-    }
-
-    private async Task OnTreeChange(TreeEventArgs args)
-    {
-        if (args.Value is ArchiveDateNode node)
-        {
-            selectedYear = node.Year;
-            selectedMonth = node.Month;
-            selectedDay = node.Day;
+            selectedCategoryId = null;
             await LoadData();
         }
     }
 
-    private async Task ClearDateFilter()
+    private async Task OnDateRangeChange(object value)
     {
-        selectedYear = null;
-        selectedMonth = null;
-        selectedDay = null;
-        await LoadData();
+        if (value is DateTime?[] range)
+        {
+            dates = range;
+            await LoadData();
+        }
+    }
+
+    private void ToggleToolsMenu()
+    {
+        isToolsMenuOpen = !isToolsMenuOpen;
     }
 
     private async Task Search()

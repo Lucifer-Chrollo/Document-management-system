@@ -7,14 +7,14 @@
 
 <PageTitle>Audit Logs - DMS</PageTitle>
 
-<RadzenStack Gap="1.5rem" class="p-4">
-    <!-- Header -->
+<RadzenStack Gap="0.5rem" class="p-2 fade-in-up">
+    <!-- Header Area -->
     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
         <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
-            <RadzenIcon Icon="receipt_long" Style="font-size: 2rem; color: var(--rz-primary);" />
-            <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Audit Trail</RadzenText>
+            <RadzenIcon Icon="receipt_long" Style="font-size: 1.5rem; color: #0071c1;" />
+            <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize" Style="margin: 0; font-weight: bold;">Audit Trail</RadzenText>
         </RadzenStack>
-        <RadzenButton Text="Refresh" Icon="refresh" Click="@LoadLogs" ButtonStyle="ButtonStyle.Light" />
+        <RadzenButton Text="Refresh" Icon="refresh" Click="@LoadLogs" ButtonStyle="ButtonStyle.Light" class="search-button" />
     </RadzenStack>
 
     <!-- Stats Cards -->
@@ -70,25 +70,16 @@
     </RadzenRow>
 
     <!-- Filters -->
-    <RadzenCard>
-        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.End" Wrap="FlexWrap.Wrap">
-            <RadzenStack Gap="0.25rem">
-                <RadzenLabel Text="Action" />
-                <RadzenDropDown @bind-Value="@filterAction" Data="@actionTypes" Placeholder="All Actions" 
-                                Style="width: 150px;" AllowClear="true" />
-            </RadzenStack>
-            <RadzenStack Gap="0.25rem">
-                <RadzenLabel Text="From Date" />
-                <RadzenDatePicker @bind-Value="@filterFromDate" DateFormat="yyyy-MM-dd" Style="width: 150px;" />
-            </RadzenStack>
-            <RadzenStack Gap="0.25rem">
-                <RadzenLabel Text="To Date" />
-                <RadzenDatePicker @bind-Value="@filterToDate" DateFormat="yyyy-MM-dd" Style="width: 150px;" />
-            </RadzenStack>
-            <RadzenButton Text="Apply Filters" Icon="filter_list" Click="@LoadLogs" />
-            <RadzenButton Text="Clear" Icon="clear" ButtonStyle="ButtonStyle.Light" Click="@ClearFilters" />
+    <div class="card-body-D px-1 py-1">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0" AlignItems="AlignItems.Center" Style="flex-wrap: nowrap;" class="zero-gap-stack">
+            <RadzenDropDown @bind-Value="@filterAction" Data="@actionTypes" Placeholder="Action..." 
+                            Style="width: 150px;" AllowClear="true" />
+            <RadzenDatePicker @bind-Value="@filterFromDate" DateFormat="yyyy-MM-dd" Placeholder="From" Style="width: 130px;" Popup="true" Inline="false" />
+            <RadzenDatePicker @bind-Value="@filterToDate" DateFormat="yyyy-MM-dd" Placeholder="To" Style="width: 130px;" Popup="true" Inline="false" />
+            <RadzenButton Text="Search" Icon="filter_list" Click="@LoadLogs" class="search-button" />
+            <RadzenButton Text="Clear" Icon="clear" ButtonStyle="ButtonStyle.Light" Click="@ClearFilters" class="search-button" />
         </RadzenStack>
-    </RadzenCard>
+    </div>
 
     <!-- Logs Grid -->
     <RadzenCard>
@@ -101,7 +92,7 @@
         }
         else
         {
-            <RadzenDataGrid Data="@logs" TItem="AuditLog" AllowFiltering="true" AllowSorting="true" 
+            <RadzenDataGrid Data="@logs" TItem="AuditLog" AllowFiltering="false" AllowSorting="true" 
                             AllowPaging="true" PageSize="20" PagerHorizontalAlign="HorizontalAlign.Center"
                             FilterMode="FilterMode.Simple" Density="Density.Compact">
                 <Columns>

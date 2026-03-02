@@ -9,11 +9,11 @@
 
 <PageTitle>My Profile - DMS</PageTitle>
 
-<RadzenStack Gap="1.5rem" class="p-4" Style="max-width: 800px;">
-    <!-- Header -->
-    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
-        <RadzenIcon Icon="account_circle" Style="font-size: 2rem; color: var(--rz-primary);" />
-        <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">My Profile</RadzenText>
+<RadzenStack Gap="0.5rem" class="p-2 fade-in-up" Style="max-width: 800px;">
+    <!-- Header Area -->
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+        <RadzenIcon Icon="account_circle" Style="font-size: 1.5rem; color: #0071c1;" />
+        <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize" Style="margin: 0; font-weight: bold;">My Profile</RadzenText>
     </RadzenStack>
 
     @if (currentUser != null)
@@ -21,7 +21,7 @@
         <!-- User Info Card -->
         <RadzenCard>
             <RadzenStack Gap="1rem">
-                <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0" AlignItems="AlignItems.Center" class="zero-gap-stack">
                     <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center"
                                  Style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%;">
                         <RadzenText Style="font-size: 2rem; color: white; font-weight: bold;">
@@ -54,7 +54,7 @@
 
                 <!-- Storage Quota -->
                 <RadzenStack Gap="0.5rem">
-                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="0" class="zero-gap-stack">
                         <RadzenText class="text-muted" Style="font-size: 0.85rem;">Storage Used</RadzenText>
                         <RadzenText Style="font-size: 0.85rem;">
                             @FormatSize(currentUser.StorageUsedBytes) / @FormatSize(currentUser.StorageQuotaBytes)
@@ -75,7 +75,7 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenCard Style="cursor: pointer; transition: all 0.2s; height: 100%;" 
                             class="rz-shadow-3" @onclick="@(() => Navigation.NavigateTo("/profile/mfa"))">
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0" AlignItems="AlignItems.Center" class="zero-gap-stack">
                         <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center"
                                      Style="width: 50px; height: 50px; background: #22c55e20; border-radius: 12px;">
                             <RadzenIcon Icon="security" Style="font-size: 1.5rem; color: #22c55e;" />
@@ -94,7 +94,7 @@
             <RadzenColumn Size="12" SizeMD="6">
                 <RadzenCard Style="cursor: pointer; transition: all 0.2s; height: 100%;" 
                             class="rz-shadow-3" @onclick="@(() => Navigation.NavigateTo("/profile/upload-qr"))">
-                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0" AlignItems="AlignItems.Center" class="zero-gap-stack">
                         <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center"
                                      Style="width: 50px; height: 50px; background: #667eea20; border-radius: 12px;">
                             <RadzenIcon Icon="qr_code_2" Style="font-size: 1.5rem; color: #667eea;" />

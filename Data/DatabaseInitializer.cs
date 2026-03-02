@@ -52,17 +52,78 @@ public class DatabaseInitializer
             var hashedNormalizedEmail = _encryptionService.Hash(normalizedAdminEmail);
 
             command.CommandText = $@"
-                -- Create Departments Table
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Departments' AND xtype='U')
+                -- Migration: Rename existing 'Departments' table to 'HRM_Departments'
+                IF EXISTS (SELECT * FROM sysobjects WHERE name='Departments' AND xtype='U')
+                AND NOT EXISTS (SELECT * FROM sysobjects WHERE name='HRM_Departments' AND xtype='U')
                 BEGIN
-                    CREATE TABLE Departments (
-                        DepartmentId INT PRIMARY KEY,
-                        DepartmentName NVARCHAR(100) NOT NULL,
-                        SortOrder INT NOT NULL DEFAULT 0
+                    -- Drop FK constraints that reference old table
+                    IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_Departments')
+                        ALTER TABLE Documents DROP CONSTRAINT FK_Documents_Departments;
+                    IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Users_Departments')
+                        ALTER TABLE Users DROP CONSTRAINT FK_Users_Departments;
+
+                    -- Rename the table
+                    EXEC sp_rename 'Departments', 'HRM_Departments';
+
+                    -- Rename DepartmentId to DepartmentID (casing)
+                    IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'DepartmentId')
+                        EXEC sp_rename 'HRM_Departments.DepartmentId', 'DepartmentID', 'COLUMN';
+
+                    -- Rename DepartmentName to Name
+                    IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'DepartmentName')
+                        EXEC sp_rename 'HRM_Departments.DepartmentName', 'Name', 'COLUMN';
+
+                    -- Drop SortOrder column if exists
+                    IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'SortOrder')
+                    BEGIN
+                        DECLARE @SortConstraint nvarchar(200);
+                        SELECT @SortConstraint = df.name FROM sys.default_constraints df
+                        INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_column_id = c.column_id
+                        WHERE c.name = 'SortOrder' AND c.object_id = OBJECT_ID('HRM_Departments');
+                        IF @SortConstraint IS NOT NULL
+                            EXEC('ALTER TABLE HRM_Departments DROP CONSTRAINT [' + @SortConstraint + ']');
+                        ALTER TABLE HRM_Departments DROP COLUMN SortOrder;
+                    END
+
+                    -- Add missing legacy columns
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'Description')
+                        ALTER TABLE HRM_Departments ADD Description NVARCHAR(100) NULL;
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'UpdatedDate')
+                        ALTER TABLE HRM_Departments ADD UpdatedDate DATETIME NULL;
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'Status')
+                        ALTER TABLE HRM_Departments ADD Status NVARCHAR(50) NULL;
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'SalaryExpenseAccountCode')
+                        ALTER TABLE HRM_Departments ADD SalaryExpenseAccountCode NVARCHAR(50) NULL;
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'EOBIExpenseAccountCode')
+                        ALTER TABLE HRM_Departments ADD EOBIExpenseAccountCode NVARCHAR(50) NULL;
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'PESSIExpenseAccountCode')
+                        ALTER TABLE HRM_Departments ADD PESSIExpenseAccountCode NVARCHAR(50) NULL;
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('HRM_Departments') AND name = 'CanteenExpenseAccountCode')
+                        ALTER TABLE HRM_Departments ADD CanteenExpenseAccountCode NVARCHAR(50) NULL;
+
+                    -- Widen Name column to match legacy NVARCHAR(500)
+                    ALTER TABLE HRM_Departments ALTER COLUMN Name NVARCHAR(500) NOT NULL;
+                END
+
+                -- Create HRM_Departments Table (legacy iBusinessFlex schema) — for fresh DBs
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='HRM_Departments' AND xtype='U')
+                BEGIN
+                    CREATE TABLE HRM_Departments (
+                        DepartmentID INT IDENTITY(1,1) PRIMARY KEY,
+                        Name NVARCHAR(500) NOT NULL,
+                        Description NVARCHAR(100) NULL,
+                        UpdatedDate DATETIME NULL,
+                        Status NVARCHAR(50) NULL,
+                        SalaryExpenseAccountCode NVARCHAR(50) NULL,
+                        EOBIExpenseAccountCode NVARCHAR(50) NULL,
+                        PESSIExpenseAccountCode NVARCHAR(50) NULL,
+                        CanteenExpenseAccountCode NVARCHAR(50) NULL
                     );
                     
-                    INSERT INTO Departments (DepartmentId, DepartmentName) VALUES 
+                    SET IDENTITY_INSERT HRM_Departments ON;
+                    INSERT INTO HRM_Departments (DepartmentID, Name) VALUES 
                     (0, 'Unassigned'), (1, 'Sales'), (2, 'HR'), (3, 'IT'), (4, 'Finance');
+                    SET IDENTITY_INSERT HRM_Departments OFF;
                 END
 
                 -- Create Categories Table
@@ -141,14 +202,30 @@ public class DatabaseInitializer
                     );
                 END
 
-                -- Create Users Table (Custom Identity)
+                -- Create Users Table (Custom Identity + Legacy iBusinessFlex columns)
                 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
                 BEGIN
                     CREATE TABLE Users (
-                        Id INT IDENTITY(1,1) PRIMARY KEY,
+                        UserID INT IDENTITY(1,1) PRIMARY KEY,
+                        -- Legacy iBusinessFlex columns
+                        FName NVARCHAR(150) NOT NULL DEFAULT '',
+                        LName NVARCHAR(150) NULL,
+                        LoginName NVARCHAR(100) NULL,
+                        Email NVARCHAR(150) NULL,
+                        Password NVARCHAR(150) NULL,
+                        Status BIT NOT NULL DEFAULT 1,
+                        Description NVARCHAR(500) NULL,
+                        LanguageId INT NULL,
+                        DepartmentID INT NULL,
+                        UserGroup NVARCHAR(MAX) NULL,
+                        CreationDate DATETIME NULL,
+                        UpdatedDate DATETIME NULL,
+                        LastLoginTime DATETIME NULL,
+                        LoginStatus NVARCHAR(50) NULL,
+                        BranchID INT NULL,
+                        -- ASP.NET Core Identity columns (DMS extensions)
                         UserName NVARCHAR(256) NOT NULL,
                         NormalizedUserName NVARCHAR(256) NOT NULL,
-                        Email NVARCHAR(256),
                         NormalizedEmail NVARCHAR(256),
                         EmailConfirmed BIT NOT NULL DEFAULT 0,
                         PasswordHash NVARCHAR(MAX),
@@ -160,9 +237,8 @@ public class DatabaseInitializer
                         LockoutEnd DATETIMEOFFSET,
                         LockoutEnabled BIT NOT NULL DEFAULT 0,
                         AccessFailedCount INT NOT NULL DEFAULT 0,
-                        FirstName NVARCHAR(MAX),
-                        LastName NVARCHAR(MAX),
                         Department NVARCHAR(MAX),
+                        EncryptedPassword NVARCHAR(MAX),
                         CreatedDate DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
                         LastLoginDate DATETIME2,
                         StorageQuotaBytes BIGINT NOT NULL DEFAULT 1073741824,
@@ -170,7 +246,62 @@ public class DatabaseInitializer
                         IsActive BIT NOT NULL DEFAULT 1
                     );
                 END
-                -- Users table already handled in EnsureSchemaAsync logic below
+                -- Migration: add any missing legacy columns to existing Users table
+                IF EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
+                BEGIN
+                    IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'Id')
+                        EXEC sp_rename 'Users.Id', 'UserID', 'COLUMN';
+
+                    IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'FirstName')
+                        EXEC sp_rename 'Users.FirstName', 'FName', 'COLUMN';
+                    ELSE IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'FName')
+                        ALTER TABLE Users ADD FName NVARCHAR(150) NULL;
+
+                    IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'LastName')
+                        EXEC sp_rename 'Users.LastName', 'LName', 'COLUMN';
+                    ELSE IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'LName')
+                        ALTER TABLE Users ADD LName NVARCHAR(150) NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'EncryptedPassword')
+                        ALTER TABLE Users ADD EncryptedPassword NVARCHAR(MAX);
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'Department')
+                        ALTER TABLE Users ADD Department NVARCHAR(MAX);
+
+                    -- Legacy columns
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'LoginName')
+                        ALTER TABLE Users ADD LoginName NVARCHAR(100) NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'Password')
+                        ALTER TABLE Users ADD Password NVARCHAR(150) NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'Status')
+                        ALTER TABLE Users ADD Status BIT NOT NULL DEFAULT 1;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'Description')
+                        ALTER TABLE Users ADD Description NVARCHAR(500) NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'LanguageId')
+                        ALTER TABLE Users ADD LanguageId INT NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'UserGroup')
+                        ALTER TABLE Users ADD UserGroup NVARCHAR(MAX) NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'CreationDate')
+                        ALTER TABLE Users ADD CreationDate DATETIME NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'UpdatedDate')
+                        ALTER TABLE Users ADD UpdatedDate DATETIME NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'LastLoginTime')
+                        ALTER TABLE Users ADD LastLoginTime DATETIME NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'LoginStatus')
+                        ALTER TABLE Users ADD LoginStatus NVARCHAR(50) NULL;
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'BranchID')
+                        ALTER TABLE Users ADD BranchID INT NULL;
+                END
             ";
             command.ExecuteNonQuery();
 
@@ -319,14 +450,37 @@ public class DatabaseInitializer
                         LastAccessedAt DATETIME2 NULL,
                         DefaultCategoryId INT NULL,
                         Label NVARCHAR(200) NULL,
-                        CONSTRAINT FK_UploadSessions_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
+                        CONSTRAINT FK_UploadSessions_Users FOREIGN KEY (UserId) REFERENCES Users(UserID)
                     );
                     
                     CREATE INDEX IX_UploadSessions_Token ON UploadSessions(Token);
                     CREATE INDEX IX_UploadSessions_UserId ON UploadSessions(UserId);
                     CREATE INDEX IX_UploadSessions_ExpiresAt ON UploadSessions(ExpiresAt);
-                    CREATE INDEX IX_UploadSessions_UserId ON UploadSessions(UserId);
-                    CREATE INDEX IX_UploadSessions_ExpiresAt ON UploadSessions(ExpiresAt);
+                END
+
+                -- Create tblComment Table (legacy iBusinessFlex schema)
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='tblComment' AND xtype='U')
+                BEGIN
+                    CREATE TABLE tblComment (
+                        ID BIGINT IDENTITY(1,1) PRIMARY KEY,
+                        Comment NVARCHAR(MAX) NULL,
+                        CommentBy INT NULL,
+                        CommentDate DATETIME NULL,
+                        DocumentID BIGINT NULL
+                    );
+
+                    CREATE INDEX IX_tblComment_DocumentID ON tblComment(DocumentID);
+                END
+
+                -- Create CategorizationRules Table
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CategorizationRules' AND xtype='U')
+                BEGIN
+                    CREATE TABLE CategorizationRules (
+                        RuleId INT IDENTITY(1,1) PRIMARY KEY,
+                        Keyword NVARCHAR(200) NOT NULL,
+                        CategoryId INT NOT NULL,
+                        IsActive BIT NOT NULL DEFAULT 1
+                    );
                 END
 
                 -- Create UserLogins Table for External Auth (Google)
@@ -338,10 +492,45 @@ public class DatabaseInitializer
                         ProviderDisplayName NVARCHAR(MAX) NULL,
                         UserId INT NOT NULL,
                         CONSTRAINT PK_UserLogins PRIMARY KEY (LoginProvider, ProviderKey),
-                        CONSTRAINT FK_UserLogins_Users FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
+                        CONSTRAINT FK_UserLogins_Users FOREIGN KEY (UserId) REFERENCES Users(UserID) ON DELETE CASCADE
                     );
                     
                     CREATE INDEX IX_UserLogins_UserId ON UserLogins(UserId);
+                END
+            ";
+            command.ExecuteNonQuery();
+
+            // ── Create UserGroups & UserGroupMembers Tables ──
+            command.CommandText = @"
+                -- Create UserGroups Table
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='UserGroups' AND xtype='U')
+                BEGIN
+                    CREATE TABLE UserGroups (
+                        GroupId INT IDENTITY(1,1) PRIMARY KEY,
+                        GroupName NVARCHAR(100) NOT NULL,
+                        CreatedBy INT NOT NULL DEFAULT 0,
+                        CreatedDate DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                        DefaultRights INT NOT NULL DEFAULT 0,
+                        CONSTRAINT FK_UserGroups_Users FOREIGN KEY (CreatedBy) REFERENCES Users(UserID)
+                    );
+                END
+
+                -- Create UserGroupMembers Link Table
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='UserGroupMembers' AND xtype='U')
+                BEGIN
+                    CREATE TABLE UserGroupMembers (
+                        Id INT IDENTITY(1,1) PRIMARY KEY,
+                        UserId INT NOT NULL,
+                        GroupId INT NOT NULL,
+                        Role NVARCHAR(50) NOT NULL DEFAULT 'Member',
+                        JoinedDate DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                        CONSTRAINT FK_UGM_Users FOREIGN KEY (UserId) REFERENCES Users(UserID),
+                        CONSTRAINT FK_UGM_Groups FOREIGN KEY (GroupId) REFERENCES UserGroups(GroupId) ON DELETE CASCADE,
+                        CONSTRAINT UQ_UserGroupMembers UNIQUE (UserId, GroupId)
+                    );
+
+                    CREATE INDEX IX_UGM_UserId ON UserGroupMembers(UserId);
+                    CREATE INDEX IX_UGM_GroupId ON UserGroupMembers(GroupId);
                 END
             ";
             command.ExecuteNonQuery();
@@ -375,9 +564,9 @@ public class DatabaseInitializer
                         FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryId);
 
                 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_Departments')
-                AND EXISTS (SELECT * FROM sysobjects WHERE name='Departments' AND xtype='U')
+                AND EXISTS (SELECT * FROM sysobjects WHERE name='HRM_Departments' AND xtype='U')
                     ALTER TABLE Documents WITH NOCHECK ADD CONSTRAINT FK_Documents_Departments 
-                        FOREIGN KEY (DepartmentID) REFERENCES Departments(DepartmentId);
+                        FOREIGN KEY (DepartmentID) REFERENCES HRM_Departments(DepartmentID);
 
                 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_Locations')
                 AND EXISTS (SELECT * FROM sysobjects WHERE name='Locations' AND xtype='U')
@@ -387,12 +576,12 @@ public class DatabaseInitializer
                 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_UploadedBy')
                 AND EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
                     ALTER TABLE Documents WITH NOCHECK ADD CONSTRAINT FK_Documents_UploadedBy 
-                        FOREIGN KEY (UploadedBy) REFERENCES Users(Id);
+                        FOREIGN KEY (UploadedBy) REFERENCES Users(UserID);
 
                 IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Documents_UpdatedBy')
                 AND EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
                     ALTER TABLE Documents WITH NOCHECK ADD CONSTRAINT FK_Documents_UpdatedBy 
-                        FOREIGN KEY (UpdatedBy) REFERENCES Users(Id);
+                        FOREIGN KEY (UpdatedBy) REFERENCES Users(UserID);
 
                 -- V9: Add GroupId column to UserDocumentRights
                 IF EXISTS (SELECT * FROM sysobjects WHERE name='UserDocumentRights' AND xtype='U')
@@ -413,19 +602,19 @@ public class DatabaseInitializer
                     -- Add FK to Users
                     IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_UDR_Users')
                         ALTER TABLE UserDocumentRights WITH NOCHECK ADD CONSTRAINT FK_UDR_Users 
-                            FOREIGN KEY (UserId) REFERENCES Users(Id);
+                            FOREIGN KEY (UserId) REFERENCES Users(UserID);
                 END
 
-                -- V6: Add DepartmentId FK to Users table
+                -- V6: Add DepartmentID FK to Users table
                 IF EXISTS (SELECT * FROM sysobjects WHERE name='Users' AND xtype='U')
                 BEGIN
-                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'DepartmentId')
-                        ALTER TABLE Users ADD DepartmentId INT NULL;
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Users') AND name = 'DepartmentID')
+                        ALTER TABLE Users ADD DepartmentID INT NULL;
 
                     IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Users_Departments')
-                    AND EXISTS (SELECT * FROM sysobjects WHERE name='Departments' AND xtype='U')
+                    AND EXISTS (SELECT * FROM sysobjects WHERE name='HRM_Departments' AND xtype='U')
                         ALTER TABLE Users WITH NOCHECK ADD CONSTRAINT FK_Users_Departments 
-                            FOREIGN KEY (DepartmentId) REFERENCES Departments(DepartmentId);
+                            FOREIGN KEY (DepartmentID) REFERENCES HRM_Departments(DepartmentID);
                 END
 
                 -- V7: Consolidate UserGroups permission columns into DefaultRights bitmask
@@ -464,7 +653,7 @@ public class DatabaseInitializer
 
                     IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_Comment_Users')
                         ALTER TABLE tblComment WITH NOCHECK ADD CONSTRAINT FK_Comment_Users 
-                            FOREIGN KEY (CommentBy) REFERENCES Users(Id);
+                            FOREIGN KEY (CommentBy) REFERENCES Users(UserID);
                 END
                 */
 
@@ -473,7 +662,7 @@ public class DatabaseInitializer
                 BEGIN
                     IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_DocVersions_Users')
                         ALTER TABLE DocumentVersions WITH NOCHECK ADD CONSTRAINT FK_DocVersions_Users 
-                            FOREIGN KEY (CreatedBy) REFERENCES Users(Id);
+                            FOREIGN KEY (CreatedBy) REFERENCES Users(UserID);
                 END
 
                 -- Add CreatedBy column to Categories for per-user scoping

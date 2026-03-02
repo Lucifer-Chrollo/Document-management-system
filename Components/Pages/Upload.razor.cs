@@ -83,11 +83,22 @@ public partial class Upload
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var isAdmin = user.Identity?.Name?.ToLower() == "admin" || user.IsInRole("Admin");
 
         try
         {
             // Load dropdown data from the database via Service layer
-            categories = await CategoryService.GetCategoriesAsync();
+            var idClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (!isAdmin && idClaim != null && int.TryParse(idClaim.Value, out var userId))
+            {
+                categories = await CategoryService.GetCategoriesByUserAsync(userId);
+            }
+            else
+            {
+                categories = await CategoryService.GetCategoriesAsync();
+            }
+
             locations = await LocationService.GetLocationsAsync();
 
             // ====================================================================================
@@ -168,7 +179,31 @@ public partial class Upload
 
         // Fetch all groups matching the search string (case-insensitive) to allow auto-detection
         Console.WriteLine($"[Upload.AddUserRight] User searched for: '{userSearch}'");
-        var allGroups = await UserGroupService.GetAllGroupsAsync();
+        
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var isAdmin = user.Identity?.Name?.ToLower() == "admin" || user.IsInRole("Admin");
+        
+        IEnumerable<UserGroup> allGroups;
+        if (isAdmin)
+        {
+            allGroups = await UserGroupService.GetAllGroupsAsync();
+        }
+        else
+        {
+            var idClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (idClaim != null && int.TryParse(idClaim.Value, out var currentUserId))
+            {
+                var created = await UserGroupService.GetGroupsCreatedByUserAsync(currentUserId);
+                var member = await UserGroupService.GetGroupsForUserAsync(currentUserId);
+                allGroups = created.Union(member).DistinctBy(g => g.GroupId).ToList();
+            }
+            else
+            {
+                allGroups = Enumerable.Empty<UserGroup>();
+            }
+        }
+
         Console.WriteLine($"[Upload.AddUserRight] Found {allGroups.Count()} total groups in system.");
         
         var targetGroup = allGroups.FirstOrDefault(g => g.GroupName.Equals(userSearch, StringComparison.OrdinalIgnoreCase));
@@ -353,7 +388,7 @@ public partial class Upload
             if (!selectedFiles.Any())
             {
                 // Redirect to Browse page on full success
-                NavigationManager.NavigateTo("/browse");
+                NavigationManager.NavigateTo("/ManageDocuments");
             }
         }
         catch (Exception ex)

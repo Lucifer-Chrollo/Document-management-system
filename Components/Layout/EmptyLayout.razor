@@ -2,12 +2,29 @@
 
 <div class="page" style="display: block;">
     <main>
-        @Body
+        <ErrorBoundary @ref="errorBoundary">
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent Context="ex">
+                <div style="padding: 2rem; text-align: center;">
+                    <p style="color: #dc3545; font-weight: bold;">Something went wrong.</p>
+                    <p style="color: #666; font-size: 0.9rem;">@ex.Message</p>
+                    <button onclick="location.reload()" 
+                            style="margin-top: 1rem; padding: 0.5rem 1.5rem; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Reload Page
+                    </button>
+                </div>
+            </ErrorContent>
+        </ErrorBoundary>
     </main>
 </div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+@code {
+    ErrorBoundary? errorBoundary;
+
+    protected override void OnParametersSet()
+    {
+        errorBoundary?.Recover();
+    }
+}

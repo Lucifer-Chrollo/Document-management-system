@@ -1,4 +1,4 @@
-﻿@page "/categories"
+﻿@page "/ManageCategories"
 @using DocumentManagementSystem.Models
 @using DocumentManagementSystem.Services
 @inject ICategoryService CategoryService
@@ -11,7 +11,10 @@
 
 <RadzenStack Gap="1rem" Style="padding: 1rem;">
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-        <RadzenText TextStyle="TextStyle.H5" class="m-0">My Categories</RadzenText>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+            <RadzenIcon Icon="category" Style="font-size: 1.5rem; color: #0071c1;" />
+            <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize m-0">My Categories</RadzenText>
+        </RadzenStack>
         <RadzenButton Icon="add" Text="New Category" ButtonStyle="ButtonStyle.Success" Click="@OnCreateCategory" />
     </RadzenStack>
 
@@ -29,9 +32,9 @@
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="Category" Title="Actions" Width="140px" TextAlign="TextAlign.Center" Sortable="false">
                 <Template Context="cat">
-                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" Variant="Variant.Flat"
+                    <RadzenButton Image="edit-icon.png" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" Variant="Variant.Flat"
                                   Click="@(() => OnEditCategory(cat))" Tooltip="Rename" />
-                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Variant="Variant.Flat"
+                    <RadzenButton Image="delete-x.png" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Variant="Variant.Flat"
                                   Click="@(() => OnDeleteCategory(cat))" Tooltip="Delete" />
                 </Template>
             </RadzenDataGridColumn>

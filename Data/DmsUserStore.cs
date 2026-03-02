@@ -17,14 +17,14 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
 
     private const string SQL_INSERT_USER = @"
         INSERT INTO Users (UserName, NormalizedUserName, Email, NormalizedEmail, 
-            PasswordHash, SecurityStamp, ConcurrencyStamp, FirstName, LastName, Department, EncryptedPassword)
+            PasswordHash, SecurityStamp, ConcurrencyStamp, FName, LName, Department, EncryptedPassword)
         VALUES (@UserName, @NormalizedUserName, @Email, @NormalizedEmail, 
-            @PasswordHash, @SecurityStamp, @ConcurrencyStamp, @FirstName, @LastName, @Department, @EncryptedPassword);
+            @PasswordHash, @SecurityStamp, @ConcurrencyStamp, @FName, @LName, @Department, @EncryptedPassword);
         SELECT CAST(SCOPE_IDENTITY() as int)";
 
-    private const string SQL_DELETE_USER = "DELETE FROM Users WHERE Id = @Id";
+    private const string SQL_DELETE_USER = "DELETE FROM Users WHERE UserID = @Id";
 
-    private const string SQL_SELECT_USER_BY_ID = "SELECT * FROM Users WHERE Id = @Id";
+    private const string SQL_SELECT_USER_BY_ID = "SELECT * FROM Users WHERE UserID = @Id";
 
     private const string SQL_SELECT_USER_BY_NAME = "SELECT * FROM Users WHERE NormalizedUserName = @Name";
 
@@ -35,10 +35,10 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
             UserName = @UserName, NormalizedUserName = @NormalizedUserName, 
             Email = @Email, NormalizedEmail = @NormalizedEmail, 
             PasswordHash = @PasswordHash, SecurityStamp = @SecurityStamp, 
-            ConcurrencyStamp = @ConcurrencyStamp, FirstName = @FirstName, 
-            LastName = @LastName, Department = @Department,
+            ConcurrencyStamp = @ConcurrencyStamp, FName = @FName, 
+            LName = @LName, Department = @Department,
             EncryptedPassword = @EncryptedPassword
-        WHERE Id = @Id";
+        WHERE UserID = @Id";
 
     private const string SQL_INSERT_LOGIN = "INSERT INTO UserLogins (LoginProvider, ProviderKey, ProviderDisplayName, UserId) VALUES (@LoginProvider, @ProviderKey, @ProviderDisplayName, @UserId)";
 
@@ -49,7 +49,7 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
     private const string SQL_SELECT_USER_BY_LOGIN = @"
         SELECT u.* 
         FROM Users u 
-        JOIN UserLogins ul ON u.Id = ul.UserId 
+        JOIN UserLogins ul ON u.UserID = ul.UserId 
         WHERE ul.LoginProvider = @LoginProvider AND ul.ProviderKey = @ProviderKey";
 
     #endregion
@@ -87,8 +87,8 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
             command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar).Value = (object?)user.PasswordHash ?? DBNull.Value;
             command.Parameters.Add("@SecurityStamp", SqlDbType.NVarChar).Value = (object?)user.SecurityStamp ?? DBNull.Value;
             command.Parameters.Add("@ConcurrencyStamp", SqlDbType.NVarChar).Value = (object?)user.ConcurrencyStamp ?? DBNull.Value;
-            command.Parameters.Add("@FirstName", SqlDbType.NVarChar).Value = user.FirstName;
-            command.Parameters.Add("@LastName", SqlDbType.NVarChar).Value = user.LastName;
+            command.Parameters.Add("@FName", SqlDbType.NVarChar).Value = user.FirstName;
+            command.Parameters.Add("@LName", SqlDbType.NVarChar).Value = user.LastName;
             command.Parameters.Add("@Department", SqlDbType.NVarChar).Value = (object?)user.Department ?? DBNull.Value;
             command.Parameters.Add("@EncryptedPassword", SqlDbType.NVarChar).Value = (object?)user.EncryptedPassword ?? DBNull.Value;
 
@@ -229,8 +229,8 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
             command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar).Value = (object?)user.PasswordHash ?? DBNull.Value;
             command.Parameters.Add("@SecurityStamp", SqlDbType.NVarChar).Value = (object?)user.SecurityStamp ?? DBNull.Value;
             command.Parameters.Add("@ConcurrencyStamp", SqlDbType.NVarChar).Value = (object?)user.ConcurrencyStamp ?? DBNull.Value;
-            command.Parameters.Add("@FirstName", SqlDbType.NVarChar).Value = user.FirstName;
-            command.Parameters.Add("@LastName", SqlDbType.NVarChar).Value = user.LastName;
+            command.Parameters.Add("@FName", SqlDbType.NVarChar).Value = user.FirstName;
+            command.Parameters.Add("@LName", SqlDbType.NVarChar).Value = user.LastName;
             command.Parameters.Add("@Department", SqlDbType.NVarChar).Value = (object?)user.Department ?? DBNull.Value;
             command.Parameters.Add("@EncryptedPassword", SqlDbType.NVarChar).Value = (object?)user.EncryptedPassword ?? DBNull.Value;
             command.Parameters.Add("@Id", SqlDbType.Int).Value = user.Id;
@@ -336,7 +336,7 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
     {
         var user = new ApplicationUser
         {
-            Id = Convert.ToInt32(reader["Id"]),
+            Id = Convert.ToInt32(reader["UserID"]),
             UserName = reader["UserName"] == DBNull.Value ? null : Convert.ToString(reader["UserName"]),
             NormalizedUserName = reader["NormalizedUserName"] == DBNull.Value ? null : Convert.ToString(reader["NormalizedUserName"]),
             // Email is Encrypted in DB, Decrypt it for the Object
@@ -345,8 +345,8 @@ public class DmsUserStore : IUserStore<ApplicationUser>, IUserPasswordStore<Appl
             PasswordHash = reader["PasswordHash"] == DBNull.Value ? null : Convert.ToString(reader["PasswordHash"]),
             SecurityStamp = reader["SecurityStamp"] == DBNull.Value ? null : Convert.ToString(reader["SecurityStamp"]),
             ConcurrencyStamp = reader["ConcurrencyStamp"] == DBNull.Value ? null : Convert.ToString(reader["ConcurrencyStamp"]),
-            FirstName = reader["FirstName"] == DBNull.Value ? "" : Convert.ToString(reader["FirstName"]) ?? "",
-            LastName = reader["LastName"] == DBNull.Value ? "" : Convert.ToString(reader["LastName"]) ?? "",
+            FirstName = reader["FName"] == DBNull.Value ? "" : Convert.ToString(reader["FName"]) ?? "",
+            LastName = reader["LName"] == DBNull.Value ? "" : Convert.ToString(reader["LName"]) ?? "",
             Department = reader["Department"] == DBNull.Value ? null : Convert.ToString(reader["Department"]),
             EncryptedPassword = reader["EncryptedPassword"] == DBNull.Value ? null : Convert.ToString(reader["EncryptedPassword"])
         };

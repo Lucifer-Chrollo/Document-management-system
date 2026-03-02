@@ -1,0 +1,2659 @@
+{
+  "$schema": "http://json.schemastore.org/sarif-1.0.0",
+  "version": "1.0.0",
+  "runs": [
+    {
+      "tool": {
+        "name": "Microsoft (R) Visual C# Compiler",
+        "version": "5.0.0.0",
+        "fileVersion": "5.0.0-2.26075.103 (c2435c3e)",
+        "semanticVersion": "5.0.0",
+        "language": "en-US"
+      },
+      "results": [
+        {
+          "ruleId": "RZ10012",
+          "level": "warning",
+          "message": "Found markup element with unexpected name 'RadzenTheme'. If this is intended to be a component, add a @using directive for its namespace.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/App.razor",
+                "region": {
+                  "startLine": 21,
+                  "startColumn": 5,
+                  "endLine": 21,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/MfaSetupCard.razor.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/MfaSetupCard.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/Categories.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/Categories.razor.cs",
+                "region": {
+                  "startLine": 12,
+                  "startColumn": 7,
+                  "endLine": 12,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/CreateGroupDialog.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/GroupUsersDialog.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/GroupUsersDialog.razor.cs",
+                "region": {
+                  "startLine": 12,
+                  "startColumn": 7,
+                  "endLine": 12,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/UserGroups.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/UserGroups.razor.cs",
+                "region": {
+                  "startLine": 12,
+                  "startColumn": 7,
+                  "endLine": 12,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/DocumentPreview.razor.cs",
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 7,
+                  "endLine": 9,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Duplicates.razor.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Duplicates.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/MfaSetup.razor.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/MfaSetup.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/MyCategories.razor.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/MyCategories.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Profile.razor.cs",
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 7,
+                  "endLine": 9,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Profile.razor.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Trash.razor.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Trash.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Models' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/UploadQr.razor.cs",
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 7,
+                  "endLine": 10,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Services' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/UploadQr.razor.cs",
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 7,
+                  "endLine": 11,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/_Imports.razor",
+                "region": {
+                  "startLine": 14,
+                  "startColumn": 8,
+                  "endLine": 14,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0105",
+          "level": "warning",
+          "message": "The using directive for 'DocumentManagementSystem.Components' appeared previously in this namespace",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/_Imports.razor",
+                "region": {
+                  "startLine": 15,
+                  "startColumn": 8,
+                  "endLine": 15,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0168",
+          "level": "warning",
+          "message": "The variable 'ex' is declared but never used",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/UploadQr.razor.cs",
+                "region": {
+                  "startLine": 122,
+                  "startColumn": 26,
+                  "endLine": 122,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0168",
+          "level": "warning",
+          "message": "The variable 'ex' is declared but never used",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/AuditLogs.razor.cs",
+                "region": {
+                  "startLine": 52,
+                  "startColumn": 26,
+                  "endLine": 52,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/Categories.razor",
+                "region": {
+                  "startLine": 42,
+                  "startColumn": 82,
+                  "endLine": 42,
+                  "endColumn": 86
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/Categories.razor",
+                "region": {
+                  "startLine": 44,
+                  "startColumn": 60,
+                  "endLine": 44,
+                  "endColumn": 64
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1662",
+          "level": "error",
+          "message": "Cannot convert lambda expression to intended delegate type because some of the return types in the block are not implicitly convertible to the delegate return type",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/obj/Debug/net8.0/Microsoft.CodeAnalysis.Razor.Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator/Components_Pages_Admin_Categories_razor.g.cs",
+                "region": {
+                  "startLine": 699,
+                  "startColumn": 142,
+                  "endLine": 699,
+                  "endColumn": 157
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/UserGroups.razor",
+                "region": {
+                  "startLine": 50,
+                  "startColumn": 82,
+                  "endLine": 50,
+                  "endColumn": 86
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1662",
+          "level": "error",
+          "message": "Cannot convert lambda expression to intended delegate type because some of the return types in the block are not implicitly convertible to the delegate return type",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/obj/Debug/net8.0/Microsoft.CodeAnalysis.Razor.Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator/Components_Pages_Admin_UserGroups_razor.g.cs",
+                "region": {
+                  "startLine": 699,
+                  "startColumn": 140,
+                  "endLine": 699,
+                  "endColumn": 155
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS0168",
+          "level": "warning",
+          "message": "The variable 'ex' is declared but never used",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Duplicates.razor.cs",
+                "region": {
+                  "startLine": 37,
+                  "startColumn": 26,
+                  "endLine": 37,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0168",
+          "level": "warning",
+          "message": "The variable 'ex' is declared but never used",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/DocumentView.razor.cs",
+                "region": {
+                  "startLine": 293,
+                  "startColumn": 30,
+                  "endLine": 293,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0168",
+          "level": "warning",
+          "message": "The variable 'ex' is declared but never used",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/DocumentView.razor.cs",
+                "region": {
+                  "startLine": 307,
+                  "startColumn": 30,
+                  "endLine": 307,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/Documents.razor",
+                "region": {
+                  "startLine": 128,
+                  "startColumn": 81,
+                  "endLine": 128,
+                  "endColumn": 85
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1662",
+          "level": "error",
+          "message": "Cannot convert lambda expression to intended delegate type because some of the return types in the block are not implicitly convertible to the delegate return type",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/obj/Debug/net8.0/Microsoft.CodeAnalysis.Razor.Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator/Components_Pages_Admin_Documents_razor.g.cs",
+                "region": {
+                  "startLine": 2019,
+                  "startColumn": 138,
+                  "endLine": 2019,
+                  "endColumn": 153
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS8629",
+          "level": "warning",
+          "message": "Nullable value type may be null.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor.cs",
+                "region": {
+                  "startLine": 163,
+                  "startColumn": 29,
+                  "endLine": 163,
+                  "endColumn": 37
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8629",
+          "level": "warning",
+          "message": "Nullable value type may be null.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor.cs",
+                "region": {
+                  "startLine": 166,
+                  "startColumn": 31,
+                  "endLine": 166,
+                  "endColumn": 39
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'value' in 'void Dictionary<string, object>.Add(string key, object value)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor.cs",
+                "region": {
+                  "startLine": 286,
+                  "startColumn": 31,
+                  "endLine": 286,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/MyCategories.razor",
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 82,
+                  "endLine": 35,
+                  "endColumn": 86
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/MyCategories.razor",
+                "region": {
+                  "startLine": 37,
+                  "startColumn": 81,
+                  "endLine": 37,
+                  "endColumn": 85
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1662",
+          "level": "error",
+          "message": "Cannot convert lambda expression to intended delegate type because some of the return types in the block are not implicitly convertible to the delegate return type",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/obj/Debug/net8.0/Microsoft.CodeAnalysis.Razor.Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator/Components_Pages_MyCategories_razor.g.cs",
+                "region": {
+                  "startLine": 707,
+                  "startColumn": 137,
+                  "endLine": 707,
+                  "endColumn": 152
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Duplicates.razor",
+                "region": {
+                  "startLine": 115,
+                  "startColumn": 126,
+                  "endLine": 115,
+                  "endColumn": 130
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1662",
+          "level": "error",
+          "message": "Cannot convert lambda expression to intended delegate type because some of the return types in the block are not implicitly convertible to the delegate return type",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/obj/Debug/net8.0/Microsoft.CodeAnalysis.Razor.Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator/Components_Pages_Duplicates_razor.g.cs",
+                "region": {
+                  "startLine": 1677,
+                  "startColumn": 146,
+                  "endLine": 1677,
+                  "endColumn": 161
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'item' in 'void List<string>.Add(string item)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/Repositories/DocumentRepository.cs",
+                "region": {
+                  "startLine": 790,
+                  "startColumn": 36,
+                  "endLine": 790,
+                  "endColumn": 74
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS0168",
+          "level": "warning",
+          "message": "The variable 'ex' is declared but never used",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Trash.razor.cs",
+                "region": {
+                  "startLine": 35,
+                  "startColumn": 26,
+                  "endLine": 35,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/DocumentView.razor",
+                "region": {
+                  "startLine": 71,
+                  "startColumn": 114,
+                  "endLine": 71,
+                  "endColumn": 118
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/DocumentView.razor",
+                "region": {
+                  "startLine": 72,
+                  "startColumn": 101,
+                  "endLine": 72,
+                  "endColumn": 105
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Trash.razor",
+                "region": {
+                  "startLine": 29,
+                  "startColumn": 99,
+                  "endLine": 29,
+                  "endColumn": 103
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Trash.razor",
+                "region": {
+                  "startLine": 90,
+                  "startColumn": 89,
+                  "endLine": 90,
+                  "endColumn": 93
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1662",
+          "level": "error",
+          "message": "Cannot convert lambda expression to intended delegate type because some of the return types in the block are not implicitly convertible to the delegate return type",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/obj/Debug/net8.0/Microsoft.CodeAnalysis.Razor.Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator/Components_Pages_Trash_razor.g.cs",
+                "region": {
+                  "startLine": 1369,
+                  "startColumn": 142,
+                  "endLine": 1369,
+                  "endColumn": 157
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS0117",
+          "level": "error",
+          "message": "'ButtonStyle' does not contain a definition for 'Base'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Upload.razor",
+                "region": {
+                  "startLine": 107,
+                  "startColumn": 105,
+                  "endLine": 107,
+                  "endColumn": 109
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1662",
+          "level": "error",
+          "message": "Cannot convert lambda expression to intended delegate type because some of the return types in the block are not implicitly convertible to the delegate return type",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/obj/Debug/net8.0/Microsoft.CodeAnalysis.Razor.Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator/Components_Pages_Upload_razor.g.cs",
+                "region": {
+                  "startLine": 1608,
+                  "startColumn": 160,
+                  "endLine": 1608,
+                  "endColumn": 175
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS1662",
+          "level": "error",
+          "message": "Cannot convert lambda expression to intended delegate type because some of the return types in the block are not implicitly convertible to the delegate return type",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/obj/Debug/net8.0/Microsoft.CodeAnalysis.Razor.Compiler/Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator/Components_Pages_Upload_razor.g.cs",
+                "region": {
+                  "startLine": 314,
+                  "startColumn": 41,
+                  "endLine": 314,
+                  "endColumn": 56
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CS4014",
+          "level": "warning",
+          "message": "Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor",
+                "region": {
+                  "startLine": 86,
+                  "startColumn": 105,
+                  "endLine": 86,
+                  "endColumn": 113
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS8604",
+          "level": "warning",
+          "message": "Possible null reference argument for parameter 'value' in 'Task Browse.OnDateRangeChange(object value)'.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor",
+                "region": {
+                  "startLine": 78,
+                  "startColumn": 116,
+                  "endLine": 78,
+                  "endColumn": 120
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CS0414",
+          "level": "warning",
+          "message": "The field 'MainLayout.sidebarExpanded' is assigned but its value is never used",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Layout/MainLayout.razor",
+                "region": {
+                  "startLine": 286,
+                  "startColumn": 18,
+                  "endLine": 286,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 3
+          }
+        },
+        {
+          "ruleId": "CA1835",
+          "level": "note",
+          "message": "Change the 'ReadAsync' method call to use the 'Stream.ReadAsync(Memory<byte>, CancellationToken)' overload",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Helpers/ProgressStream.cs",
+                "region": {
+                  "startLine": 41,
+                  "startColumn": 31,
+                  "endLine": 41,
+                  "endColumn": 95
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1816",
+          "level": "note",
+          "message": "Change DmsRoleStore.Dispose() to call GC.SuppressFinalize(object). This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/DmsRoleStore.cs",
+                "region": {
+                  "startLine": 21,
+                  "startColumn": 17,
+                  "endLine": 21,
+                  "endColumn": 24
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1816",
+          "level": "note",
+          "message": "Change DmsUserStore.Dispose() to call GC.SuppressFinalize(object). This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/DmsUserStore.cs",
+                "region": {
+                  "startLine": 131,
+                  "startColumn": 17,
+                  "endLine": 131,
+                  "endColumn": 24
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Controllers/FilesController.cs",
+                "region": {
+                  "startLine": 228,
+                  "startColumn": 40,
+                  "endLine": 228,
+                  "endColumn": 57
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetString' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/UserGroupService.cs",
+                "region": {
+                  "startLine": 418,
+                  "startColumn": 20,
+                  "endLine": 418,
+                  "endColumn": 29
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetDateTime' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/UserGroupService.cs",
+                "region": {
+                  "startLine": 420,
+                  "startColumn": 22,
+                  "endLine": 420,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetInt' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/UserGroupService.cs",
+                "region": {
+                  "startLine": 419,
+                  "startColumn": 17,
+                  "endLine": 419,
+                  "endColumn": 23
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1862",
+          "level": "note",
+          "message": "Prefer the string comparison method overload of 'string.Contains(string)' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/AutoCategorizationService.cs",
+                "region": {
+                  "startLine": 44,
+                  "startColumn": 21,
+                  "endLine": 44,
+                  "endColumn": 73
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "LeftOffendingMethod": null,
+              "RightOffendingMethod": "ToUpperInvariant"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1806",
+          "level": "note",
+          "message": "OnInitializedAsync calls TryParse but does not explicitly check whether the conversion succeeded. Either use the return value in a conditional statement or verify that the call site expects that the out argument will be set to the default value when the conversion fails.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Admin/UserGroups.razor.cs",
+                "region": {
+                  "startLine": 33,
+                  "startColumn": 13,
+                  "endLine": 33,
+                  "endColumn": 60
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1816",
+          "level": "note",
+          "message": "Change Home.DisposeAsync() to call GC.SuppressFinalize(object). This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Home.razor.cs",
+                "region": {
+                  "startLine": 96,
+                  "startColumn": 28,
+                  "endLine": 96,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'MapComment' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/CommentService.cs",
+                "region": {
+                  "startLine": 159,
+                  "startColumn": 22,
+                  "endLine": 159,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1816",
+          "level": "note",
+          "message": "Change DocumentView.Dispose() to call GC.SuppressFinalize(object). This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/DocumentView.razor.cs",
+                "region": {
+                  "startLine": 242,
+                  "startColumn": 21,
+                  "endLine": 242,
+                  "endColumn": 28
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1850",
+          "level": "note",
+          "message": "Prefer static 'System.Security.Cryptography.SHA256.HashData' method over 'ComputeHash'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/UploadSessionService.cs",
+                "region": {
+                  "startLine": 435,
+                  "startColumn": 20,
+                  "endLine": 435,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/UploadSessionService.cs",
+                "region": {
+                  "startLine": 433,
+                  "startColumn": 19,
+                  "endLine": 433,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "ComputeTypePropertyKey": "ComputeHash",
+              "DeleteHashCreationPropertyKey": "DeleteHashCreationPropertyKey",
+              "HashCreationIndexPropertyKey": "0",
+              "TargetHashTypeDiagnosticPropertyKey": "SHA256"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1850",
+          "level": "note",
+          "message": "Prefer static 'System.Security.Cryptography.SHA256.HashData' method over 'ComputeHash'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/UploadSessionService.cs",
+                "region": {
+                  "startLine": 465,
+                  "startColumn": 28,
+                  "endLine": 465,
+                  "endColumn": 83
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/UploadSessionService.cs",
+                "region": {
+                  "startLine": 463,
+                  "startColumn": 23,
+                  "endLine": 463,
+                  "endColumn": 51
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "ComputeTypePropertyKey": "ComputeHash",
+              "DeleteHashCreationPropertyKey": "DeleteHashCreationPropertyKey",
+              "HashCreationIndexPropertyKey": "0",
+              "TargetHashTypeDiagnosticPropertyKey": "SHA256"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'CompressWithDeflate' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/CompressionService.cs",
+                "region": {
+                  "startLine": 241,
+                  "startColumn": 18,
+                  "endLine": 241,
+                  "endColumn": 37
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'CompressWithGZip' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/CompressionService.cs",
+                "region": {
+                  "startLine": 255,
+                  "startColumn": 18,
+                  "endLine": 255,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'CompressWithBrotli' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/CompressionService.cs",
+                "region": {
+                  "startLine": 265,
+                  "startColumn": 18,
+                  "endLine": 265,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'DecompressWithBrotli' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/CompressionService.cs",
+                "region": {
+                  "startLine": 274,
+                  "startColumn": 18,
+                  "endLine": 274,
+                  "endColumn": 38
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'DecompressWithDeflate' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/CompressionService.cs",
+                "region": {
+                  "startLine": 282,
+                  "startColumn": 18,
+                  "endLine": 282,
+                  "endColumn": 39
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'DecompressWithGZip' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/CompressionService.cs",
+                "region": {
+                  "startLine": 290,
+                  "startColumn": 18,
+                  "endLine": 290,
+                  "endColumn": 36
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Upload.razor.cs",
+                "region": {
+                  "startLine": 317,
+                  "startColumn": 14,
+                  "endLine": 317,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Upload.razor.cs",
+                "region": {
+                  "startLine": 388,
+                  "startColumn": 18,
+                  "endLine": 388,
+                  "endColumn": 37
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'MapCategory' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/CategoryService.cs",
+                "region": {
+                  "startLine": 215,
+                  "startColumn": 22,
+                  "endLine": 215,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'DownloadDocument' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Home.razor.cs",
+                "region": {
+                  "startLine": 64,
+                  "startColumn": 24,
+                  "endLine": 64,
+                  "endColumn": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1806",
+          "level": "note",
+          "message": "OnShareDocument calls TryParse but does not explicitly check whether the conversion succeeded. Either use the return value in a conditional statement or verify that the call site expects that the out argument will be set to the default value when the conversion fails.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor.cs",
+                "region": {
+                  "startLine": 395,
+                  "startColumn": 30,
+                  "endLine": 395,
+                  "endColumn": 69
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA2012",
+          "level": "note",
+          "message": "ValueTask instances returned from method calls should always be used, typically awaited. Not doing so often represents a functional bug, but even if it doesn't, it can result in degraded performance if the target method pools objects for use with ValueTasks.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor.cs",
+                "region": {
+                  "startLine": 433,
+                  "startColumn": 17,
+                  "endLine": 433,
+                  "endColumn": 45
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1816",
+          "level": "note",
+          "message": "Change Browse.Dispose() to call GC.SuppressFinalize(object). This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor.cs",
+                "region": {
+                  "startLine": 428,
+                  "startColumn": 17,
+                  "endLine": 428,
+                  "endColumn": 24
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "ASP0015",
+          "level": "note",
+          "message": "The header 'User-Agent' can be accessed using the UserAgent property",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/IdentityUserContextService.cs",
+                "region": {
+                  "startLine": 40,
+                  "startColumn": 49,
+                  "endLine": 40,
+                  "endColumn": 79
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "HeaderName": "User-Agent",
+              "ResolvedPropertyName": "UserAgent"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1850",
+          "level": "note",
+          "message": "Prefer static 'System.Security.Cryptography.SHA256.HashData' method over 'ComputeHash'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/EncryptionService.cs",
+                "region": {
+                  "startLine": 164,
+                  "startColumn": 21,
+                  "endLine": 164,
+                  "endColumn": 82
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/EncryptionService.cs",
+                "region": {
+                  "startLine": 163,
+                  "startColumn": 19,
+                  "endLine": 163,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "ComputeTypePropertyKey": "ComputeHash",
+              "DeleteHashCreationPropertyKey": "DeleteHashCreationPropertyKey",
+              "HashCreationIndexPropertyKey": "0",
+              "TargetHashTypeDiagnosticPropertyKey": "SHA256"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1850",
+          "level": "note",
+          "message": "Prefer static 'System.Security.Cryptography.SHA256.HashData' method over 'ComputeHash'",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/EncryptionService.cs",
+                "region": {
+                  "startLine": 233,
+                  "startColumn": 16,
+                  "endLine": 233,
+                  "endColumn": 80
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/EncryptionService.cs",
+                "region": {
+                  "startLine": 232,
+                  "startColumn": 19,
+                  "endLine": 232,
+                  "endColumn": 43
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "ComputeTypePropertyKey": "ComputeHash",
+              "DeleteHashCreationPropertyKey": "DeleteHashCreationPropertyKey",
+              "HashCreationIndexPropertyKey": "0",
+              "TargetHashTypeDiagnosticPropertyKey": "SHA256"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'DeriveKey' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/EncryptionService.cs",
+                "region": {
+                  "startLine": 230,
+                  "startColumn": 20,
+                  "endLine": 230,
+                  "endColumn": 29
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetString' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/Repositories/DocumentRepository.cs",
+                "region": {
+                  "startLine": 666,
+                  "startColumn": 20,
+                  "endLine": 666,
+                  "endColumn": 29
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetInt' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/Repositories/DocumentRepository.cs",
+                "region": {
+                  "startLine": 667,
+                  "startColumn": 17,
+                  "endLine": 667,
+                  "endColumn": 23
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetLong' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/Repositories/DocumentRepository.cs",
+                "region": {
+                  "startLine": 668,
+                  "startColumn": 18,
+                  "endLine": 668,
+                  "endColumn": 25
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetDecimal' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/Repositories/DocumentRepository.cs",
+                "region": {
+                  "startLine": 669,
+                  "startColumn": 21,
+                  "endLine": 669,
+                  "endColumn": 31
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetBool' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/Repositories/DocumentRepository.cs",
+                "region": {
+                  "startLine": 670,
+                  "startColumn": 18,
+                  "endLine": 670,
+                  "endColumn": 25
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetDateTime' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/Repositories/DocumentRepository.cs",
+                "region": {
+                  "startLine": 671,
+                  "startColumn": 22,
+                  "endLine": 671,
+                  "endColumn": 33
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetNullableDateTime' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/Repositories/DocumentRepository.cs",
+                "region": {
+                  "startLine": 672,
+                  "startColumn": 23,
+                  "endLine": 672,
+                  "endColumn": 42
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetNullableLong' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Data/Repositories/DocumentRepository.cs",
+                "region": {
+                  "startLine": 673,
+                  "startColumn": 19,
+                  "endLine": 673,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/DocumentService.cs",
+                "region": {
+                  "startLine": 303,
+                  "startColumn": 60,
+                  "endLine": 303,
+                  "endColumn": 97
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1816",
+          "level": "note",
+          "message": "Change LuceneSearchService.Dispose() to call GC.SuppressFinalize(object). This will prevent derived types that introduce a finalizer from needing to re-implement 'IDisposable' to call it.",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/LuceneSearchService.cs",
+                "region": {
+                  "startLine": 178,
+                  "startColumn": 17,
+                  "endLine": 178,
+                  "endColumn": 24
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1860",
+          "level": "note",
+          "message": "Prefer comparing 'Count' to 0 rather than using 'Any()', both for clarity and for performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/DocumentConversionService.cs",
+                "region": {
+                  "startLine": 126,
+                  "startColumn": 22,
+                  "endLine": 126,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1,
+            "customProperties": {
+              "DiagnosticPropertyKey": "Count"
+            }
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'WrapText' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/DocumentConversionService.cs",
+                "region": {
+                  "startLine": 234,
+                  "startColumn": 26,
+                  "endLine": 234,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GenerateFallbackPdf' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/DocumentConversionService.cs",
+                "region": {
+                  "startLine": 264,
+                  "startColumn": 20,
+                  "endLine": 264,
+                  "endColumn": 39
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1859",
+          "level": "note",
+          "message": "Change return type of method 'GenerateFallbackPdf' from 'System.IO.Stream' to 'System.IO.MemoryStream' for improved performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/DocumentConversionService.cs",
+                "region": {
+                  "startLine": 264,
+                  "startColumn": 20,
+                  "endLine": 264,
+                  "endColumn": 39
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1859",
+          "level": "note",
+          "message": "Change type of field 'selectedDocuments' from 'System.Collections.Generic.IList<DocumentManagementSystem.Models.Document>' to 'System.Collections.Generic.List<DocumentManagementSystem.Models.Document>' for improved performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Trash.razor.cs",
+                "region": {
+                  "startLine": 18,
+                  "startColumn": 29,
+                  "endLine": 18,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'ShowEditDialog' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/DocumentView.razor.cs",
+                "region": {
+                  "startLine": 247,
+                  "startColumn": 28,
+                  "endLine": 247,
+                  "endColumn": 42
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetFileIcon' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor.cs",
+                "region": {
+                  "startLine": 245,
+                  "startColumn": 20,
+                  "endLine": 245,
+                  "endColumn": 31
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'FormatFileSize' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor.cs",
+                "region": {
+                  "startLine": 254,
+                  "startColumn": 20,
+                  "endLine": 254,
+                  "endColumn": 34
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1859",
+          "level": "note",
+          "message": "Change type of field 'selectedDocuments' from 'System.Collections.Generic.IList<DocumentManagementSystem.Models.Document>' to 'System.Collections.Generic.List<DocumentManagementSystem.Models.Document>' for improved performance",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Components/Pages/Browse.razor.cs",
+                "region": {
+                  "startLine": 29,
+                  "startColumn": 29,
+                  "endLine": 29,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetDaySuffix' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/DocumentService.cs",
+                "region": {
+                  "startLine": 949,
+                  "startColumn": 20,
+                  "endLine": 949,
+                  "endColumn": 32
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'GetContentTypeFromFileName' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/DocumentService.cs",
+                "region": {
+                  "startLine": 1076,
+                  "startColumn": 20,
+                  "endLine": 1076,
+                  "endColumn": 46
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        },
+        {
+          "ruleId": "CA1822",
+          "level": "note",
+          "message": "Member 'CalculateHashAsync' does not access instance data and can be marked as static",
+          "locations": [
+            {
+              "resultFile": {
+                "uri": "file:///D:/Gemini/.gemini/antigravity/scratch/DocumentManagementSystem/Services/DocumentService.cs",
+                "region": {
+                  "startLine": 1294,
+                  "startColumn": 32,
+                  "endLine": 1294,
+                  "endColumn": 50
+                }
+              }
+            }
+          ],
+          "properties": {
+            "warningLevel": 1
+          }
+        }
+      ],
+      "rules": {
+        "ASP0015": {
+          "id": "ASP0015",
+          "shortDescription": "Suggest using IHeaderDictionary properties",
+          "defaultLevel": "note",
+          "helpUri": "https://aka.ms/aspnet/analyzers",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true
+          }
+        },
+        "CA1806": {
+          "id": "CA1806",
+          "shortDescription": "Do not ignore method results",
+          "fullDescription": "A new object is created but never used; or a method that creates and returns a new string is called and the new string is never used; or a COM or P/Invoke method returns an HRESULT or error code that is never used.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1806",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1816": {
+          "id": "CA1816",
+          "shortDescription": "Dispose methods should call SuppressFinalize",
+          "fullDescription": "A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1816",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1822": {
+          "id": "CA1822",
+          "shortDescription": "Mark members as static",
+          "fullDescription": "Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1835": {
+          "id": "CA1835",
+          "shortDescription": "Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'",
+          "fullDescription": "'Stream' has a 'ReadAsync' overload that takes a 'Memory<Byte>' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory<Byte>' as the first argument. Prefer calling the memory based overloads, which are more efficient.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1835",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1850": {
+          "id": "CA1850",
+          "shortDescription": "Prefer static 'HashData' method over 'ComputeHash'",
+          "fullDescription": "It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1850",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1859": {
+          "id": "CA1859",
+          "shortDescription": "Use concrete types when possible for improved performance",
+          "fullDescription": "Using concrete types avoids virtual or interface call overhead and enables inlining.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1860": {
+          "id": "CA1860",
+          "shortDescription": "Avoid using 'Enumerable.Any()' extension method",
+          "fullDescription": "Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1862": {
+          "id": "CA1862",
+          "shortDescription": "Use the 'StringComparison' method overloads to perform case-insensitive string comparisons",
+          "fullDescription": "Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2012": {
+          "id": "CA2012",
+          "shortDescription": "Use ValueTasks correctly",
+          "fullDescription": "ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2012",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CS0105": {
+          "id": "CS0105",
+          "shortDescription": "Using directive appeared previously in this namespace",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0105)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS0117": {
+          "id": "CS0117",
+          "defaultLevel": "error",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0117)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry",
+              "NotConfigurable"
+            ]
+          }
+        },
+        "CS0168": {
+          "id": "CS0168",
+          "shortDescription": "Variable is declared but never used",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0168)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS0414": {
+          "id": "CS0414",
+          "shortDescription": "Field is assigned but its value is never used",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0414)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS1662": {
+          "id": "CS1662",
+          "defaultLevel": "error",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS1662)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry",
+              "NotConfigurable"
+            ]
+          }
+        },
+        "CS4014": {
+          "id": "CS4014",
+          "shortDescription": "Because this call is not awaited, execution of the current method continues before the call is completed",
+          "fullDescription": "The current method calls an async method that returns a Task or a Task<TResult> and doesn't apply the await operator to the result. The call to the async method starts an asynchronous task. However, because no await operator is applied, the program continues without waiting for the task to complete. In most cases, that behavior isn't what you expect. Usually other aspects of the calling method depend on the results of the call or, minimally, the called method is expected to complete before you return from the method that contains the call.\u000d\u000a\u000d\u000aAn equally important issue is what happens to exceptions that are raised in the called async method. An exception that's raised in a method that returns a Task or Task<TResult> is stored in the returned task. If you don't await the task or explicitly check for exceptions, the exception is lost. If you await the task, its exception is rethrown.\u000d\u000a\u000d\u000aAs a best practice, you should always await the call.\u000d\u000a\u000d\u000aYou should consider suppressing the warning only if you're sure that you don't want to wait for the asynchronous call to complete and that the called method won't raise any exceptions. In that case, you can suppress the warning by assigning the task result of the call to a variable.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS4014)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8604": {
+          "id": "CS8604",
+          "shortDescription": "Possible null reference argument.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8604)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "CS8629": {
+          "id": "CS8629",
+          "shortDescription": "Nullable value type may be null.",
+          "defaultLevel": "warning",
+          "helpUri": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8629)",
+          "properties": {
+            "category": "Compiler",
+            "isEnabledByDefault": true,
+            "tags": [
+              "Compiler",
+              "Telemetry"
+            ]
+          }
+        },
+        "RZ10012": {
+          "id": "RZ10012",
+          "shortDescription": "Found markup element with unexpected name 'RadzenTheme'. If this is intended to be a component, add a @using directive for its namespace.",
+          "defaultLevel": "warning",
+          "properties": {
+            "category": "Razor",
+            "isEnabledByDefault": true
+          }
+        }
+      }
+    }
+  ]
+}

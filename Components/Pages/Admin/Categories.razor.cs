@@ -11,22 +11,38 @@ using Radzen.Blazor;
 using DocumentManagementSystem.Models;
 using DocumentManagementSystem.Services;
 
+using Microsoft.AspNetCore.Components.Authorization;
+
 namespace DocumentManagementSystem.Components.Pages.Admin
 {
     public partial class Categories
     {
-RadzenDataGrid<Category> grid = default!;
-    IEnumerable<Category>? categories;
+        [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadData();
-    }
+        RadzenDataGrid<Category> grid = default!;
+        IEnumerable<Category>? categories;
 
-    private async Task LoadData()
-    {
-        categories = await CategoryService.GetCategoriesAsync();
-    }
+        protected override async Task OnInitializedAsync()
+        {
+            await LoadData();
+        }
+
+        private async Task LoadData()
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var isAdmin = user.Identity?.Name?.ToLower() == "admin" || user.IsInRole("Admin");
+            var idClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            if (!isAdmin && idClaim != null && int.TryParse(idClaim.Value, out var userId))
+            {
+                categories = await CategoryService.GetCategoriesByUserAsync(userId);
+            }
+            else
+            {
+                categories = await CategoryService.GetCategoriesAsync();
+            }
+        }
 
     private async Task OnCreateCategory()
     {

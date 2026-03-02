@@ -10,9 +10,9 @@
     <!-- Welcome Section -->
     <RadzenCard>
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
-            <RadzenIcon Icon="waving_hand" Style="font-size: 2.5rem; color: #667eea;" />
+            <RadzenIcon Icon="waving_hand" Style="font-size: 2.5rem; color: #0071c1;" />
             <RadzenStack Gap="0.25rem">
-                <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Welcome to Document Management System</RadzenText>
+                <RadzenText TextStyle="TextStyle.H4" Style="margin: 0; color: #0071c1;">Welcome to Document Management System</RadzenText>
                 <RadzenText TextStyle="TextStyle.Body1" class="text-muted">
                     Manage, organize, and share your documents efficiently
                 </RadzenText>
@@ -60,11 +60,11 @@
             <RadzenCard>
                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" 
                              JustifyContent="JustifyContent.SpaceBetween" class="mb-3">
-                    <RadzenText TextStyle="TextStyle.H5" Style="margin: 0;">
-                        <RadzenIcon Icon="history" /> Recent Documents
+                    <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize" Style="margin: 0;">
+                        <RadzenIcon Icon="history" Style="color: #0071c1;" /> Recent Documents
                     </RadzenText>
                     <RadzenButton Text="View All" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
-                                  Click="@(() => NavigationManager.NavigateTo("/browse"))" />
+                                  Click="@(() => NavigationManager.NavigateTo("/ManageDocuments"))" />
                 </RadzenStack>
 
                 @if (recentDocuments.Any())
@@ -123,14 +123,14 @@
             <RadzenStack Gap="1.5rem">
                 <!-- Quick Actions -->
                 <RadzenCard>
-                    <RadzenText TextStyle="TextStyle.H5" Style="margin-bottom: 1rem;">
-                        <RadzenIcon Icon="flash_on" /> Quick Actions
+                    <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize" Style="margin-bottom: 1rem;">
+                        <RadzenIcon Icon="flash_on" Style="color: #0071c1;" /> Quick Actions
                     </RadzenText>
                     <RadzenStack Gap="0.75rem">
                         <RadzenButton Text="Upload Documents" Icon="cloud_upload" ButtonStyle="ButtonStyle.Primary"
                                       Style="width: 100%;" Click="@(() => NavigationManager.NavigateTo("/upload"))" />
                         <RadzenButton Text="Browse All Documents" Icon="search" ButtonStyle="ButtonStyle.Light"
-                                      Style="width: 100%;" Click="@(() => NavigationManager.NavigateTo("/browse"))" />
+                                      Style="width: 100%;" Click="@(() => NavigationManager.NavigateTo("/ManageDocuments"))" />
                     </RadzenStack>
                 </RadzenCard>
 

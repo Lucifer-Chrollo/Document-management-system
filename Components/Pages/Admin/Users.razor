@@ -14,12 +14,15 @@
 
 <RadzenStack Gap="1rem" Style="padding: 1rem;">
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-        <RadzenText TextStyle="TextStyle.H5" class="m-0">User Management</RadzenText>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+        <RadzenIcon Icon="people" Style="font-size: 1.5rem; color: #0071c1;" />
+        <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize m-0">User Management</RadzenText>
+    </RadzenStack>
         <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="@($"{users.Count()} users")" />
     </RadzenStack>
 
     <RadzenDataGrid @ref="grid" Data="@users" TItem="ApplicationUser" IsLoading="@isLoading"
-                    AllowColumnResize="true" AllowSorting="true" AllowFiltering="true"
+                    AllowColumnResize="true" AllowSorting="true" AllowFiltering="false"
                     FilterMode="FilterMode.Simple" PagerPosition="PagerPosition.Bottom"
                     AllowPaging="true" PageSize="15"
                     Style="border: 1px solid #ccc;">

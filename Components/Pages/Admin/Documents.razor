@@ -14,9 +14,9 @@
 <RadzenStack Gap="1rem" Style="padding: 1rem;">
     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
         <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
-            <RadzenIcon Icon="admin_panel_settings" Style="font-size: 1.75rem; color: var(--rz-primary);" />
+            <RadzenIcon Icon="admin_panel_settings" Style="font-size: 1.75rem; color: #0071c1;" />
             <RadzenStack Gap="0">
-                <RadzenText TextStyle="TextStyle.H5" class="m-0">Document Management</RadzenText>
+                <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize m-0">Document Management</RadzenText>
                 <RadzenText TextStyle="TextStyle.Caption" class="text-muted">View and manage all documents including password-protected ones</RadzenText>
             </RadzenStack>
         </RadzenStack>
@@ -39,7 +39,7 @@
     </RadzenCard>
 
     <RadzenDataGrid @ref="grid" Data="@filteredDocuments" TItem="Document" IsLoading="@isLoading"
-                    AllowColumnResize="true" AllowSorting="true" AllowFiltering="true"
+                    AllowColumnResize="true" AllowSorting="true" AllowFiltering="false"
                     FilterMode="FilterMode.Simple" PagerPosition="PagerPosition.Bottom"
                     AllowPaging="true" PageSize="15"
                     Style="border: 1px solid #ccc;">
@@ -125,7 +125,7 @@
                         <RadzenButton Icon="lock_open" ButtonStyle="ButtonStyle.Warning" Size="ButtonSize.ExtraSmall"
                                        Click="@(() => RemovePassword(doc))" Tooltip="Remove password protection" />
                     }
-                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall"
+                    <RadzenButton Image="delete-x.png" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.ExtraSmall"
                                    Click="@(() => DeleteDocument(doc))" Tooltip="Delete" />
                 </Template>
             </RadzenDataGridColumn>

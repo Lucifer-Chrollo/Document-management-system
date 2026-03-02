@@ -31,13 +31,13 @@
                 <RadzenText TextStyle="TextStyle.Body2" class="m-0" Style="color: #333;">Group Permissions</RadzenText>
                 
                 <RadzenCheckBox @bind-Value="@canReadBool" Name="canRead" Change="@((bool args) => OnPermissionChanged(1, args))" TValue="bool" />
-                <RadzenLabel Text="CanRead" Component="canRead" class="ms-1 rz-text-body2" Style="margin-right: 0.5rem;" />
+                <RadzenLabel Text="Can Read" Component="canRead" class="ms-1 rz-text-body2" Style="margin-right: 0.5rem;" />
 
                 <RadzenCheckBox @bind-Value="@canWriteBool" Name="canWrite" Change="@((bool args) => OnPermissionChanged(2, args))" TValue="bool" />
-                <RadzenLabel Text="CanWrite" Component="canWrite" class="ms-1 rz-text-body2" Style="margin-right: 0.5rem;" />
+                <RadzenLabel Text="Can Write" Component="canWrite" class="ms-1 rz-text-body2" Style="margin-right: 0.5rem;" />
 
                 <RadzenCheckBox @bind-Value="@canDeleteBool" Name="canDelete" Change="@((bool args) => OnPermissionChanged(4, args))" TValue="bool" />
-                <RadzenLabel Text="CanDelete" Component="canDelete" class="ms-1 rz-text-body2" />
+                <RadzenLabel Text="Can Delete" Component="canDelete" class="ms-1 rz-text-body2" />
             </RadzenStack>
         }
 

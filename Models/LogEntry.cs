@@ -39,8 +39,8 @@ public class LogEntry
 
     // Display-only fields (populated via JOIN with Users table)
     [NotMapped]
-    public string? FName { get; set; }
+    public string? FirstName { get; set; }
 
     [NotMapped]
-    public string? LName { get; set; }
+    public string? LastName { get; set; }
 }

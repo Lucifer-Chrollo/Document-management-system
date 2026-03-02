@@ -11,11 +11,11 @@
 
 <PageTitle>Two-Factor Authentication - DMS</PageTitle>
 
-<RadzenStack Gap="1.5rem" class="p-4" Style="max-width: 600px;">
-    <!-- Header -->
-    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
-        <RadzenIcon Icon="security" Style="font-size: 2rem; color: var(--rz-primary);" />
-        <RadzenText TextStyle="TextStyle.H4" Style="margin: 0;">Two-Factor Authentication</RadzenText>
+<RadzenStack Gap="0.5rem" class="p-2 fade-in-up" Style="max-width: 600px;">
+    <!-- Header Area -->
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+        <RadzenIcon Icon="security" Style="font-size: 1.5rem; color: #0071c1;" />
+        <RadzenText TextStyle="TextStyle.H5" class="pagetitle-fontsize" Style="margin: 0; font-weight: bold;">Two-Factor Authentication</RadzenText>
     </RadzenStack>
 
     @if (isLoading)
@@ -110,7 +110,7 @@
                     </RadzenAlert>
                 }
                 
-                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0" class="zero-gap-stack">
                     <RadzenButton Text="Back" Icon="arrow_back" ButtonStyle="ButtonStyle.Light" 
                                   Click="@(() => setupStep = 1)" />
                     <RadzenButton Text="Verify & Enable" Icon="check" ButtonStyle="ButtonStyle.Success" 

@@ -1,19 +1,39 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DocumentManagementSystem.Models;
 
-// Updated Department to use int Key to match DBBridge FKs
+/// <summary>
+/// Maps directly to the legacy 'HRM_Departments' table in iBusinessFlex.
+/// </summary>
+[Table("HRM_Departments")]
 public class Department
 {
     [Key]
-    public int DepartmentId { get; set; }
+    public int DepartmentID { get; set; }
 
     [Required]
+    [MaxLength(500)]
+    [Column("Name")]
+    public string Name { get; set; } = string.Empty;
+
     [MaxLength(100)]
-    public string DepartmentName { get; set; } = string.Empty;
+    public string? Description { get; set; }
 
-    public int SortOrder { get; set; } = 0;
-    public bool IsActive { get; set; } = true;
+    public DateTime? UpdatedDate { get; set; }
+
+    [MaxLength(50)]
+    public string? Status { get; set; }
+
+    [MaxLength(50)]
+    public string? SalaryExpenseAccountCode { get; set; }
+
+    [MaxLength(50)]
+    public string? EOBIExpenseAccountCode { get; set; }
+
+    [MaxLength(50)]
+    public string? PESSIExpenseAccountCode { get; set; }
+
+    [MaxLength(50)]
+    public string? CanteenExpenseAccountCode { get; set; }
 }
-
-

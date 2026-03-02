@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DocumentManagementSystem.Models;
 
@@ -29,4 +30,7 @@ public class ApplicationUser : IdentityUser<int>
 
     // Navigation properties
     public virtual ICollection<Document> OwnedDocuments { get; set; } = new List<Document>();
+
+    [NotMapped]
+    public string FullName => $"{FirstName} {LastName}".Trim();
 }

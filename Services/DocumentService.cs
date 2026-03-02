@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
 using DocumentManagementSystem.Hubs;
 using DocumentManagementSystem.Data.Repositories;
@@ -31,11 +29,12 @@ public class DocumentService : IDocumentService
     private readonly ICompressionService _compressionService;
     private readonly IHubContext<DocumentHub> _hubContext;
     private readonly ILogger<DocumentService> _logger;
-    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IUserContextService _userContext;
     private readonly IAutoCategorizationService _autoCategorizationService;
     private readonly ICommentService _commentService;
     private readonly ICategoryService _categoryService;
     private readonly ILocationService _locationService;
+    private readonly IUserGroupService _userGroupService;
 
     public DocumentService(
         IDocumentRepository documentRepository,
@@ -44,12 +43,13 @@ public class DocumentService : IDocumentService
         ISearchService searchService,
         IAuditService auditService,
         ILogger<DocumentService> logger,
-        IHttpContextAccessor httpContextAccessor,
+        IUserContextService userContext,
         IHubContext<DocumentHub> hubContext,
         IAutoCategorizationService autoCategorizationService,
         ICommentService commentService,
         ICategoryService categoryService,
-        ILocationService locationService)
+        ILocationService locationService,
+        IUserGroupService userGroupService)
     {
         _documentRepository = documentRepository;
         _storageService = storageService;
@@ -57,27 +57,24 @@ public class DocumentService : IDocumentService
         _searchService = searchService;
         _auditService = auditService;
         _logger = logger;
-        _httpContextAccessor = httpContextAccessor;
+        _userContext = userContext;
         _hubContext = hubContext;
         _autoCategorizationService = autoCategorizationService;
         _commentService = commentService;
         _categoryService = categoryService;
         _locationService = locationService;
+        _userGroupService = userGroupService;
     }
 
     /// <summary>
     /// Security Helper: Extracts the unique integer ID of the current logged-in user.
     /// Used for Ownership verification and Audit logging.
+    /// Returns null if unauthenticated (0 from IUserContextService maps to null).
     /// </summary>
     private int? GetCurrentUserId()
     {
-        var user = _httpContextAccessor.HttpContext?.User;
-        if (user == null || !user.Identity!.IsAuthenticated) return null;
-        
-        var claim = user.FindFirst(ClaimTypes.NameIdentifier);
-        if (claim != null && int.TryParse(claim.Value, out int id)) return id;
-        
-        return null; 
+        var id = _userContext.GetCurrentUserId();
+        return id == 0 ? null : id;
     }
 
 
@@ -87,10 +84,10 @@ public class DocumentService : IDocumentService
     /// </summary>
     private bool IsAdmin()
     {
-        var user = _httpContextAccessor.HttpContext?.User;
-        if (user == null) return false;
-        // Check Username "admin" (seeded) or "Admin" Role
-        return user.Identity?.Name?.ToLower() == "admin" || user.IsInRole("Admin");
+        var userName = _userContext.GetCurrentUserName();
+        if (userName == "System") return false;
+        // Check Username "admin" (seeded) or fallback to simple name check
+        return userName.Equals("admin", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -767,6 +764,129 @@ public class DocumentService : IDocumentService
         return await _documentRepository.GetRightsAsync(documentId);
     }
 
+    /// <summary>
+    /// Grants a group access to a document with the specified rights level.
+    /// </summary>
+    public async Task<iFishResponse> GrantGroupAccessAsync(int documentId, int groupId, int rights)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            var group = await _userGroupService.GetGroupByIdAsync(groupId);
+            if (group == null)
+            {
+                response.Result = false;
+                response.ReturnCode = -2;
+                response.Message = $"Group {groupId} not found";
+                return response;
+            }
+
+            await _documentRepository.GrantGroupAccessAsync(documentId, groupId, rights);
+            await _auditService.LogAsync("GrantGroupAccess", documentId, null);
+            _logger.LogInformation("Granted group '{Group}' (ID:{GroupId}) rights {Rights} to document {DocId}", group.GroupName, groupId, rights, documentId);
+
+            response.Result = true;
+            response.RecordID = documentId;
+            response.Message = $"Group '{group.GroupName}' granted access";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error granting group {GroupId} access to document {DocumentId}", groupId, documentId);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    /// <summary>
+    /// Revokes a group's access to a document.
+    /// </summary>
+    public async Task<iFishResponse> RevokeGroupAccessAsync(int documentId, int groupId)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            await _documentRepository.RevokeGroupAccessAsync(documentId, groupId);
+            await _auditService.LogAsync("RevokeGroupAccess", documentId, null);
+            _logger.LogInformation("Revoked group {GroupId} access from document {DocId}", groupId, documentId);
+
+            response.Result = true;
+            response.RecordID = documentId;
+            response.Message = "Group access revoked";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error revoking group {GroupId} access from document {DocumentId}", groupId, documentId);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    /// <summary>
+    /// Grants a user access to a document with the specified rights level.
+    /// </summary>
+    public async Task<iFishResponse> GrantUserAccessAsync(int documentId, int userId, int rights)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            await _documentRepository.GrantUserAccessAsync(documentId, userId, rights);
+            await _auditService.LogAsync("GrantUserAccess", documentId, null);
+            _logger.LogInformation("Granted user {UserId} rights {Rights} to document {DocId}", userId, rights, documentId);
+
+            // Notify the user via SignalR
+            var doc = await _documentRepository.GetByIdAsync(documentId);
+            if (doc != null)
+            {
+                await _hubContext.Clients.User(userId.ToString()).SendAsync("FileShared",
+                    _userContext.GetCurrentUserName(),
+                    doc.DocumentName,
+                    documentId);
+            }
+
+            response.Result = true;
+            response.RecordID = documentId;
+            response.Message = "User granted access";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error granting user {UserId} access to document {DocumentId}", userId, documentId);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
+    /// <summary>
+    /// Revokes a user's access to a document.
+    /// </summary>
+    public async Task<iFishResponse> RevokeUserAccessAsync(int documentId, int userId)
+    {
+        var response = new iFishResponse();
+        try
+        {
+            await _documentRepository.RevokeUserAccessAsync(documentId, userId);
+            await _auditService.LogAsync("RevokeUserAccess", documentId, null);
+            _logger.LogInformation("Revoked user {UserId} access from document {DocId}", userId, documentId);
+
+            response.Result = true;
+            response.RecordID = documentId;
+            response.Message = "User access revoked";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error revoking user {UserId} access from document {DocumentId}", userId, documentId);
+            response.Result = false;
+            response.ReturnCode = -1;
+            response.Message = ex.Message;
+        }
+        return response;
+    }
+
     public async Task<IEnumerable<Document>> SearchDocumentsAsync(string query, int userId)
     {
         // Unify with SearchAsync
@@ -1178,82 +1298,6 @@ public class DocumentService : IDocumentService
         var hashBytes = await sha256.ComputeHashAsync(stream);
         if (stream.CanSeek) stream.Position = 0;
         return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-    }
-
-    public async Task<iFishResponse> GrantUserAccessAsync(int documentId, int userId, int rights = 1)
-    {
-        var response = new iFishResponse();
-        try
-        {
-            await _documentRepository.GrantUserAccessAsync(documentId, userId, rights);
-            response.Result = true;
-            response.RecordID = documentId;
-            response.Message = "User access granted";
-        }
-        catch (Exception ex)
-        {
-            response.Result = false;
-            response.ReturnCode = -1;
-            response.Message = ex.Message;
-        }
-        return response;
-    }
-
-    public async Task<iFishResponse> GrantGroupAccessAsync(int documentId, int groupId, int rights = 1)
-    {
-        var response = new iFishResponse();
-        try
-        {
-            await _documentRepository.GrantGroupAccessAsync(documentId, groupId, rights);
-            response.Result = true;
-            response.RecordID = documentId;
-            response.Message = "Group access granted";
-        }
-        catch (Exception ex)
-        {
-            response.Result = false;
-            response.ReturnCode = -1;
-            response.Message = ex.Message;
-        }
-        return response;
-    }
-
-    public async Task<iFishResponse> RevokeUserAccessAsync(int documentId, int userId)
-    {
-        var response = new iFishResponse();
-        try
-        {
-            await _documentRepository.RevokeUserAccessAsync(documentId, userId);
-            response.Result = true;
-            response.RecordID = documentId;
-            response.Message = "User access revoked";
-        }
-        catch (Exception ex)
-        {
-            response.Result = false;
-            response.ReturnCode = -1;
-            response.Message = ex.Message;
-        }
-        return response;
-    }
-
-    public async Task<iFishResponse> RevokeGroupAccessAsync(int documentId, int groupId)
-    {
-        var response = new iFishResponse();
-        try
-        {
-            await _documentRepository.RevokeGroupAccessAsync(documentId, groupId);
-            response.Result = true;
-            response.RecordID = documentId;
-            response.Message = "Group access revoked";
-        }
-        catch (Exception ex)
-        {
-            response.Result = false;
-            response.ReturnCode = -1;
-            response.Message = ex.Message;
-        }
-        return response;
     }
 
     public async Task<IEnumerable<Category>> GetCategoriesAsync()
